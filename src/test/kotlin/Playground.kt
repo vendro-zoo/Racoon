@@ -2,7 +2,7 @@ import commons.ConnectionSettings
 import commons.RacoonConfiguration
 import habitat.RacoonManager
 import models.Cat
-import org.intellij.lang.annotations.Language
+import models.Owner
 
 fun main() {
     RacoonConfiguration.defaultConnectionSettings = ConnectionSettings(
@@ -12,11 +12,14 @@ fun main() {
         username = "test",
         password = "test"
     )
+    data class Wrapper(val cat: Cat, val owner: Owner)
 
-    val racoonManager = RacoonManager.create()
+    RacoonManager.create().use { racoonManager ->
+        for (i in 1..10) {
+            val mapped = racoonManager.createRacoon("SELECT c.*, o.* FROM cat c, owner o")
+                .use { it.mutliMapToClass<Wrapper>() }
+            println(mapped.first())
+        }
+    }
 
-    @Language("MySQL") val racoon = racoonManager.createRacoon("SELECT c.* FROM cat c")
-    val cats = racoon.mapToClass<Cat>()
-
-    println(cats.first().name)
 }
