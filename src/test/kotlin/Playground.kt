@@ -1,5 +1,5 @@
-import commons.ConnectionSettings
-import commons.RacoonConfiguration
+import commons.configuration.ConnectionSettings
+import commons.configuration.RacoonConfiguration
 import habitat.RacoonManager
 import models.Cat
 import models.Owner
@@ -15,11 +15,12 @@ fun main() {
     data class Wrapper(val cat: Cat, val owner: Owner)
 
     RacoonManager.create().use { racoonManager ->
-        for (i in 1..10) {
-            val mapped = racoonManager.createRacoon("SELECT c.*, o.* FROM cat c, owner o")
-                .use { it.mutliMapToClass<Wrapper>() }
-            println(mapped.first())
-        }
+        val mapped = racoonManager.createRacoon("SELECT c.*, o.* FROM cat c, owner o")
+            .use {
+                print(it.getImplementationResult(false))
+                it.mutliMapToClass<Wrapper>()
+            }
+        println(mapped.first())
     }
 
 }

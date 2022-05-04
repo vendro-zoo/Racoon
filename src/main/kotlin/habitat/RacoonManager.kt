@@ -1,7 +1,7 @@
 package habitat
 
-import commons.ConnectionSettings
-import commons.RacoonConfiguration
+import commons.configuration.ConnectionSettings
+import commons.configuration.RacoonConfiguration
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.ResultSet
@@ -48,11 +48,13 @@ class RacoonManager(private val connection: Connection) : AutoCloseable {
         fun create(connectionSettings: ConnectionSettings? = RacoonConfiguration.defaultConnectionSettings): RacoonManager {
             // If no connection settings are defined, throw an exception
             if (connectionSettings == null)
-                throw IllegalStateException("No connection settings provided " +
-                        "and no default connection settings configured. " +
-                        "Please provide connection settings or configure " +
-                        "default connection settings by changing " +
-                        "'commons.RacoonConfiguration.defaultConnectionSettings'.")
+                throw IllegalStateException(
+                    "No connection settings provided " +
+                            "and no default connection settings configured. " +
+                            "Please provide connection settings or configure " +
+                            "default connection settings by changing " +
+                            "'commons.configuration.RacoonConfiguration.defaultConnectionSettings'."
+                )
 
             // Return a new instance of the habitat.RacoonManager
             return RacoonManager(DriverManager.getConnection(connectionSettings.toString()))

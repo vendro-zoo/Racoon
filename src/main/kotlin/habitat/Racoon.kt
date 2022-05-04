@@ -1,6 +1,7 @@
 package habitat
 
-import commons.RacoonConfiguration
+import commons.configuration.RacoonConfiguration
+import commons.declarations.ParameterCaster
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
@@ -13,8 +14,8 @@ class Racoon(
     private val statement: Statement,
     private val query: String,
     var resultSet: ResultSet? = null,
-    val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf()
-) : AutoCloseable{
+    val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf(),
+) : AutoCloseable {
     /**
      * Adds a table alias to be used when mapping the result of the query to a class.
      *
@@ -35,7 +36,7 @@ class Racoon(
         resultSet = statement.executeQuery(query)
     }
 
-    inline fun <reified T: Any> mapToClass(): List<T> = mapToClass(T::class)
+    inline fun <reified T : Any> mapToClass(): List<T> = mapToClass(T::class)
 
     /**
      * Maps the result of the query to a class.
@@ -44,7 +45,7 @@ class Racoon(
      * @throws ClassCastException If an error occurs during the mapping.
      * See the message of the exception for more details.
      */
-    fun <T: Any> mapToClass(tClass: KClass<T>): List<T> {
+    fun <T : Any> mapToClass(tClass: KClass<T>): List<T> {
         // If the query has not been executed yet, execute it
         resultSet ?: execute()
         val immutableResultSet = resultSet!!
@@ -96,12 +97,13 @@ class Racoon(
         return list.toList()
     }
 
-    inline fun <reified T: Any> mutliMapToClass(): List<T> {
+    inline fun <reified T : Any> mutliMapToClass(): List<T> {
         // Get the class containing the properties to map to
         val clazz = T::class
 
         // Get the primary constructor of the class and its parameters
-        val constructor = clazz.primaryConstructor ?: throw ClassCastException("${clazz.simpleName} has no primary constructor")
+        val constructor =
+            clazz.primaryConstructor ?: throw ClassCastException("${clazz.simpleName} has no primary constructor")
         val parameters = constructor.parameters
         val paramSize = parameters.size
 
@@ -111,7 +113,7 @@ class Racoon(
             // Convert map of lists to list of maps
             it.value.map { i -> it.key to i }
 
-        // Creates a matrix of the parameters and their values
+            // Creates a matrix of the parameters and their values
         }.withIndex().fold(mutableListOf<Array<Pair<KParameter, Any>?>>()) { acc, (i, v) ->
             // Fill the matrix with the values
             v.withIndex().forEach { (index, value) ->
@@ -134,6 +136,16 @@ class Racoon(
 
         // Return the list of wrappers
         return listOfWrappers
+    }
+
+    // Debugging purposes
+    // Example of retrieving the caster from the class
+    fun getImplementationResult(value: Any): String {
+        RacoonConfiguration.parameterCasters[value::class]?.let {
+            @Suppress("UNCHECKED_CAST")
+            return (it as ParameterCaster<Any>).cast(value)
+        }
+        return ""
     }
 
     /**
