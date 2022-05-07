@@ -38,7 +38,7 @@ class Racoon(
         val simpleMatch = simpleRegex.findAll(query)
         val surroundedMatch = surroundedRegex.findAll(query)
 
-        val indexes = simpleMatch.toList().map {  it.groups[1]!!.range.first }.toMutableList()
+        val indexes = simpleMatch.toList().map { it.groups[1]!!.range.first }.toMutableList()
         indexes.addAll(surroundedMatch.toList().map {
             Regex("\\?").findAll(it.groupValues[1])
                 .toList().map { it2 -> it.groups[1]!!.range.first + it2.groups[0]!!.range.first }
@@ -48,8 +48,9 @@ class Racoon(
         return indexes.withIndex().fold(Pair(query, 0)) { a, it ->
             val v = it.value
             val i = it.index
-            val replacing = indexedParameters[i + 1] ?: throw IllegalArgumentException("Indexed parameter `$i` not found")
-            Pair(a.first.replaceRange((v+a.second)..(v+a.second), replacing), a.second+(replacing.length - 1))
+            val replacing =
+                indexedParameters[i + 1] ?: throw IllegalArgumentException("Indexed parameter `$i` not found")
+            Pair(a.first.replaceRange((v + a.second)..(v + a.second), replacing), a.second + (replacing.length - 1))
         }.first
     }
 
