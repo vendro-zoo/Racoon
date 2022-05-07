@@ -89,6 +89,13 @@ class Racoon(
         resultSet = statement.executeQuery(processedQuery)
     }
 
+    /**
+     * Maps the result of the query to a class.
+     * @param T The class to map to.
+     * @return A list of [T] containing the result of the mapping.
+     * @throws ClassCastException If an error occurs during the mapping.
+     * See the message of the exception for more details.
+     */
     inline fun <reified T : Any> mapToClass(): List<T> = mapToClass(T::class)
 
     /**
