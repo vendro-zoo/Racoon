@@ -25,11 +25,20 @@ class Racoon(
      *
      * If the query contains the same table multiple times,
      * the alias must be re-set before each mapping.
+     *
      * @param clazz The class to alias.
      * @param alias The alias to use.
      */
     fun setAlias(clazz: KClass<*>, alias: String) = apply { tableAliases[clazz] = alias }
 
+    /**
+     * Modifies the query by replacing the '?' with the value of the corresponding parameter.
+     *
+     * @param query The query to modify.
+     *
+     * @throws IllegalArgumentException If the size of [indexedParameters] is not equal to the number of '?' in the query,
+     * or if a parameter is not found in [indexedParameters].
+     */
     private fun replaceIndexed(query: String): String {
         // Simple regex that finds parameters without parentheses after an equal sign
         val simpleRegex = Regex("=\\s*(\\?)")
@@ -53,6 +62,11 @@ class Racoon(
         // Sorting the list to correctly replace the parameters
         indexes.sort()
 
+        // Checking if the list's size is the same as the number of parameters
+        if (indexes.size != indexedParameters.size)
+            throw IllegalArgumentException("The number of parameters defined is ${indexedParameters.size}, " +
+                    "but ${indexes.size} parameters were found in the query.")
+
         return indexes.withIndex().fold(Pair(query, 0)) { a, it ->
             val v = it.value  // Index of the question mark
             val i = it.index  // Index of the iteration
@@ -70,6 +84,13 @@ class Racoon(
         }.first  // Returning the query with the replaced parameters
     }
 
+    /**
+     * Modifies the query by replacing all the named parameters with the value of the corresponding parameter.
+     *
+     * @param query The query to modify.
+     *
+     * @throws IllegalArgumentException If a parameter is present in [namedParameters] but not in the query.
+     */
     private fun replaceNamed(query: String): String {
         // Initializing the result
         var result = query
@@ -88,7 +109,7 @@ class Racoon(
                 match = regex.find(query)
 
                 // If neither matched, throw an exception
-                if (match == null) throw IllegalArgumentException("Could not find parameter $key in query `$query`")
+                if (match == null) throw IllegalArgumentException("Could not find parameter :$key in the query")
             }
 
             // Replacing the parameter with the value
@@ -99,6 +120,12 @@ class Racoon(
         return result
     }
 
+    /**
+     * Applies both [replaceIndexed] and [replaceNamed] to [originalQuery] and saves the result in [processedQuery].
+     * Does nothing if [processedQuery] is already set.
+     *
+     * @throws IllegalArgumentException If an error occurs while replacing the parameters.
+     */
     fun calculateProcessedQuery() {
         if (processedQuery != null) return  // If the query has already been calculated, return
 
@@ -110,15 +137,16 @@ class Racoon(
 
     /**
      * Executes the query and save the result in the [Racoon].
+     *
      * @return the [Racoon] itself
      */
-    fun execute() = apply {
-        resultSet = statement.executeQuery(processedQuery)
-    }
+    fun execute() = apply { resultSet = statement.executeQuery(processedQuery) }
 
     /**
      * Maps the result of the query to a class.
+     *
      * @param T The class to map to.
+     *
      * @return A list of [T] containing the result of the mapping.
      * @throws ClassCastException If an error occurs during the mapping.
      * See the message of the exception for more details.
@@ -127,7 +155,9 @@ class Racoon(
 
     /**
      * Maps the result of the query to a class.
+     *
      * @param T The class to map to.
+     *
      * @return A list of [T] containing the result of the mapping.
      * @throws ClassCastException If an error occurs during the mapping.
      * See the message of the exception for more details.
@@ -184,6 +214,16 @@ class Racoon(
         return list.toList()
     }
 
+    /**
+     * Maps the result of the query to a wrapper class.
+     *
+     * Each property of the wrapper class is mapped to the result of [mapToClass].
+     *
+     * @param T The wrapper class to map to.
+     *
+     * @return A list of [T] containing the result of the mapping.
+     * @throws ClassCastException If an error occurs during the mapping.
+     */
     inline fun <reified T : Any> multiMapToClass(): List<T> {
         // Get the class containing the properties to map to
         val clazz = T::class
@@ -225,6 +265,15 @@ class Racoon(
         return listOfWrappers
     }
 
+    /**
+     * Sets an indexed parameter of the query.
+     *
+     * @param index The index of the parameter.
+     * @param value The value of the parameter.
+     *
+     * @return The [Racoon] instance.
+     * @throws NoSuchMethodException if a [ParameterCaster] is not found for the parameter's type.
+     */
     fun <T : Any> setParam(index: Int, value: T): Racoon = apply {
         val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
@@ -232,6 +281,15 @@ class Racoon(
         indexedParameters[index] = (caster as ParameterCaster<Any>).cast(value)
     }
 
+    /**
+     * Sets a named parameter of the query.
+     *
+     * @param name The name of the parameter.
+     * @param value The value of the parameter.
+     *
+     * @return The [Racoon] instance.
+     * @throws NoSuchMethodException if a [ParameterCaster] is not found for the parameter's type.
+     */
     fun <T : Any> setParam(name: String, value: T): Racoon = apply {
         val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
