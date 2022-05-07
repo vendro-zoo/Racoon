@@ -1,16 +1,16 @@
 package habitat
 
-import commons.configuration.RacoonConfiguration
 import commons.casting.ParameterCaster
+import commons.configuration.RacoonConfiguration
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.full.superclasses
 
 @Suppress("unused")
+// TODO: add documentation
 class Racoon(
     private val statement: Statement,
     private val originalQuery: String,
@@ -25,62 +25,87 @@ class Racoon(
      *
      * If the query contains the same table multiple times,
      * the alias must be re-set before each mapping.
-     * @param klass The class to alias.
+     * @param clazz The class to alias.
      * @param alias The alias to use.
      */
-    fun setAlias(klass: KClass<*>, alias: String) = apply {
-        tableAliases[klass] = alias
-    }
+    fun setAlias(clazz: KClass<*>, alias: String) = apply { tableAliases[clazz] = alias }
 
     private fun replaceIndexed(query: String): String {
+        // Simple regex that finds parameters without parentheses after an equal sign
         val simpleRegex = Regex("=\\s*(\\?)")
+
+        // Regex that finds multiple parameters within parentheses
         val surroundedRegex = Regex("\\(((\\?\\s*,?\\s*)+)\\)")
 
+        // Getting the result of the regex
         val simpleMatch = simpleRegex.findAll(query)
         val surroundedMatch = surroundedRegex.findAll(query)
 
+        // Getting the indexes of the simple matches
         val indexes = simpleMatch.toList().map { it.groups[1]!!.range.first }.toMutableList()
+
+        // Getting the indexes of the surrounded matches
         indexes.addAll(surroundedMatch.toList().map {
-            Regex("\\?").findAll(it.groupValues[1])
-                .toList().map { it2 -> it.groups[1]!!.range.first + it2.groups[0]!!.range.first }
-        }.fold(mutableListOf()) { acc, it -> acc.addAll(it); acc })
+            Regex("\\?").findAll(it.groupValues[1])  // Getting all the '?' in the group
+                .toList().map { it2 -> it.groups[1]!!.range.first + it2.groups[0]!!.range.first }  // Calculating the index
+        }.fold(mutableListOf()) { acc, it -> acc.addAll(it); acc })  // Flattening the list
+
+        // Sorting the list to correctly replace the parameters
         indexes.sort()
 
         return indexes.withIndex().fold(Pair(query, 0)) { a, it ->
-            val v = it.value
-            val i = it.index
+            val v = it.value  // Index of the question mark
+            val i = it.index  // Index of the iteration
+
+            // Getting the value to replace the question mark with
             val replacing =
                 indexedParameters[i + 1] ?: throw IllegalArgumentException("Indexed parameter `$i` not found")
-            Pair(a.first.replaceRange((v + a.second)..(v + a.second), replacing), a.second + (replacing.length - 1))
-        }.first
+
+            Pair(
+                // Replacing the question mark with the value
+                a.first.replaceRange((v + a.second)..(v + a.second), replacing),
+                // Increasing the offset of the next question mark
+                a.second + (replacing.length - 1)
+            )
+        }.first  // Returning the query with the replaced parameters
     }
 
     private fun replaceNamed(query: String): String {
+        // Initializing the result
         var result = query
 
         for ((key, value) in namedParameters) {
+            // Escaping the key to prevent regex issues
             val escapedKey = Regex.escape(key)
+
+            // Try matching the simple regex
             var regex = Regex("=\\s*(:$escapedKey)")
             var match = regex.find(query)
+
+            // If not found, try matching the surrounded regex
             if (match == null) {
                 regex = Regex("\\((?>\\s*:[:\\w\\d_]+\\s*,)*\\s*(:$escapedKey)\\s*(?>,\\s*:[:\\w\\d_]+\\s*)*\\)")
                 match = regex.find(query)
+
+                // If neither matched, throw an exception
                 if (match == null) throw IllegalArgumentException("Could not find parameter $key in query `$query`")
             }
 
+            // Replacing the parameter with the value
             result = result.replaceRange(match.groups[1]!!.range, value)
         }
 
+        // Returning the result
         return result
     }
 
     fun calculateProcessedQuery() {
-        if (processedQuery != null) return  // already calculated
+        if (processedQuery != null) return  // If the query has already been calculated, return
 
         val indexReplaced = replaceIndexed(originalQuery)
         val namedReplaced = replaceNamed(indexReplaced)
 
-        processedQuery = namedReplaced
+        processedQuery = namedReplaced  // Setting the processed query
     }
 
     /**
@@ -116,7 +141,7 @@ class Racoon(
         val clazzName = tClass.simpleName ?: throw ClassCastException("Class name is null")
 
         // Get the table alias for the class or generate one if it isn't specified
-        val sqlAlias = tableAliases[tClass] ?: RacoonConfiguration.defaultTableAliasMapper(clazzName)
+        val sqlAlias = tableAliases[tClass] ?: RacoonConfiguration.TableAliases.getAlias(clazzName)
 
         // Get the primary constructor of the class and its parameters
         val constructor = tClass.primaryConstructor ?: throw ClassCastException("$clazzName has no primary constructor")
@@ -201,23 +226,17 @@ class Racoon(
     }
 
     fun <T : Any> setParam(index: Int, value: T): Racoon = apply {
-        val caster = getFirstCaster(value::class)
+        val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
         @Suppress("UNCHECKED_CAST")
         indexedParameters[index] = (caster as ParameterCaster<Any>).cast(value)
     }
 
     fun <T : Any> setParam(name: String, value: T): Racoon = apply {
-        val caster = getFirstCaster(value::class)
+        val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
         @Suppress("UNCHECKED_CAST")
         namedParameters[name] = (caster as ParameterCaster<Any>).cast(value)
-    }
-
-    private fun getFirstCaster(clazz: KClass<*>): ParameterCaster<out Any> {
-        return RacoonConfiguration.parameterCasters[clazz]
-            ?: clazz.superclasses.firstNotNullOfOrNull { RacoonConfiguration.parameterCasters[it] }
-            ?: throw NoSuchMethodException("A ParameterCaster for the class '${clazz.simpleName}' has not been registered")
     }
 
     /**

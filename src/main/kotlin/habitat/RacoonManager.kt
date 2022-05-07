@@ -45,15 +45,15 @@ class RacoonManager(private val connection: Connection) : AutoCloseable {
          * If no connection settings are provided and
          * the default connection settings are not available.
          */
-        fun create(connectionSettings: ConnectionSettings? = RacoonConfiguration.defaultConnectionSettings): RacoonManager {
+        fun create(connectionSettings: ConnectionSettings? = RacoonConfiguration.Connection.getDefault()): RacoonManager {
             // If no connection settings are defined, throw an exception
             if (connectionSettings == null)
                 throw IllegalStateException(
                     "No connection settings provided " +
                             "and no default connection settings configured. " +
                             "Please provide connection settings or configure " +
-                            "default connection settings by changing " +
-                            "'commons.configuration.RacoonConfiguration.defaultConnectionSettings'."
+                            "default connection settings by calling " +
+                            "'commons.configuration.RacoonConfiguration.Connection.setDefault()'."
                 )
 
             // Return a new instance of the habitat.RacoonManager

@@ -3,13 +3,13 @@ import commons.configuration.RacoonConfiguration
 import habitat.RacoonManager
 
 fun main() {
-    RacoonConfiguration.defaultConnectionSettings = ConnectionSettings(
+    RacoonConfiguration.Connection.setDefault(ConnectionSettings(
         host = "localhost",
         port = 3306,
         database = "test",
         username = "test",
         password = "test"
-    )
+    ))
 
     RacoonManager.create().use { racoonManager ->
         racoonManager.createRacoon("select 1 from cat c where c.name = (?, ?) and c.id = ? and p = :n1 and a in (:n2, :n3)")
