@@ -22,7 +22,7 @@ fun main() {
                     .setParam("n3", 'f')
                     .calculateProcessedQuery()
 //                print(it.getImplementationResult(false))
-//                it.mutliMapToClass<Wrapper>()
+//                it.multiMapToClass<Wrapper>()
             }
 //        println(mapped.first())
     }

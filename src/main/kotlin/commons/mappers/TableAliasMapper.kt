@@ -1,4 +1,4 @@
-package commons
+package commons.mappers
 
 @Suppress("unused")
 object TableAliasMappers {

@@ -1,6 +1,6 @@
 package commons.configuration
 
-import commons.TableAliasMappers
+import commons.mappers.TableAliasMappers
 import commons.casting.ParameterCaster
 import commons.casting.casters.*
 import java.util.*
