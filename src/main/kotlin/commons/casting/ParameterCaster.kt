@@ -1,4 +1,4 @@
-package commons.declarations
+package commons.casting
 
 /**
  * A class that casts a query parameter of a given type to a String.

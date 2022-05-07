@@ -1,11 +1,11 @@
 package commons.configuration
 
 import commons.TableAliasMappers
-import commons.declarations.ParameterCaster
-import commons.declarations.casters.BooleanCaster
-import commons.declarations.casters.CharCaster
-import commons.declarations.casters.DateCaster
-import commons.declarations.casters.StringCaster
+import commons.casting.ParameterCaster
+import commons.casting.casters.BooleanCaster
+import commons.casting.casters.CharCaster
+import commons.casting.casters.DateCaster
+import commons.casting.casters.StringCaster
 import java.util.*
 import kotlin.reflect.KClass
 

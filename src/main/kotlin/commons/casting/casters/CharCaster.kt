@@ -1,6 +1,6 @@
-package commons.declarations.casters
+package commons.casting.casters
 
-import commons.declarations.ParameterCaster
+import commons.casting.ParameterCaster
 
 class CharCaster : ParameterCaster<Char> {
     override fun cast(parameter: Char): String = "'$parameter'"

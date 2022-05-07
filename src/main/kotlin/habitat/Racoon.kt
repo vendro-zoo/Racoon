@@ -1,7 +1,7 @@
 package habitat
 
 import commons.configuration.RacoonConfiguration
-import commons.declarations.ParameterCaster
+import commons.casting.ParameterCaster
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
