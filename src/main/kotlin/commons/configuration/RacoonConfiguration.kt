@@ -2,10 +2,7 @@ package commons.configuration
 
 import commons.TableAliasMappers
 import commons.casting.ParameterCaster
-import commons.casting.casters.BooleanCaster
-import commons.casting.casters.CharCaster
-import commons.casting.casters.DateCaster
-import commons.casting.casters.StringCaster
+import commons.casting.casters.*
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -16,6 +13,7 @@ object RacoonConfiguration {
         Pair(String::class, StringCaster()),
         Pair(Boolean::class, BooleanCaster()),
         Pair(Char::class, CharCaster()),
-        Pair(Date::class, DateCaster())
+        Pair(Date::class, DateCaster()),
+        Pair(Number::class, NumberCaster())
     )
 }
