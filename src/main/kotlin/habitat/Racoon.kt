@@ -12,9 +12,12 @@ import kotlin.reflect.full.primaryConstructor
 @Suppress("unused")
 class Racoon(
     private val statement: Statement,
-    private val query: String,
-    var resultSet: ResultSet? = null,
-    val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf(),
+    private val originalQuery: String,
+    private var processedQuery: String? = null,
+    private var resultSet: ResultSet? = null,
+    private val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf(),
+    private val namedParameters: MutableMap<String, String> = mutableMapOf(),
+    private val indexedParameters: MutableMap<Int, String> = mutableMapOf(),
 ) : AutoCloseable {
     /**
      * Adds a table alias to be used when mapping the result of the query to a class.
@@ -28,12 +31,62 @@ class Racoon(
         tableAliases[klass] = alias
     }
 
+    private fun replaceIndexed(query: String): String {
+        val simpleRegex = Regex("=\\s*(\\?)")
+        val surroundedRegex = Regex("\\(((\\?\\s*,?\\s*)+)\\)")
+
+        val simpleMatch = simpleRegex.findAll(query)
+        val surroundedMatch = surroundedRegex.findAll(query)
+
+        val indexes = simpleMatch.toList().map {  it.groups[1]!!.range.first }.toMutableList()
+        indexes.addAll(surroundedMatch.toList().map {
+            Regex("\\?").findAll(it.groupValues[1])
+                .toList().map { it2 -> it.groups[1]!!.range.first + it2.groups[0]!!.range.first }
+        }.fold(mutableListOf()) { acc, it -> acc.addAll(it); acc })
+        indexes.sort()
+
+        return indexes.withIndex().fold(Pair(query, 0)) { a, it ->
+            val v = it.value
+            val i = it.index
+            val replacing = indexedParameters[i + 1] ?: throw IllegalArgumentException("Indexed parameter `$i` not found")
+            Pair(a.first.replaceRange((v+a.second)..(v+a.second), replacing), a.second+(replacing.length - 1))
+        }.first
+    }
+
+    private fun replaceNamed(query: String): String {
+        var result = query
+
+        for ((key, value) in namedParameters) {
+            val escapedKey = Regex.escape(key)
+            var regex = Regex("=\\s*(:$escapedKey)")
+            var match = regex.find(query)
+            if (match == null) {
+                regex = Regex("\\((?>\\s*:[:\\w\\d_]+\\s*,)*\\s*(:$escapedKey)\\s*(?>,\\s*:[:\\w\\d_]+\\s*)*\\)")
+                match = regex.find(query)
+                if (match == null) throw IllegalArgumentException("Could not find parameter $key in query `$query`")
+            }
+
+            result = result.replaceRange(match.groups[1]!!.range, value)
+        }
+
+        return result
+    }
+
+    fun calculateProcessedQuery() {
+        if (processedQuery != null) return  // already calculated
+
+        val indexReplaced = replaceIndexed(originalQuery)
+        val namedReplaced = replaceNamed(indexReplaced)
+
+        processedQuery = namedReplaced
+    }
+
     /**
      * Executes the query and save the result in the [Racoon].
      * @return the [Racoon] itself
      */
     fun execute() = apply {
-        resultSet = statement.executeQuery(query)
+        resultSet = statement.executeQuery(processedQuery)
     }
 
     inline fun <reified T : Any> mapToClass(): List<T> = mapToClass(T::class)
@@ -136,6 +189,20 @@ class Racoon(
 
         // Return the list of wrappers
         return listOfWrappers
+    }
+
+    fun <T: Any> setParam(index: Int, value: T): Racoon = apply {
+        RacoonConfiguration.parameterCasters[value::class]?.let {
+            @Suppress("UNCHECKED_CAST")
+            indexedParameters[index] = (it as ParameterCaster<Any>).cast(value)
+        } ?: throw NoSuchMethodException("A ParameterCaster for the class '${value::class.simpleName}' has not been registered")
+    }
+
+    fun <T: Any> setParam(name: String, value: T): Racoon = apply {
+        RacoonConfiguration.parameterCasters[value::class]?.let {
+            @Suppress("UNCHECKED_CAST")
+            namedParameters[name] = (it as ParameterCaster<Any>).cast(value)
+        } ?: throw NoSuchMethodException("A ParameterCaster for the class '${value::class.simpleName}' has not been registered")
     }
 
     // Debugging purposes
