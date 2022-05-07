@@ -8,6 +8,7 @@ import java.sql.Statement
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.full.superclasses
 
 @Suppress("unused")
 class Racoon(
@@ -199,28 +200,24 @@ class Racoon(
         return listOfWrappers
     }
 
-    fun <T: Any> setParam(index: Int, value: T): Racoon = apply {
-        RacoonConfiguration.parameterCasters[value::class]?.let {
-            @Suppress("UNCHECKED_CAST")
-            indexedParameters[index] = (it as ParameterCaster<Any>).cast(value)
-        } ?: throw NoSuchMethodException("A ParameterCaster for the class '${value::class.simpleName}' has not been registered")
+    fun <T : Any> setParam(index: Int, value: T): Racoon = apply {
+        val caster = getFirstCaster(value::class)
+
+        @Suppress("UNCHECKED_CAST")
+        indexedParameters[index] = (caster as ParameterCaster<Any>).cast(value)
     }
 
-    fun <T: Any> setParam(name: String, value: T): Racoon = apply {
-        RacoonConfiguration.parameterCasters[value::class]?.let {
-            @Suppress("UNCHECKED_CAST")
-            namedParameters[name] = (it as ParameterCaster<Any>).cast(value)
-        } ?: throw NoSuchMethodException("A ParameterCaster for the class '${value::class.simpleName}' has not been registered")
+    fun <T : Any> setParam(name: String, value: T): Racoon = apply {
+        val caster = getFirstCaster(value::class)
+
+        @Suppress("UNCHECKED_CAST")
+        namedParameters[name] = (caster as ParameterCaster<Any>).cast(value)
     }
 
-    // Debugging purposes
-    // Example of retrieving the caster from the class
-    fun getImplementationResult(value: Any): String {
-        RacoonConfiguration.parameterCasters[value::class]?.let {
-            @Suppress("UNCHECKED_CAST")
-            return (it as ParameterCaster<Any>).cast(value)
-        }
-        return ""
+    private fun getFirstCaster(clazz: KClass<*>): ParameterCaster<out Any> {
+        return RacoonConfiguration.parameterCasters[clazz]
+            ?: clazz.superclasses.firstNotNullOfOrNull { RacoonConfiguration.parameterCasters[it] }
+            ?: throw NoSuchMethodException("A ParameterCaster for the class '${clazz.simpleName}' has not been registered")
     }
 
     /**
