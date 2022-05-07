@@ -150,7 +150,7 @@ class Racoon(
         return list.toList()
     }
 
-    inline fun <reified T : Any> mutliMapToClass(): List<T> {
+    inline fun <reified T : Any> multiMapToClass(): List<T> {
         // Get the class containing the properties to map to
         val clazz = T::class
 
