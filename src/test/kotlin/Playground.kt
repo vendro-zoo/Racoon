@@ -1,6 +1,7 @@
 import commons.configuration.ConnectionSettings
 import commons.configuration.RacoonConfiguration
 import habitat.RacoonManager
+import models.Cat
 
 fun main() {
     RacoonConfiguration.Connection.setDefault(ConnectionSettings(
@@ -12,19 +13,12 @@ fun main() {
     ))
 
     RacoonManager.create().use { racoonManager ->
-        racoonManager.createRacoon("select 1 from cat c where c.name = (?, ?) and c.id = ? and p = :n1 and a in (:n2, :n3)")
+        val mapped = racoonManager.createRacoon("SELECT c.* FROM cat c WHERE c.name = :name")
             .use {
-                it.setParam(1, 'a')
-                    .setParam(2, 'b')
-                    .setParam(3, 'c')
-                    .setParam("n1", 'd')
-                    .setParam("n2", 'e')
-                    .setParam("n3", 'f')
-                    .calculateProcessedQuery()
-//                print(it.getImplementationResult(false))
-//                it.multiMapToClass<Wrapper>()
+                it.setParam("name", "Carl")
+                it.mapToClass<Cat>()
             }
-//        println(mapped.first())
+        println(mapped.first())
     }
 
 }
