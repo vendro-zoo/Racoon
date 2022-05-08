@@ -2,8 +2,6 @@ package commons.configuration
 
 import commons.mappers.TableAliasMappers
 import commons.casting.ParameterCaster
-import commons.casting.casters.*
-import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.superclasses
 
@@ -33,19 +31,13 @@ object RacoonConfiguration {
     }
 
     object Casting {
-        private val parameterCasters: MutableMap<KClass<out Any>, ParameterCaster<out Any>> = mutableMapOf(
-            Pair(String::class, StringCaster()),
-            Pair(Boolean::class, BooleanCaster()),
-            Pair(Char::class, CharCaster()),
-            Pair(Date::class, DateCaster()),
-            Pair(Number::class, NumberCaster())
-        )
+        private val parameterCasters: MutableMap<KClass<out Any>, ParameterCaster<out Any, out Any>> = mutableMapOf()
 
-        fun <T: Any> setCaster(clazz: KClass<T>, caster: ParameterCaster<T>) {
+        fun <T: Any> setCaster(clazz: KClass<T>, caster: ParameterCaster<T, out Any>) {
             parameterCasters[clazz] = caster
         }
 
-        fun getCaster(clazz: KClass<*>): ParameterCaster<out Any> {
+        fun getCaster(clazz: KClass<*>): ParameterCaster<out Any, out Any> {
             return parameterCasters[clazz]
                 ?: clazz.superclasses.firstNotNullOfOrNull { parameterCasters[it] }
                 ?: throw NoSuchMethodException("A ParameterCaster for the class '${clazz.simpleName}' has not been registered")
