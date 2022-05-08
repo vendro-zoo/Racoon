@@ -4,8 +4,8 @@ import commons.configuration.ConnectionSettings
 import commons.configuration.RacoonConfiguration
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.PreparedStatement
 import java.sql.ResultSet
-import java.sql.Statement
 
 class RacoonManager(private val connection: Connection) : AutoCloseable {
     /**
@@ -16,11 +16,8 @@ class RacoonManager(private val connection: Connection) : AutoCloseable {
         connection.close()
     }
 
-    /**
-     * @return a new scrollable [ResultSet].
-     */
-    private fun getStatement(): Statement {
-        return connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)
+    fun prepare(query: String): PreparedStatement {
+        return connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)
     }
 
     /**
@@ -30,7 +27,7 @@ class RacoonManager(private val connection: Connection) : AutoCloseable {
      * @return A [Racoon] with the given query.
      */
     fun createRacoon(query: String): Racoon {
-        return Racoon(getStatement(), query)
+        return Racoon(this, query, RacoonType.QUERY)
     }
 
     // Handles the instantiation of the class.

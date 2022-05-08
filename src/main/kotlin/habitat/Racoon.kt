@@ -2,23 +2,33 @@ package habitat
 
 import commons.casting.ParameterCaster
 import commons.configuration.RacoonConfiguration
+import commons.query.QueryProcessing
+import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
-import java.sql.Statement
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
 
 @Suppress("unused")
-// TODO: add documentation
 class Racoon(
-    private val statement: Statement,
+    // Mandatory parameters
+    private val manager: RacoonManager,
     private val originalQuery: String,
-    private var processedQuery: String? = null,
+    private val type: RacoonType,
+
+    // Query processing results
+    private var preparedStatement: PreparedStatement? = null,
     private var resultSet: ResultSet? = null,
+
+    // Query parameters
+    private val indexedParameters: MutableMap<Int, Any> = mutableMapOf(),
+    private val namedParameters: MutableMap<String, Any> = mutableMapOf(),
+
+    // Mapping and aliases
     private val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf(),
-    private val namedParameters: MutableMap<String, String> = mutableMapOf(),
-    private val indexedParameters: MutableMap<Int, String> = mutableMapOf(),
+    private var indexedParametersMappings: Map<Int, Int>? = null,
+    private var namedParametersMappings: Map<String, Int>? = null,
 ) : AutoCloseable {
     /**
      * Adds a table alias to be used when mapping the result of the query to a class.
@@ -32,115 +42,46 @@ class Racoon(
     fun setAlias(clazz: KClass<*>, alias: String) = apply { tableAliases[clazz] = alias }
 
     /**
-     * Modifies the query by replacing the '?' with the value of the corresponding parameter.
-     *
-     * @param query The query to modify.
-     *
-     * @throws IllegalArgumentException If the size of [indexedParameters] is not equal to the number of '?' in the query,
-     * or if a parameter is not found in [indexedParameters].
-     */
-    private fun replaceIndexed(query: String): String {
-        // Simple regex that finds parameters without parentheses after an equal sign
-        val simpleRegex = Regex("=\\s*(\\?)")
-
-        // Regex that finds multiple parameters within parentheses
-        val surroundedRegex = Regex("\\(((\\?\\s*,?\\s*)+)\\)")
-
-        // Getting the result of the regex
-        val simpleMatch = simpleRegex.findAll(query)
-        val surroundedMatch = surroundedRegex.findAll(query)
-
-        // Getting the indexes of the simple matches
-        val indexes = simpleMatch.toList().map { it.groups[1]!!.range.first }.toMutableList()
-
-        // Getting the indexes of the surrounded matches
-        indexes.addAll(surroundedMatch.toList().map {
-            Regex("\\?").findAll(it.groupValues[1])  // Getting all the '?' in the group
-                .toList().map { it2 -> it.groups[1]!!.range.first + it2.groups[0]!!.range.first }  // Calculating the index
-        }.fold(mutableListOf()) { acc, it -> acc.addAll(it); acc })  // Flattening the list
-
-        // Sorting the list to correctly replace the parameters
-        indexes.sort()
-
-        // Checking if the list's size is the same as the number of parameters
-        if (indexes.size != indexedParameters.size)
-            throw IllegalArgumentException("The number of parameters defined is ${indexedParameters.size}, " +
-                    "but ${indexes.size} parameters were found in the query.")
-
-        return indexes.withIndex().fold(Pair(query, 0)) { a, it ->
-            val v = it.value  // Index of the question mark
-            val i = it.index  // Index of the iteration
-
-            // Getting the value to replace the question mark with
-            val replacing =
-                indexedParameters[i + 1] ?: throw IllegalArgumentException("Indexed parameter `$i` not found")
-
-            Pair(
-                // Replacing the question mark with the value
-                a.first.replaceRange((v + a.second)..(v + a.second), replacing),
-                // Increasing the offset of the next question mark
-                a.second + (replacing.length - 1)
-            )
-        }.first  // Returning the query with the replaced parameters
-    }
-
-    /**
-     * Modifies the query by replacing all the named parameters with the value of the corresponding parameter.
-     *
-     * @param query The query to modify.
-     *
-     * @throws IllegalArgumentException If a parameter is present in [namedParameters] but not in the query.
-     */
-    private fun replaceNamed(query: String): String {
-        // Initializing the result
-        var result = query
-
-        for ((key, value) in namedParameters) {
-            // Escaping the key to prevent regex issues
-            val escapedKey = Regex.escape(key)
-
-            // Try matching the simple regex
-            var regex = Regex("=\\s*(:$escapedKey)")
-            var match = regex.find(query)
-
-            // If not found, try matching the surrounded regex
-            if (match == null) {
-                regex = Regex("\\((?>\\s*:[:\\w\\d_]+\\s*,)*\\s*(:$escapedKey)\\s*(?>,\\s*:[:\\w\\d_]+\\s*)*\\)")
-                match = regex.find(query)
-
-                // If neither matched, throw an exception
-                if (match == null) throw IllegalArgumentException("Could not find parameter :$key in the query")
-            }
-
-            // Replacing the parameter with the value
-            result = result.replaceRange(match.groups[1]!!.range, value)
-        }
-
-        // Returning the result
-        return result
-    }
-
-    /**
-     * Applies both [replaceIndexed] and [replaceNamed] to [originalQuery] and saves the result in [processedQuery].
-     * Does nothing if [processedQuery] is already set.
-     *
-     * @throws IllegalArgumentException If an error occurs while replacing the parameters.
-     */
-    fun calculateProcessedQuery() {
-        if (processedQuery != null) return  // If the query has already been calculated, return
-
-        val indexReplaced = replaceIndexed(originalQuery)
-        val namedReplaced = replaceNamed(indexReplaced)
-
-        processedQuery = namedReplaced  // Setting the processed query
-    }
-
-    /**
      * Executes the query and save the result in the [Racoon].
      *
      * @return the [Racoon] itself
      */
-    fun execute() = apply { resultSet = statement.executeQuery(processedQuery) }
+    fun execute() = apply {
+        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery)
+
+        val processedQuery = queryProcessingResult.first
+        indexedParametersMappings = queryProcessingResult.second
+        namedParametersMappings = queryProcessingResult.third
+
+        preparedStatement = manager.prepare(processedQuery)
+
+        bindParameters()
+
+        when (type) {
+            RacoonType.QUERY -> {
+                resultSet = preparedStatement?.executeQuery()
+            }
+            else -> {
+                TODO("Not yet implemented")
+            }
+        }
+    }
+
+    private fun bindParameters() {
+        indexedParameters.forEach{
+            val realIndex = indexedParametersMappings!![it.key] ?:
+                throw SQLException("Indexed parameter ${it.key} not found")
+
+            preparedStatement!!.setObject(realIndex, it.value)
+        }
+
+        namedParameters.forEach{
+            val realIndex = namedParametersMappings!![it.key] ?:
+                throw SQLException("Named parameter ${it.key} not found")
+
+            preparedStatement!!.setObject(realIndex, it.value)
+        }
+    }
 
     /**
      * Maps the result of the query to a class.
@@ -278,7 +219,7 @@ class Racoon(
         val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
         @Suppress("UNCHECKED_CAST")
-        indexedParameters[index] = (caster as ParameterCaster<Any>).cast(value)
+        indexedParameters[index] = (caster as ParameterCaster<Any, Any>?)?.cast(value) ?: value
     }
 
     /**
@@ -294,7 +235,7 @@ class Racoon(
         val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
         @Suppress("UNCHECKED_CAST")
-        namedParameters[name] = (caster as ParameterCaster<Any>).cast(value)
+        namedParameters[name] = (caster as ParameterCaster<Any, Any>?)?.cast(value) ?: value
     }
 
     /**
@@ -303,6 +244,6 @@ class Racoon(
      */
     override fun close() {
         resultSet?.close()
-        statement.close()
+        preparedStatement?.close()
     }
 }
