@@ -37,10 +37,9 @@ object RacoonConfiguration {
             parameterCasters[clazz] = caster
         }
 
-        fun getCaster(clazz: KClass<*>): ParameterCaster<out Any, out Any> {
+        fun getCaster(clazz: KClass<*>): ParameterCaster<out Any, out Any>? {
             return parameterCasters[clazz]
                 ?: clazz.superclasses.firstNotNullOfOrNull { parameterCasters[it] }
-                ?: throw NoSuchMethodException("A ParameterCaster for the class '${clazz.simpleName}' has not been registered")
         }
     }
 }
