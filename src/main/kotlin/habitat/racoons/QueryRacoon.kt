@@ -1,6 +1,6 @@
 package habitat.racoons
 
-import commons.configuration.RacoonConfiguration
+import habitat.configuration.RacoonConfiguration
 import commons.query.QueryProcessing
 import habitat.RacoonManager
 import java.sql.ResultSet

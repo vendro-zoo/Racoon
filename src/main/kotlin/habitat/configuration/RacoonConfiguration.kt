@@ -1,7 +1,8 @@
-package commons.configuration
+package habitat.configuration
 
 import commons.mappers.TableAliasMappers
 import commons.casting.ParameterCaster
+import commons.configuration.ConnectionSettings
 import kotlin.reflect.KClass
 import kotlin.reflect.full.superclasses
 

@@ -1,7 +1,7 @@
 package habitat
 
 import commons.configuration.ConnectionSettings
-import commons.configuration.RacoonConfiguration
+import habitat.configuration.RacoonConfiguration
 import habitat.racoons.QueryRacoon
 import java.sql.Connection
 import java.sql.DriverManager
@@ -51,7 +51,7 @@ class RacoonManager(private val connection: Connection) : AutoCloseable {
                             "and no default connection settings configured. " +
                             "Please provide connection settings or configure " +
                             "default connection settings by calling " +
-                            "'commons.configuration.RacoonConfiguration.Connection.setDefault()'."
+                            "'habitat.configuration.RacoonConfiguration.Connection.setDefault()'."
                 )
 
             // Return a new instance of the habitat.RacoonManager

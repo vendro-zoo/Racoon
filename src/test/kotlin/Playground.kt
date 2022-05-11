@@ -1,5 +1,5 @@
 import commons.configuration.ConnectionSettings
-import commons.configuration.RacoonConfiguration
+import habitat.configuration.RacoonConfiguration
 import habitat.RacoonManager
 import models.Cat
 
