@@ -2,6 +2,7 @@ package habitat
 
 import commons.configuration.ConnectionSettings
 import commons.configuration.RacoonConfiguration
+import habitat.racoons.QueryRacoon
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.PreparedStatement
@@ -21,13 +22,13 @@ class RacoonManager(private val connection: Connection) : AutoCloseable {
     }
 
     /**
-     * Creates a [Racoon] with the given query.
+     * Creates a [QueryRacoon] of type [RacoonType.QUERY] with the given query.
      *
      * @param query The query to execute.
-     * @return A [Racoon] with the given query.
+     * @return A [QueryRacoon] capable of handling the query and its results.
      */
-    fun createRacoon(query: String): Racoon {
-        return Racoon(this, query, RacoonType.QUERY)
+    fun createQueryRacoon(query: String): QueryRacoon {
+        return QueryRacoon(this, query)
     }
 
     // Handles the instantiation of the class.

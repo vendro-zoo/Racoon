@@ -13,7 +13,7 @@ fun main() {
     ))
 
     RacoonManager.create().use { racoonManager ->
-        val mapped = racoonManager.createRacoon("SELECT c.* FROM cat c WHERE c.name = :name")
+        val mapped = racoonManager.createQueryRacoon("SELECT c.* FROM cat c WHERE c.name = :name")
             .use {
                 it.setParam("name", "Carl")
                 it.mapToClass<Cat>()

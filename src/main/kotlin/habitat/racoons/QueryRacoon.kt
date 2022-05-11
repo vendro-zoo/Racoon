@@ -1,9 +1,8 @@
-package habitat
+package habitat.racoons
 
-import commons.casting.ParameterCaster
 import commons.configuration.RacoonConfiguration
 import commons.query.QueryProcessing
-import java.sql.PreparedStatement
+import habitat.RacoonManager
 import java.sql.ResultSet
 import java.sql.SQLException
 import kotlin.reflect.KClass
@@ -11,25 +10,17 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
 
 @Suppress("unused")
-class Racoon(
+class QueryRacoon(
     // Mandatory parameters
-    private val manager: RacoonManager,
-    private val originalQuery: String,
-    private val type: RacoonType,
+    manager: RacoonManager,
+    originalQuery: String,
 
     // Query processing results
-    private var preparedStatement: PreparedStatement? = null,
     private var resultSet: ResultSet? = null,
-
-    // Query parameters
-    private val indexedParameters: MutableMap<Int, Any> = mutableMapOf(),
-    private val namedParameters: MutableMap<String, Any> = mutableMapOf(),
 
     // Mapping and aliases
     private val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf(),
-    private var indexedParametersMappings: Map<Int, Int>? = null,
-    private var namedParametersMappings: Map<String, Int>? = null,
-) : AutoCloseable {
+) : Racoon<QueryRacoon>(manager, originalQuery), AutoCloseable {
     /**
      * Adds a table alias to be used when mapping the result of the query to a class.
      *
@@ -42,11 +33,13 @@ class Racoon(
     fun setAlias(clazz: KClass<*>, alias: String) = apply { tableAliases[clazz] = alias }
 
     /**
-     * Executes the query and save the result in the [Racoon].
+     * Processes the query and saves the result in the [QueryRacoon].
      *
-     * @return the [Racoon] itself
+     * In more details, the query is first processed by binding the parameters, and then the query is executed.
+     *
+     * @return the [QueryRacoon] itself
      */
-    fun execute() = apply {
+    override fun execute() = apply {
         val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery)
 
         val processedQuery = queryProcessingResult.first
@@ -57,34 +50,13 @@ class Racoon(
 
         bindParameters()
 
-        when (type) {
-            RacoonType.QUERY -> {
-                resultSet = preparedStatement?.executeQuery()
-            }
-            else -> {
-                TODO("Not yet implemented")
-            }
-        }
-    }
-
-    private fun bindParameters() {
-        indexedParameters.forEach{
-            val realIndex = indexedParametersMappings!![it.key] ?:
-                throw SQLException("Indexed parameter ${it.key} not found")
-
-            preparedStatement!!.setObject(realIndex, it.value)
-        }
-
-        namedParameters.forEach{
-            val realIndex = namedParametersMappings!![it.key] ?:
-                throw SQLException("Named parameter ${it.key} not found")
-
-            preparedStatement!!.setObject(realIndex, it.value)
-        }
+        resultSet = preparedStatement?.executeQuery()
     }
 
     /**
      * Maps the result of the query to a class.
+     *
+     * If the query has not been executed yet, it is executed first.
      *
      * @param T The class to map to.
      *
@@ -96,6 +68,8 @@ class Racoon(
 
     /**
      * Maps the result of the query to a class.
+     *
+     * If the query has not been executed yet, it is executed first.
      *
      * @param T The class to map to.
      *
@@ -206,42 +180,7 @@ class Racoon(
         return listOfWrappers
     }
 
-    /**
-     * Sets an indexed parameter of the query.
-     *
-     * @param index The index of the parameter.
-     * @param value The value of the parameter.
-     *
-     * @return The [Racoon] instance.
-     * @throws NoSuchMethodException if a [ParameterCaster] is not found for the parameter's type.
-     */
-    fun <T : Any> setParam(index: Int, value: T): Racoon = apply {
-        val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
-        @Suppress("UNCHECKED_CAST")
-        indexedParameters[index] = (caster as ParameterCaster<Any, Any>?)?.cast(value) ?: value
-    }
-
-    /**
-     * Sets a named parameter of the query.
-     *
-     * @param name The name of the parameter.
-     * @param value The value of the parameter.
-     *
-     * @return The [Racoon] instance.
-     * @throws NoSuchMethodException if a [ParameterCaster] is not found for the parameter's type.
-     */
-    fun <T : Any> setParam(name: String, value: T): Racoon = apply {
-        val caster = RacoonConfiguration.Casting.getCaster(value::class)
-
-        @Suppress("UNCHECKED_CAST")
-        namedParameters[name] = (caster as ParameterCaster<Any, Any>?)?.cast(value) ?: value
-    }
-
-    /**
-     * Closes the [Racoon] instance.
-     * This method should be called when the [Racoon] instance is no longer needed.
-     */
     override fun close() {
         resultSet?.close()
         preparedStatement?.close()
