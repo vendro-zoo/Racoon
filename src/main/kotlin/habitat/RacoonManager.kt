@@ -3,6 +3,7 @@ package habitat
 import commons.configuration.ConnectionSettings
 import habitat.configuration.RacoonConfiguration
 import habitat.racoons.QueryRacoon
+import org.intellij.lang.annotations.Language
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.PreparedStatement
@@ -27,7 +28,7 @@ class RacoonManager(private val connection: Connection) : AutoCloseable {
      * @param query The query to execute.
      * @return A [QueryRacoon] capable of handling the query and its results.
      */
-    fun createQueryRacoon(query: String): QueryRacoon {
+    fun createQueryRacoon(@Language("mysql") query: String): QueryRacoon {
         return QueryRacoon(this, query)
     }
 
