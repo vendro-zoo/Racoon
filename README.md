@@ -5,7 +5,7 @@ It makes communicating with the database easier by providing functionalities lik
 
 - Mapping query results to classes.
 - Query parameter support (prepared statements)
-    - Interface for custom types conversion
+    - Custom types support
     - Indexed parameter support
     - Named parameter support
     - Basic types support
