@@ -9,12 +9,16 @@ import kotlin.reflect.full.superclasses
 @Suppress("unused")
 object RacoonConfiguration {
     object Connection {
-        private var defaultConnectionSettings: ConnectionSettings? = null
+        private var defaultConnectionSettings: ConnectionSettings = ConnectionSettings(
+            host = "test",
+            database = "test"
+        )
+
         fun setDefault(settings: ConnectionSettings) {
             defaultConnectionSettings = settings
         }
 
-        fun getDefault(): ConnectionSettings? {
+        fun getDefault(): ConnectionSettings {
             return defaultConnectionSettings
         }
     }
