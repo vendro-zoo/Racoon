@@ -35,3 +35,50 @@ fun String.isInQuotes(index: Int): Boolean {
     // The index is inside a quote if the number of quotes is odd
     return n % 2 == 1
 }
+
+/**
+ * Convert an upper camel case string to a snake case string, leaving the first character of each word as is.
+ *
+ * Example:
+ *
+ *    "ThisIsCamelCase".toSnakeCase() // "This_Is_Camel_Case"
+ *
+ * @return The snake case string.
+ */
+fun String.snakeCase(): String {
+    val sb = StringBuilder()
+    var first = true
+
+    this.forEach {
+        if (it.isUpperCase()) {
+            if (!first) {
+                sb.append('_')
+            } else first = false
+        }
+        sb.append(it)
+    }
+    return sb.toString()
+}
+
+/**
+ * Convert an upper camel case string to a lower snake case string.
+ *
+ * Example:
+ *
+ *    "ThisIsCamelCase".toLowerSnakeCase() // "this_is_camel_case"
+ *
+ * @return The lower snake case string.
+ */
+fun String.lowerSnakeCase(): String = this.snakeCase().lowercase()
+
+
+/**
+ * Convert an upper camel case string to an upper snake case string.
+ *
+ * Example:
+ *
+ *    "ThisIsCamelCase".toUpperSnakeCase() // "THIS_IS_CAMEL_CASE"
+ *
+ * @return The upper snake case string.
+ */
+fun String.upperSnakeCase(): String = this.snakeCase().uppercase()
