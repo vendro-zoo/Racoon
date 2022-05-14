@@ -1,8 +1,10 @@
 package habitat
 
+import commons.configuration.ConnectionSettings
 import habitat.racoons.QueryRacoon
 import org.intellij.lang.annotations.Language
 import java.sql.Connection
+import java.sql.DriverManager
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
@@ -45,5 +47,11 @@ class RacoonManager(
      */
     fun createQueryRacoon(@Language("mysql") query: String): QueryRacoon {
         return QueryRacoon(this, query)
+    }
+
+    internal companion object Factory {
+        fun fromSettings(connectionSettings: ConnectionSettings): RacoonManager {
+            return RacoonManager(DriverManager.getConnection(connectionSettings.toString()))
+        }
     }
 }

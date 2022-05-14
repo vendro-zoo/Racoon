@@ -2,7 +2,6 @@ package habitat
 
 import commons.query.Ping
 import habitat.configuration.RacoonConfiguration
-import java.sql.DriverManager
 import java.sql.SQLException
 
 object RacoonDen {
@@ -33,7 +32,7 @@ object RacoonDen {
         }
 
         // Return a new manager
-        val manager = RacoonManager(DriverManager.getConnection(settings.toString()))
+        val manager = RacoonManager.fromSettings(settings)
         unavailableManagers.add(manager)
         return manager
     }
@@ -44,10 +43,12 @@ object RacoonDen {
      * @param manager The manager to re-insert.
      * @return True if the manager was re-inserted, false otherwise.
      */
-    fun releaseManager(manager: RacoonManager) {
+    fun releaseManager(manager: RacoonManager): Boolean {
         // Moves the manager to the available list
+        if (availableManagers.size >= RacoonConfiguration.Connection.getDefault().maxPoolSize) return false
         unavailableManagers.remove(manager)
         availableManagers.addLast(manager)
+        return true
     }
 
     /**
@@ -62,7 +63,7 @@ object RacoonDen {
             val ping = manager.createQueryRacoon("SELECT 1 ping").mapToClass<Ping>()
 
             // If the result is not 1, the connection is not alive
-            if (ping.isEmpty() || ping[0].ping != 1L) return false
+            if (ping.isEmpty() || ping[0].ping != 1.toByte()) return false
         } catch (e: SQLException) {
             // If an exception is thrown, the connection is not alive
             return false

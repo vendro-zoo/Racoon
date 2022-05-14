@@ -37,7 +37,15 @@ data class ConnectionSettings(
      *
      * The default value is 0.
      */
-    val maxManagers: Int = 0
+    val maxManagers: Int = 0,
+    /**
+     * The maximum number of connections to keep stored in the pool.
+     *
+     * If the pool already has this many connections, then new connections will be closed.
+     *
+     * The default value is 10.
+     */
+    val maxPoolSize: Int = 10,
 ) {
     override fun toString(): String {
         val stringBuilder = StringBuilder("jdbc:${protocol}://")
