@@ -1,6 +1,5 @@
 package habitat.racoons
 
-import commons.casting.ParameterCaster
 import habitat.configuration.RacoonConfiguration
 import habitat.RacoonManager
 import java.sql.PreparedStatement
