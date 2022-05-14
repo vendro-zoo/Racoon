@@ -1,5 +1,6 @@
 package habitat.racoons
 
+import commons.casting.castEquivalent
 import habitat.configuration.RacoonConfiguration
 import commons.query.QueryProcessing
 import habitat.RacoonManager
@@ -119,7 +120,9 @@ class QueryRacoon(
                         else null
                     }
                 }
-            }.filter { it.value != null }.toMap()
+            }.filter { it.value != null }.map {
+                it.key to castEquivalent(it.key, it.value!!)
+            }.toMap()
 
             // Create a new instance of the class and add it to the list
             list.add(constructor.callBy(map))
