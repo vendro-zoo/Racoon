@@ -1,6 +1,7 @@
 package habitat.racoons
 
 import commons.configuration.ConnectionSettings
+import habitat.RacoonDen
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
 import models.Cat
@@ -36,13 +37,13 @@ internal class QueryRacoonTest {
     // Creating a new racoon manager
     @BeforeEach
     internal fun setUp() {
-        racoonManager = RacoonManager.create()
+        racoonManager = RacoonDen.getManager()
     }
 
     // Closing the racoon manager
     @AfterEach
     internal fun tearDown() {
-        racoonManager.close()
+        racoonManager.release()
     }
 
     /**
@@ -94,16 +95,17 @@ internal class QueryRacoonTest {
     }
 
     /**
-     * Testing alias functionality on simple query
+     * Testing mapping functionality on multiple query
      */
     @Test
     internal fun multiQueryMapping() {
         data class CatAndOwner(val cat: Cat, val owner: Owner)
 
-        val catAndOwners = racoonManager.createQueryRacoon("SELECT c.*, o.* FROM cat c JOIN owner o ON c.owner_id = o.id")
-            .use {
-                it.multiMapToClass<CatAndOwner>()
-            }
+        val catAndOwners =
+            racoonManager.createQueryRacoon("SELECT c.*, o.* FROM cat c JOIN owner o ON c.owner_id = o.id")
+                .use {
+                    it.multiMapToClass<CatAndOwner>()
+                }
 
         assert(catAndOwners.size == 1)
         catAndOwners.forEach {

@@ -1,6 +1,5 @@
 package habitat.racoons
 
-import commons.casting.ParameterCaster
 import habitat.configuration.RacoonConfiguration
 import habitat.RacoonManager
 import java.sql.PreparedStatement
@@ -76,7 +75,7 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
         val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
         @Suppress("UNCHECKED_CAST")
-        indexedParameters[index] = (caster as ParameterCaster<Any, Any>?)?.cast(value) ?: value
+        indexedParameters[index] = caster?.cast(value) ?: value
 
         return self()
     }
@@ -93,7 +92,7 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
         val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
         @Suppress("UNCHECKED_CAST")
-        namedParameters[name] = (caster as ParameterCaster<Any, Any>?)?.cast(value) ?: value
+        namedParameters[name] = caster?.cast(value) ?: value
 
         return self()
     }

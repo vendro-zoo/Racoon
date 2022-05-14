@@ -9,12 +9,16 @@ import kotlin.reflect.full.superclasses
 @Suppress("unused")
 object RacoonConfiguration {
     object Connection {
-        private var defaultConnectionSettings: ConnectionSettings? = null
+        private var defaultConnectionSettings: ConnectionSettings = ConnectionSettings(
+            host = "test",
+            database = "test"
+        )
+
         fun setDefault(settings: ConnectionSettings) {
             defaultConnectionSettings = settings
         }
 
-        fun getDefault(): ConnectionSettings? {
+        fun getDefault(): ConnectionSettings {
             return defaultConnectionSettings
         }
     }
@@ -38,9 +42,10 @@ object RacoonConfiguration {
             parameterCasters[clazz] = caster
         }
 
-        fun getCaster(clazz: KClass<*>): ParameterCaster<out Any, out Any>? {
-            return parameterCasters[clazz]
-                ?: clazz.superclasses.firstNotNullOfOrNull { parameterCasters[it] }
+        fun getCaster(clazz: KClass<*>): ParameterCaster<Any, Any>? {
+            @Suppress("UNCHECKED_CAST")
+            return (parameterCasters[clazz] as ParameterCaster<Any, Any>?)
+                ?: (clazz.superclasses.firstNotNullOfOrNull { parameterCasters[it] } as ParameterCaster<Any, Any>?)
         }
     }
 }
