@@ -3,6 +3,7 @@ package habitat.configuration
 import commons.mappers.TableAliasMappers
 import commons.casting.ParameterCaster
 import commons.configuration.ConnectionSettings
+import commons.mappers.NameMapper
 import kotlin.reflect.KClass
 import kotlin.reflect.full.superclasses
 
@@ -23,15 +24,24 @@ object RacoonConfiguration {
         }
     }
 
-    object TableAliases {
+    object Naming {
         private var defaultTableAliasMapper: (String) -> String = TableAliasMappers.onlyUpperToLower
+        private var defaultNameMapper: (String) -> String = NameMapper.lowerSnakeCase
 
-        fun setAliasMapper(mapper: (String) -> String) {
+        fun setTableAliasMapper(mapper: (String) -> String) {
             defaultTableAliasMapper = mapper
         }
 
-        fun getAlias(tableName: String): String {
+        fun getTableAlias(tableName: String): String {
             return defaultTableAliasMapper(tableName)
+        }
+
+        fun setNameMapper(mapper: (String) -> String) {
+            defaultNameMapper = mapper
+        }
+
+        fun getName(tableAlias: String): String {
+            return defaultNameMapper(tableAlias)
         }
     }
 

@@ -87,7 +87,7 @@ class QueryRacoon(
         val clazzName = tClass.simpleName ?: throw ClassCastException("Class name is null")
 
         // Get the table alias for the class or generate one if it isn't specified
-        val sqlAlias = tableAliases[tClass] ?: RacoonConfiguration.TableAliases.getAlias(clazzName)
+        val sqlAlias = tableAliases[tClass] ?: RacoonConfiguration.Naming.getTableAlias(clazzName)
 
         // Get the primary constructor of the class and its parameters
         val constructor = tClass.primaryConstructor ?: throw ClassCastException("$clazzName has no primary constructor")
