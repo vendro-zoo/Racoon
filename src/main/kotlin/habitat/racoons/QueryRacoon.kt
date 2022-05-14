@@ -121,7 +121,13 @@ class QueryRacoon(
                     }
                 }
             }.filter { it.value != null }.map {
-                it.key to castEquivalent(it.key, it.value!!)
+                // Getting the user defined type [ParameterCaster], if it exists
+                val caster = RacoonConfiguration.Casting.getCaster(it.key.type.classifier as KClass<*>)
+
+                // Casting with the user defined type [ParameterCaster], otherwise casting with the internal caster
+                val value = caster?.cast(it.value!!) ?: castEquivalent(it.key, it.value!!)
+
+                it.key to value
             }.toMap()
 
             // Create a new instance of the class and add it to the list
