@@ -41,21 +41,23 @@ fun String.isInQuotes(index: Int): Boolean {
  *
  * Example:
  *
- *    "ThisIsCamelCase".toSnakeCase() // "This_Is_Camel_Case"
+ *    "0Hello123World4oSnakeCase() // "0_Hello_123_World_4"
  *
  * @return The snake case string.
  */
 fun String.snakeCase(): String {
     val sb = StringBuilder()
-    var first = true
+    var wasNum = false
 
-    this.forEach {
-        if (it.isUpperCase()) {
-            if (!first) {
-                sb.append('_')
-            } else first = false
-        }
-        sb.append(it)
+    this.withIndex().forEach {(i, v) ->
+        if (i != 0 &&
+            (
+                (v.isDigit() != wasNum) ||
+                    v.isUpperCase()
+            )
+        ) sb.append('_')
+        wasNum = v.isDigit()
+        sb.append(v)
     }
     return sb.toString()
 }
@@ -65,7 +67,7 @@ fun String.snakeCase(): String {
  *
  * Example:
  *
- *    "ThisIsCamelCase".toLowerSnakeCase() // "this_is_camel_case"
+ *    "0Hello123World4".toLowerSnakeCase() // "0_hello_123_world_4"
  *
  * @return The lower snake case string.
  */
@@ -77,7 +79,7 @@ fun String.lowerSnakeCase(): String = this.snakeCase().lowercase()
  *
  * Example:
  *
- *    "ThisIsCamelCase".toUpperSnakeCase() // "THIS_IS_CAMEL_CASE"
+ *    "0Hello123World4".toUpperSnakeCase() // "0_HELLO_123_WORLD_4"
  *
  * @return The upper snake case string.
  */
