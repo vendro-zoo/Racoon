@@ -1,3 +1,3 @@
 package models
 
-data class Cat(val id: Int?, val name: String?, val owner_id: Int? = null)
+data class Cat(var id: Int? = null, val name: String? = null, val owner_id: Int? = null)

@@ -47,8 +47,10 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
 
         // Binding the indexed parameters
         indexedParameters.forEach{
-            val realIndex = indexedParametersMappings[it.key] ?:
-            throw SQLException("Indexed parameter ${it.key} not found")
+            if (!indexedParametersMappings.keys.contains(it.key))
+                throw SQLException("Indexed parameter ${it.key} not found")
+
+            val realIndex = indexedParametersMappings[it.key]!!
 
             preparedStatement.setObject(realIndex, it.value)
         }
