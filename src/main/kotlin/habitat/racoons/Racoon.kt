@@ -23,8 +23,8 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
     var namedParametersMappings: Map<String, Int>? = null
 
     // Query parameters
-    private val indexedParameters: MutableMap<Int, Any> = mutableMapOf()
-    private val namedParameters: MutableMap<String, Any> = mutableMapOf()
+    private val indexedParameters: MutableMap<Int, Any?> = mutableMapOf()
+    private val namedParameters: MutableMap<String, Any?> = mutableMapOf()
 
     abstract fun execute(): R
 
@@ -71,14 +71,7 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
      *
      * @return The [QueryRacoon] instance.
      */
-    fun <T : Any> setParam(index: Int, value: T): R {
-        val caster = RacoonConfiguration.Casting.getCaster(value::class)
-
-        @Suppress("UNCHECKED_CAST")
-        indexedParameters[index] = caster?.cast(value) ?: value
-
-        return self()
-    }
+    fun <T : Any> setParam(index: Int, value: T?): R = setParam(indexedParameters, index, value)
 
     /**
      * Sets a named parameter of the query.
@@ -88,12 +81,18 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
      *
      * @return The [QueryRacoon] instance.
      */
-    fun <T : Any> setParam(name: String, value: T): R {
+    fun <T : Any> setParam(name: String, value: T?): R = setParam(namedParameters, name, value)
+
+    private fun <T, K: Any> setParam(map: MutableMap<T, Any?>, index: T, value: K?): R {
+        if (value == null) {
+            map[index] = null
+            return self()
+        }
+
         val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
         @Suppress("UNCHECKED_CAST")
-        namedParameters[name] = caster?.cast(value) ?: value
-
+        map[index] = caster?.cast(value) ?: value
         return self()
     }
 
