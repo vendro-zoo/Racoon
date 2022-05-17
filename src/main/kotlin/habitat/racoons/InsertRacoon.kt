@@ -1,22 +1,13 @@
 package habitat.racoons
 
-import commons.query.QueryProcessing
 import habitat.RacoonManager
 
-class InsertRacoon(manager: RacoonManager, query: String, var lastId: Int? = null) : Racoon<InsertRacoon>(manager, query) {
+class InsertRacoon(manager: RacoonManager, query: String, var lastId: Int? = null) : ExecuteRacoon(manager, query) {
     override fun execute() = apply {
-        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery)
+        // Executes query
+        super.execute()
 
-        val processedQuery = queryProcessingResult.first
-        indexedParametersMappings = queryProcessingResult.second
-        namedParametersMappings = queryProcessingResult.third
-
-        preparedStatement = manager.prepare(processedQuery)
-
-        bindParameters()
-
-        preparedStatement!!.executeUpdate()
-
+        // Saves the last inserted id
         lastId = manager.getLastId()
     }
 }
