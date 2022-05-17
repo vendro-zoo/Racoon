@@ -9,6 +9,7 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.memberProperties
 
@@ -67,9 +68,11 @@ class RacoonManager(
         return result.getInt(1)
     }
 
-    inline fun <reified T: Any> insert(obj: T) {
-        val insertRacoon = InsertRacoon(this, generateInsertQuery<T>())
-        for ((i, field) in T::class.memberProperties.withIndex()) insertRacoon.setParam(i + 1, field.get(obj))
+    inline fun <reified T: Any> insert(obj: T) = insert(obj, T::class)
+
+    fun <T: Any> insert(obj: T, tClass: KClass<T>) = apply {
+        val insertRacoon = InsertRacoon(this, generateInsertQuery(tClass))
+        for ((i, field) in tClass.memberProperties.withIndex()) insertRacoon.setParam(i + 1, field.get(obj))
         insertRacoon.execute()
 
         println(obj::class.memberProperties.find { it.name == "id" })
