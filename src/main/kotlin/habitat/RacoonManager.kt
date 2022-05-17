@@ -13,6 +13,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.memberProperties
 
+@Suppress("unused")
 class RacoonManager(
     private val connection: Connection
 ) {
@@ -71,7 +72,7 @@ class RacoonManager(
     inline fun <reified T: Any> insert(obj: T) = insert(obj, T::class)
 
     fun <T: Any> insert(obj: T, tClass: KClass<T>) = apply {
-        val insertRacoon = InsertRacoon(this, generateInsertQuery(tClass))
+        val insertRacoon = createInsertRacoon(generateInsertQuery(tClass))
         for ((i, field) in tClass.memberProperties.withIndex()) insertRacoon.setParam(i + 1, field.get(obj))
         insertRacoon.execute()
 
