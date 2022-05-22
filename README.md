@@ -13,6 +13,20 @@ It makes communicating with the database easier by providing a bunch of function
 
 Racoon is developed with freedom of use in mind from the beginning.
 This property of Racoon can be seen in the mapping operations that allow the use of reified generic types and runtime types.
+## Installation
+
+To build the library, run the following command:
+
+```
+$ ./gradlew clean build -x test
+```
+
+To publish the library to the local Maven repository, run the following command:
+
+```
+$ ./gradlew publishToMavenLocal
+```
+
 ## Roadmap
 
 - Basics:
