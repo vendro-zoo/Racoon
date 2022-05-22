@@ -2,10 +2,10 @@ package habitat
 
 import commons.configuration.ConnectionSettings
 import commons.exceptions.connectionClosedException
-import commons.model.generateInsertQuery
-import commons.model.generateSelectQuery
-import commons.model.generateUpdateQuery
-import commons.model.getValue
+import commons.model.generateInsertQueryK
+import commons.model.generateSelectQueryK
+import commons.model.generateUpdateQueryK
+import commons.model.getValueK
 import habitat.racoons.ExecuteRacoon
 import habitat.racoons.InsertRacoon
 import habitat.racoons.QueryRacoon
@@ -144,7 +144,7 @@ class RacoonManager(
      * @return The record mapped to the type [T].
      */
     fun <T : Any> findK(id: Int, kClass: KClass<T>): T? {
-        val queryRacoon = createQueryRacoon(generateSelectQuery(kClass))
+        val queryRacoon = createQueryRacoon(generateSelectQueryK(kClass))
         queryRacoon.setParam("id", id)
         return queryRacoon.mapToClass(kClass).firstOrNull()
     }
@@ -168,7 +168,7 @@ class RacoonManager(
      * @return The [RacoonManager] instance.
      */
     fun <T : Any> insertK(obj: T, kClass: KClass<T>) = apply {
-        val insertRacoon = createInsertRacoon(generateInsertQuery(kClass))
+        val insertRacoon = createInsertRacoon(generateInsertQueryK(kClass))
         val parameters = kClass.memberProperties
         for (field in parameters) insertRacoon.setParam(field.name, field.get(obj))
         insertRacoon.execute()
@@ -197,19 +197,19 @@ class RacoonManager(
      * @param kClass The class of the object to update.
      */
     fun <T : Any> updateK(obj: T, kClass: KClass<T>) = apply {
-        val executeRacoon = createExecuteRacoon(generateUpdateQuery(kClass))
+        val executeRacoon = createExecuteRacoon(generateUpdateQueryK(kClass))
         val parameters = kClass.memberProperties
         for (field in parameters) executeRacoon.setParam(field.name, field.get(obj))
         executeRacoon.execute()
 
-        getValue(obj, "id", kClass)?.let {
+        getValueK(obj, "id", kClass)?.let {
             if (it !is Int) throw IllegalArgumentException("id must be an Int")
             val updated = findK(it, kClass) ?: throw SQLException("Could not find object with id '$it' " +
                     "while updating the fields")
 
             for (parameter in parameters) {
                 if (parameter !is KMutableProperty<*>) continue
-                parameter.setter.call(obj, getValue(updated, parameter.name, kClass))
+                parameter.setter.call(obj, getValueK(updated, parameter.name, kClass))
             }
         }
     }

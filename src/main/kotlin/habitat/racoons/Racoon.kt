@@ -29,7 +29,7 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
     /**
      * Executes the query to the database.
      *
-     *
+     * Calling this function may change the state of the subclass.
      */
     abstract fun execute(): R
 

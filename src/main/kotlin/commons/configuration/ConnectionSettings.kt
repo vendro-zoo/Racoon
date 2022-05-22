@@ -47,6 +47,11 @@ data class ConnectionSettings(
      */
     val maxPoolSize: Int = 10,
 ) {
+    /**
+     * Creates a connection string for the database.
+     *
+     * @return The connection string.
+     */
     override fun toString(): String {
         val stringBuilder = StringBuilder("jdbc:${protocol}://")
             .append("$host:$port/$database")
@@ -61,6 +66,7 @@ data class ConnectionSettings(
     }
 
     companion object {
+        // Protocol can't be changed for now, but could be in the future when multiple drivers are supported.
         private const val protocol: String = "mysql"
     }
 }

@@ -8,6 +8,13 @@ object RacoonDen {
     private val availableManagers: ArrayDeque<RacoonManager> = ArrayDeque()
     private val unavailableManagers: MutableSet<RacoonManager> = mutableSetOf()
 
+    /**
+     * Returns a manager that is available for use.
+     * If no managers are available in the pool, a new one is created.
+     *
+     * @return A manager that is available for use.
+     * @throws SQLException If the number of available managers exceeds the maximum number of managers.
+     */
     fun getManager(): RacoonManager {
         val settings = RacoonConfiguration.Connection.getDefault()
 

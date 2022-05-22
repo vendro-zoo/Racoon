@@ -5,7 +5,9 @@ import habitat.RacoonManager
 /**
  * Behaves like an [ExecuteRacoon], but also stores the last inserted id.
  */
-class InsertRacoon(manager: RacoonManager, query: String, var lastId: Int? = null) : ExecuteRacoon(manager, query) {
+class InsertRacoon(manager: RacoonManager, query: String) : ExecuteRacoon(manager, query) {
+    var lastId: Int? = null
+
     override fun execute() = apply {
         // Executes query
         super.execute()

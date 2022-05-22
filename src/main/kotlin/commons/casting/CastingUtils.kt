@@ -1,9 +1,18 @@
 package commons.casting
 
+import java.sql.ResultSet
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.superclasses
 
+/**
+ * Casts a parameter to a considered equivalent type.
+ *
+ * This method is used in order to prevent small type mismatches, like casting a [Long] to a [Int], and vice versa.
+ *
+ * @param param The parameter of the class' constructor to cast.
+ * @param value The value retrieved from the [ResultSet]
+ */
 internal fun castEquivalent(param: KParameter, value: Any): Any {
     // Getting the classes of the parameters
     val vClass: KClass<out Any> = value::class

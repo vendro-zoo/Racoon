@@ -1,9 +1,9 @@
 package habitat.racoons
 
 import commons.casting.castEquivalent
-import habitat.configuration.RacoonConfiguration
 import commons.query.QueryProcessing
 import habitat.RacoonManager
+import habitat.configuration.RacoonConfiguration
 import java.sql.ResultSet
 import java.sql.SQLException
 import kotlin.reflect.KClass
@@ -15,13 +15,12 @@ class QueryRacoon(
     // Mandatory parameters
     manager: RacoonManager,
     originalQuery: String,
-
-    // Query processing results
-    private var resultSet: ResultSet? = null,
-
-    // Mapping and aliases
-    private val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf(),
 ) : Racoon<QueryRacoon>(manager, originalQuery), AutoCloseable {
+    // Query processing results
+    private var resultSet: ResultSet? = null
+    // Mapping and aliases
+    private val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf()
+
     /**
      * Adds a table alias to be used when mapping the result of the query to a class.
      *
@@ -192,6 +191,6 @@ class QueryRacoon(
 
     override fun close() {
         resultSet?.close()
-        preparedStatement?.close()
+        super.close()
     }
 }
