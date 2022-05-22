@@ -35,8 +35,20 @@ internal class Playground {
 
         val manager = RacoonDen.getManager()
 
-        manager.insert(cat)
+        manager.insertK(cat)
 
         assertNotNull(cat.id)
+    }
+
+    @Test
+    internal fun update() {
+        val manager = RacoonDen.getManager()
+
+        val cat = manager.find<Cat>(18)?.let {
+            it.name = "newName"
+            manager.update(it)
+        }
+
+        manager.commit()
     }
 }

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class QueryRacoonTest {
@@ -54,7 +55,7 @@ internal class QueryRacoonTest {
         val cats = racoonManager.createQueryRacoon("SELECT * FROM cat")
             .use { it.mapToClass<Cat>() }
 
-        assert(cats.size == 3)
+        assertEquals(3, cats.size)
         cats.forEach {
             assertNotNull(it)
             if (verbose) println(it)
@@ -69,7 +70,7 @@ internal class QueryRacoonTest {
         val cats = racoonManager.createQueryRacoon("SELECT c.* FROM cat c")
             .use { it.mapToClass<Cat>() }
 
-        assert(cats.size == 3)
+        assertEquals(3, cats.size)
         cats.forEach {
             assertNotNull(it)
             if (verbose) println(it)
@@ -87,7 +88,7 @@ internal class QueryRacoonTest {
                     .mapToClass<Cat>()
             }
 
-        assert(cats.size == 3)
+        assertEquals(3, cats.size)
         cats.forEach {
             assertNotNull(it)
             if (verbose) println(it)
