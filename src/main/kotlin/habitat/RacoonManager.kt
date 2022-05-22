@@ -17,7 +17,7 @@ import kotlin.reflect.full.memberProperties
 
 @Suppress("unused")
 class RacoonManager(
-    private val connection: Connection,
+    internal val connection: Connection,
 ) {
     /**
      * A state indicating whether a final operation such as commit or rollback has been performed.
@@ -27,16 +27,17 @@ class RacoonManager(
     var finalOpExecuted = false
         private set
 
+    /**
+     * A state indicating whether the manager can still be used or not.
+     *
+     * The manager is considered closed if it has been released to the pool or if the connection has been closed.
+     */
+    var closed = false
+        internal set
+
     init {
         connection.autoCommit = false
     }
-
-    /**
-     * States whether the connection is open.
-     *
-     * @return true if the connection is open, false otherwise.
-     */
-    fun isClosed(): Boolean = connection.isClosed
 
     /**
      * Closes the connection to the database.
@@ -45,8 +46,9 @@ class RacoonManager(
      * @throws SQLException if the connection is already closed.
      */
     internal fun close() {
-        if (connection.isClosed) throw SQLException("Connection is already closed.")
+        if (closed) throw SQLException("Connection is already closed.")
         connection.close()
+        closed = true
     }
 
     /**
@@ -56,7 +58,7 @@ class RacoonManager(
      * @throws SQLException if the connection is closed.
      */
     fun commit() = apply {
-        if (connection.isClosed) throw connectionClosedException()
+        if (closed) throw connectionClosedException()
         if (finalOpExecuted) throw IllegalStateException("Can't commit after final operation has been executed")
         finalOpExecuted = true
         connection.commit()
@@ -69,7 +71,7 @@ class RacoonManager(
      * @throws SQLException if the connection is closed.
      */
     fun rollback() = apply {
-        if (connection.isClosed) throw connectionClosedException()
+        if (closed) throw connectionClosedException()
         if (finalOpExecuted) throw IllegalStateException("Can't rollback after final operation has been executed")
         finalOpExecuted = true
         connection.rollback()
@@ -82,7 +84,7 @@ class RacoonManager(
      * @return The result of the block.
      */
     inline fun <T> use(block: (RacoonManager) -> T): T {
-        if (isClosed()) throw connectionClosedException()
+        if (closed) throw connectionClosedException()
         if (finalOpExecuted) throw IllegalStateException("Can't use after final operation has been executed")
         val blockResult = block(this)
         if (!finalOpExecuted) commit()
@@ -97,8 +99,9 @@ class RacoonManager(
      * @throws SQLException if the connection is closed.
      */
     fun release() {
-        if (connection.isClosed) throw connectionClosedException()
+        if (closed) throw connectionClosedException()
         if (!finalOpExecuted) throw IllegalStateException("Can't release before final operation has been executed")
+        this.closed = true
         RacoonDen.releaseManager(this)
     }
 

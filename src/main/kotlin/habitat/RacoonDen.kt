@@ -2,11 +2,15 @@ package habitat
 
 import commons.query.Ping
 import habitat.configuration.RacoonConfiguration
+import java.sql.Connection
 import java.sql.SQLException
 
 object RacoonDen {
-    private val availableManagers: ArrayDeque<RacoonManager> = ArrayDeque()
+    private val availableConnections: ArrayDeque<Connection> = ArrayDeque()
     private val unavailableManagers: MutableSet<RacoonManager> = mutableSetOf()
+
+    fun inUseManagers(): Int = unavailableManagers.size
+    fun notInUseManagers(): Int = availableConnections.size
 
     /**
      * Returns a manager that is available for use.
@@ -19,15 +23,15 @@ object RacoonDen {
         val settings = RacoonConfiguration.Connection.getDefault()
 
         if (settings.maxManagers != 0 &&
-            availableManagers.isEmpty() &&
+            availableConnections.isEmpty() &&
             unavailableManagers.size >= settings.maxManagers)
             throw SQLException("The maximum number of managers has been reached")
 
 
         // If there are available managers, return the first still available one, if exists
-        while (availableManagers.isNotEmpty()) {
+        while (availableConnections.isNotEmpty()) {
             // Get the first available manager
-            val manager = availableManagers.removeLast()
+            val manager = RacoonManager(availableConnections.removeLast())
 
             // Check if the manager is still available, if not, check the next one
             if (!this.ping(manager)) continue
@@ -52,9 +56,9 @@ object RacoonDen {
      */
     fun releaseManager(manager: RacoonManager): Boolean {
         // Moves the manager to the available list
-        if (availableManagers.size >= RacoonConfiguration.Connection.getDefault().maxPoolSize) return false
+        if (availableConnections.size >= RacoonConfiguration.Connection.getDefault().maxPoolSize) return false
         unavailableManagers.remove(manager)
-        availableManagers.addLast(manager)
+        availableConnections.addLast(manager.connection)
         return true
     }
 
