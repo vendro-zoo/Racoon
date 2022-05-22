@@ -1,7 +1,7 @@
 package habitat.racoons
 
-import habitat.configuration.RacoonConfiguration
 import habitat.RacoonManager
+import habitat.configuration.RacoonConfiguration
 import java.sql.PreparedStatement
 import java.sql.SQLException
 
@@ -26,6 +26,11 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
     private val indexedParameters: MutableMap<Int, Any?> = mutableMapOf()
     private val namedParameters: MutableMap<String, Any?> = mutableMapOf()
 
+    /**
+     * Executes the query to the database.
+     *
+     *
+     */
     abstract fun execute(): R
 
     /**
@@ -66,7 +71,7 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
 
 
     /**
-     * Sets an indexed parameter of the query.
+     * Sets the value of an indexed parameter of the query.
      *
      * @param index The index of the parameter.
      * @param value The value of the parameter.
@@ -76,7 +81,7 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
     fun <T : Any> setParam(index: Int, value: T?): R = setParam(indexedParameters, index, value)
 
     /**
-     * Sets a named parameter of the query.
+     * Sets the value of a named parameter of the query.
      *
      * @param name The name of the parameter.
      * @param value The value of the parameter.
