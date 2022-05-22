@@ -30,38 +30,50 @@ internal class RacoonDenTest {
     }
 
     @Test
-    internal fun poolingSync() {
+    internal fun test() {
+        poolingSync()
+        assertEquals(0, RacoonDen.inUseManagers())
+        poolingAsync()
+        assertEquals(0, RacoonDen.inUseManagers())
+        poolingLimit()
+        assertEquals(0, RacoonDen.inUseManagers())
+    }
+
+    private fun poolingSync() {
         var manager = RacoonDen.getManager()
-        val managerRepr = manager.toString()
+        val managerRepr = manager.connection.toString()
 
         manager.use { rm ->
             val cats = rm.createQueryRacoon("SELECT * FROM cat").use { qr -> qr.mapToClass<Cat>() }
-            assertEquals(3, cats.size)
+            assertEquals(7, cats.size)
         }
 
         manager = RacoonDen.getManager()
-        val newManagerRepr = manager.toString()
+        val newManagerRepr = manager.connection.toString()
+        manager.rollback().release()
 
         assertEquals(newManagerRepr, managerRepr)
     }
 
-    @Test
-    internal fun poolingAsync() {
+    private fun poolingAsync() {
         val manager1 = RacoonDen.getManager()
         val managerRepr1 = manager1.toString()
+        manager1.rollback().release()
 
         val manager2 = RacoonDen.getManager()
         val managerRepr2 = manager2.toString()
+        manager2.rollback().release()
 
         assertNotEquals(managerRepr1, managerRepr2)
     }
 
 
-    @Test
-    internal fun poolingLimit() {
-        RacoonDen.getManager()
-        RacoonDen.getManager()
+    private fun poolingLimit() {
+        val m1 = RacoonDen.getManager()
+        val m2 = RacoonDen.getManager()
 
         assertThrows(SQLException::class.java, RacoonDen::getManager)
+        m1.rollback().release()
+        m2.rollback().release()
     }
 }
