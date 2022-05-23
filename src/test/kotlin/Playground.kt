@@ -51,4 +51,15 @@ internal class Playground {
 
         manager.commit()
     }
+
+    @Test
+    internal fun newMapping() {
+        val manager = RacoonDen.getManager()
+
+        val cat = manager.find<Cat>(1)
+
+        println(cat?.owner_id?.get())
+
+        manager.commit()
+    }
 }

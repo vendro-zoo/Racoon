@@ -1,9 +1,11 @@
 package habitat.configuration
 
-import commons.mappers.TableAliasMappers
 import commons.casting.ParameterCaster
+import commons.casting.builtin.LazyCaster
 import commons.configuration.ConnectionSettings
 import commons.mappers.NameMapper
+import commons.mappers.TableAliasMappers
+import habitat.definition.LazyId
 import kotlin.reflect.KClass
 import kotlin.reflect.full.superclasses
 
@@ -46,7 +48,9 @@ object RacoonConfiguration {
     }
 
     object Casting {
-        private val parameterCasters: MutableMap<KClass<out Any>, ParameterCaster<out Any, out Any>> = mutableMapOf()
+        private val parameterCasters: MutableMap<KClass<out Any>, ParameterCaster<out Any, out Any>> = mutableMapOf(
+            LazyId::class to LazyCaster()
+        )
 
         fun <T: Any> setCaster(clazz: KClass<T>, caster: ParameterCaster<T, out Any>) {
             parameterCasters[clazz] = caster

@@ -6,6 +6,7 @@ import commons.model.generateInsertQueryK
 import commons.model.generateSelectQueryK
 import commons.model.generateUpdateQueryK
 import commons.model.getValueK
+import habitat.definition.Table
 import habitat.racoons.ExecuteRacoon
 import habitat.racoons.InsertRacoon
 import habitat.racoons.QueryRacoon
@@ -188,7 +189,7 @@ class RacoonManager(
      * @param obj The object to update.
      * @return The [RacoonManager] instance.
      */
-    inline fun <reified T : Any> update(obj: T) = updateK(obj, T::class)
+    inline fun <reified T : Table> update(obj: T) = updateK(obj, T::class)
 
     /**
      * Updates a record in the database with the given object.
@@ -199,14 +200,13 @@ class RacoonManager(
      * @param obj The object to update.
      * @param kClass The class of the object to update.
      */
-    fun <T : Any> updateK(obj: T, kClass: KClass<T>) = apply {
+    fun <T : Table> updateK(obj: T, kClass: KClass<T>) = apply {
         val executeRacoon = createExecuteRacoon(generateUpdateQueryK(kClass))
         val parameters = kClass.memberProperties
         for (field in parameters) executeRacoon.setParam(field.name, field.get(obj))
         executeRacoon.execute()
 
-        getValueK(obj, "id", kClass)?.let {
-            if (it !is Int) throw IllegalArgumentException("id must be an Int")
+        obj.id?.let {
             val updated = findK(it, kClass) ?: throw SQLException("Could not find object with id '$it' " +
                     "while updating the fields")
 

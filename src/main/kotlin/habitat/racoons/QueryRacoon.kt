@@ -1,9 +1,12 @@
 package habitat.racoons
 
+import commons.casting.RecordCaster
 import commons.casting.castEquivalent
 import commons.query.QueryProcessing
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
+import habitat.context.ParameterCasterContext
+import habitat.definition.LazyId
 import java.sql.ResultSet
 import java.sql.SQLException
 import kotlin.reflect.KClass
@@ -77,7 +80,7 @@ class QueryRacoon(
      * @throws ClassCastException If an error occurs during the mapping.
      * See the message of the exception for more details.
      */
-    fun <T : Any> mapToClass(tClass: KClass<T>): List<T> {
+    fun <T : Any> mapToClass(tClass: KClass<T>): List<T> {  // TODO: CHECK IF COGNITIVE COMPLEXITY CAN BE REDUCED
         // If the query has not been executed yet, execute it
         resultSet ?: execute()
         val immutableResultSet = resultSet!!
@@ -121,10 +124,12 @@ class QueryRacoon(
                 }
             }.filter { it.value != null }.map {
                 // Getting the user defined type [ParameterCaster], if it exists
-                val caster = RacoonConfiguration.Casting.getCaster(it.key.type.classifier as KClass<*>)
+                var kClassifier = it.key.type.classifier as KClass<*>
+                val caster = RacoonConfiguration.Casting.getCaster(kClassifier)
+                if (kClassifier == LazyId::class) kClassifier = it.key.type.arguments[0].type!!.classifier as KClass<*>
 
                 // Casting with the user defined type [ParameterCaster], otherwise casting with the internal caster
-                val value = caster?.cast(it.value!!) ?: castEquivalent(it.key, it.value!!)
+                val value = caster?.uncast(it.value!!, ParameterCasterContext(manager, kClassifier)) ?: castEquivalent(it.key, it.value!!)
 
                 it.key to value
             }.toMap()
@@ -186,6 +191,11 @@ class QueryRacoon(
 
         // Return the list of wrappers
         return listOfWrappers
+    }
+
+    fun <T> mapToCustom(fn: RecordCaster<T>): T {
+        resultSet ?: execute()
+        return fn.cast(resultSet!!)
     }
 
 

@@ -1,5 +1,7 @@
 package commons.casting
 
+import habitat.context.ParameterCasterContext
+
 /**
  * A class that casts a query parameter of a given type to another given type.
  *
@@ -14,7 +16,7 @@ interface ParameterCaster<T: Any, K: Any> {
      * @return the same parameter converted to the other type
      * that can be used as the value of a query parameter.
      */
-    fun cast(parameter: T): K
+    fun cast(parameter: T, context: ParameterCasterContext): K
 
     /**
      * Converts the parameter back to its original type.
@@ -22,5 +24,5 @@ interface ParameterCaster<T: Any, K: Any> {
      * @param parameter the parameter to convert to the original type
      * @return the same parameter converted to the original type
      */
-    fun uncast(parameter: K): T
+    fun uncast(parameter: K, context: ParameterCasterContext): T
 }
