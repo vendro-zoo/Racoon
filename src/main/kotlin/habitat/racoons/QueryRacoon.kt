@@ -15,13 +15,10 @@ import kotlin.reflect.full.primaryConstructor
 
 @Suppress("unused")
 class QueryRacoon(
-    // Mandatory parameters
     manager: RacoonManager,
     originalQuery: String,
 ) : Racoon<QueryRacoon>(manager, originalQuery), AutoCloseable {
-    // Query processing results
     private var resultSet: ResultSet? = null
-    // Mapping and aliases
     private val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf()
 
     /**
