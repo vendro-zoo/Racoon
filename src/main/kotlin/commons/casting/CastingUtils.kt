@@ -25,8 +25,22 @@ internal fun castEquivalent(param: KParameter, value: Any): Any {
     // If the classes are the same, we can return the value
     if (vClass == pClass) return value
 
+    val unsignedValue = getUType(value)
+    val unsignedPClass = getUType(pClass)
+
+    if (unsignedValue != null) {
+        if (unsignedPClass != null) {
+            return unsignedValue.toUType(unsignedPClass)
+        }
+        @Suppress("UNCHECKED_CAST")
+        return unsignedValue.toSType(pClass as KClass<out Number>)
+    } else if (unsignedPClass != null) {
+        return castToUnsigned(value as Number, unsignedPClass)
+    }
+
     // If are both numbers, we can cast the value
     if (vSuper != null && pSuper != null && vSuper == pSuper && vSuper == Number::class) {
+
         return when (pClass) {
             Int::class -> (value as Number).toInt()
             Long::class -> (value as Number).toLong()
@@ -39,4 +53,79 @@ internal fun castEquivalent(param: KParameter, value: Any): Any {
     }
 
     throw IllegalArgumentException("Cannot cast $value from ${vClass.simpleName} to ${pClass.simpleName}")
+}
+
+private fun castToUnsigned(value: Number, uType: KClass<out UType>) = when(uType) {
+    UByte::class -> value.toByte().toUByte()
+    UShort::class -> value.toShort().toUShort()
+    UInt::class -> value.toInt().toUInt()
+    ULong::class -> value.toLong().toULong()
+    else -> throw IllegalArgumentException("Cannot cast $value to ${uType.simpleName}")
+}
+
+private fun getUType(value: Any) = when (value::class) {
+    UInt::class -> CUInt(value as UInt)
+    ULong::class -> CULong(value as ULong)
+    UByte::class -> CUByte(value as UByte)
+    UShort::class -> CUShort(value as UShort)
+    else -> null
+}
+
+private fun getUType(type: KClass<out Any>) = when (type) {
+    UInt::class -> CUInt::class
+    ULong::class -> CULong::class
+    UByte::class -> CUByte::class
+    UShort::class -> CUShort::class
+    else -> null
+}
+
+private interface UType {
+    fun toUInt(): UInt
+    fun toULong(): ULong
+    fun toUShort(): UShort
+    fun toUByte(): UByte
+
+    fun toUType(uType: KClass<out UType>) = when (uType) {
+        CUInt::class -> toUInt()
+        CULong::class -> toULong()
+        CUShort::class -> toUShort()
+        CUByte::class -> toUByte()
+        else -> throw IllegalArgumentException("Cannot cast $this to $uType")
+    }
+
+    fun toSType(sType: KClass<out Number>) = when (sType) {
+        Int::class -> toUInt().toInt()
+        Long::class -> toULong().toLong()
+        Short::class -> toUShort().toShort()
+        Byte::class -> toUByte().toByte()
+        else -> throw IllegalArgumentException("Cannot cast $this to $sType")
+    }
+}
+
+private class CUInt(val value: UInt) : UType {
+    override fun toUInt(): UInt = value
+    override fun toULong(): ULong = value.toULong()
+    override fun toUShort(): UShort = value.toUShort()
+    override fun toUByte(): UByte = value.toUByte()
+}
+
+private class CULong(val value: ULong) : UType {
+    override fun toUInt(): UInt = value.toUInt()
+    override fun toULong(): ULong = value
+    override fun toUShort(): UShort = value.toUShort()
+    override fun toUByte(): UByte = value.toUByte()
+}
+
+private class CUShort(val value: UShort) : UType {
+    override fun toUInt(): UInt = value.toUInt()
+    override fun toULong(): ULong = value.toULong()
+    override fun toUShort(): UShort = value
+    override fun toUByte(): UByte = value.toUByte()
+}
+
+private class CUByte(val value: UByte) : UType {
+    override fun toUInt(): UInt = value.toUInt()
+    override fun toULong(): ULong = value.toULong()
+    override fun toUShort(): UShort = value.toUShort()
+    override fun toUByte(): UByte = value
 }
