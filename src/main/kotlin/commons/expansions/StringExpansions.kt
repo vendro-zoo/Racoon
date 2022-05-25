@@ -37,11 +37,11 @@ fun String.isInQuotes(index: Int): Boolean {
 }
 
 /**
- * Convert an upper camel case string to a snake case string, leaving the first character of each word as is.
+ * Convert a camel case string to a snake case string, leaving the first character of each word as is.
  *
  * Example:
  *
- *    "0Hello123World4oSnakeCase() // "0_Hello_123_World_4"
+ *    "0Hello123World4".snakeCase() // "0_Hello_123_World_4"
  *
  * @return The snake case string.
  */
@@ -63,11 +63,11 @@ fun String.snakeCase(): String {
 }
 
 /**
- * Convert an upper camel case string to a lower snake case string.
+ * Convert a camel case string to a snake case string.
  *
  * Example:
  *
- *    "0Hello123World4".toLowerSnakeCase() // "0_hello_123_world_4"
+ *    "0Hello123World4".lowerSnakeCase() // "0_hello_123_world_4"
  *
  * @return The lower snake case string.
  */
@@ -75,12 +75,43 @@ fun String.lowerSnakeCase(): String = this.snakeCase().lowercase()
 
 
 /**
- * Convert an upper camel case string to an upper snake case string.
+ * Convert a camel case string to a screaming snake case string.
  *
  * Example:
  *
- *    "0Hello123World4".toUpperSnakeCase() // "0_HELLO_123_WORLD_4"
+ *    "0Hello123World4".upperSnakeCase() // "0_HELLO_123_WORLD_4"
  *
  * @return The upper snake case string.
  */
 fun String.upperSnakeCase(): String = this.snakeCase().uppercase()
+
+private fun camelCase(s: String, capitalize: Boolean) =
+    s.split("_")
+    .withIndex()
+    .joinToString("") { (i, v) ->
+        if (i == 0 && !capitalize) v else v[0].uppercase() + v.substring(1).lowercase()
+    }
+
+/**
+ * Convert a snake case string to a camel case string.
+ *
+ * Example:
+ *
+ *    "hello_0_world".() // "hello0World"
+ *    "0_HELLO_123_WORLD_4".toUpperCamelCase() // "0Hello123World4"
+ *
+ * @return The camel case string.
+ */
+fun String.camelCase(): String = camelCase(this, false)
+
+/**
+ * Convert a snake case string to an upper camel case string.
+ *
+ * Example:
+ *
+ *    "hello_0_world".toUpperCamelCase() // "Hello0World"
+ *    "0_HELLO_123_WORLD_4".toUpperCamelCase() // "0Hello123World4"
+ *
+ * @return The upper camel case string.
+ */
+fun String.upperCamelCase(): String = camelCase(this, true)

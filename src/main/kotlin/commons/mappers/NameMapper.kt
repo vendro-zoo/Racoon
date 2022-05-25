@@ -1,6 +1,8 @@
 package commons.mappers
 
+import commons.expansions.camelCase
 import commons.expansions.lowerSnakeCase
+import commons.expansions.upperCamelCase
 import commons.expansions.upperSnakeCase
 
 @Suppress("unused")
@@ -21,7 +23,17 @@ object NameMapper {
     val lowercase: (String) -> String = { it.lowercase() }
 
     /**
-     * Converts the string to uppercase using the [uppercase] function.
+     * Converts the string to UPPERCASE using the [uppercase] function.
      */
     val uppercase: (String) -> String = { it.uppercase() }
+
+    /**
+     * Converts the string to camelCase using the [camelCase] function extension.
+     */
+    val camelCase: (String) -> String = { it.camelCase() }
+
+    /**
+     * Converts the string to UpperCamelCase using the [upperCamelCase] function extension.
+     */
+    val upperCamelCase: (String) -> String = { it.upperCamelCase() }
 }
