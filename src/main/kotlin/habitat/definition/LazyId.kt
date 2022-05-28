@@ -3,6 +3,7 @@ package habitat.definition
 import habitat.RacoonManager
 import kotlin.reflect.KClass
 
+// TODO: Update with new implementation
 class LazyId<out T: Table> private constructor(
     private val type: KClass<T>,
     val id: Int,
