@@ -16,7 +16,7 @@ interface ParameterCaster<T: Any, K: Any> {
      * @return the same parameter converted to the other type
      * that can be used as the value of a query parameter.
      */
-    fun cast(parameter: T, context: ParameterCasterContext): K
+    fun cast(parameter: T, context: ParameterCasterContext): K?
 
     /**
      * Converts the parameter back to its original type.

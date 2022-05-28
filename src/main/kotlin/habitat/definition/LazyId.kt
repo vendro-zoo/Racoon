@@ -2,54 +2,51 @@ package habitat.definition
 
 import habitat.RacoonManager
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 
-// TODO: Update with new implementation
-class LazyId<out T: Table> private constructor(
-    private val type: KClass<T>,
-    val id: Int,
+class LazyId<T: Table> private constructor(
+    val type: KClass<T>,
+    var id: Int?,
 
-    private val manager: RacoonManager? = null,
+    var manager: RacoonManager? = null,
 
-    private var value: T? = null,
-    private var isLoaded: Boolean = false
+    var value: T? = null,
+    var isLoaded: Boolean = false
 ) {
     fun get(): T? {
         if (!isLoaded) {
-            manager ?: throw IllegalArgumentException("No manager available")
+            val manager = manager ?: throw IllegalArgumentException("No manager available")
+            val id = id ?: throw IllegalArgumentException("No id available")
             value = manager.findK(id, type)
             isLoaded = true
         }
         return value
     }
 
-    companion object {
-        inline fun <reified T : Table> lazy(id: Int, manager: RacoonManager) = lazy(id, manager, T::class)
-        fun <T : Table> lazy(
-            id: Int,
-            manager: RacoonManager,
-            type: KClass<T>
-        ) = LazyId(
-            type = type,
-            id = id,
-            manager = manager,
-            isLoaded = false
-        )
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
+        return get()
+    }
 
-        inline fun <reified T : Table> defined(value: T) =
-            defined(
-                value,
-                T::class,
-                value.id ?: throw IllegalArgumentException("Cannot create a defined LazyId from a value without an id")
-            )
-        fun <T : Table> defined(
-            value: T,
-            type: KClass<T>,
-            id: Int
-        ) = LazyId(
-            type = type,
-            value = value,
-            id = id,
-            isLoaded = true
-        )
+    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: LazyId<T>) {
+        this.id = value.id
+        this.manager = value.manager
+        this.value = value.value
+        this.isLoaded = value.isLoaded
+    }
+
+    constructor(id: Int, manager: RacoonManager, type: KClass<T>) : this(type, id, manager, null, false)
+    constructor(value: T, type: KClass<T>) : this(type, value.id, null, value, true)
+    constructor(type: KClass<T>) : this(type, -1, null, null, true)
+    constructor(type: KClass<T>, manager: RacoonManager, id: Int, value: LazyId<T>) : this(type, -1, manager, null, false)
+
+    companion object {
+        inline fun <reified T : Table> lazy(id: Int, manager: RacoonManager) = LazyId(id, manager, T::class)
+        fun <T : Table> lazy(id: Int, manager: RacoonManager, type: KClass<T>) = LazyId(id, manager, type)
+
+        inline fun <reified T : Table> defined(value: T) = LazyId(value, T::class)
+        fun <T : Table> defined(value: T, type: KClass<T>) = LazyId(value, type)
+
+        inline fun <reified T: Table> empty() = LazyId(T::class)
+        fun <T: Table> empty(type: KClass<T>) = LazyId(type)
     }
 }

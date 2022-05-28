@@ -113,4 +113,18 @@ internal class QueryRacoonTest {
             if (verbose) println(it)
         }
     }
+
+    @Test
+    internal fun lazyIdTest() {
+        val cats = racoonManager.createQueryRacoon("SELECT alias.* FROM cat alias")
+            .use {
+                it.setAlias(Cat::class, "alias")
+                    .mapToClass<Cat>()
+            }.toMutableList()
+
+        cats.forEach {
+            val owner = it.owner
+            if (verbose) println(owner)
+        }
+    }
 }

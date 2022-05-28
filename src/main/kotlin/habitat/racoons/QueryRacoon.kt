@@ -7,6 +7,7 @@ import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
 import habitat.context.ParameterCasterContext
 import habitat.definition.LazyId
+import habitat.definition.Table
 import java.sql.ResultSet
 import java.sql.SQLException
 import kotlin.reflect.KClass
@@ -114,19 +115,32 @@ class QueryRacoon(
                         immutableResultSet.getObject(name)
                     } catch (e: SQLException) {
                         // If the column doesn't exist and the parameter is not optional, throw an exception
-                        if (!it.isOptional)
+                        if (!it.isOptional) {
                             throw ClassCastException("resultSet has no column '$sqlAlias.$name' or '$name'")
-                        else null
+                        } else null
                     }
                 }
+            }.map {
+                val kClass = it.key.type.classifier as KClass<*>
+                @Suppress("UNCHECKED_CAST")
+                if (it.value == null && it.key.type.classifier as KClass<*> == LazyId::class){
+                    return@map listOf(
+                        it.key to LazyId.empty(it.key.type.arguments[0].type!!.classifier as KClass<Table>)
+                    ).toMap().entries.first()
+                }
+                it
             }.filter { it.value != null }.map {
+                if (it.value is LazyId<*>) return@map it.toPair()
+
                 // Getting the user defined type [ParameterCaster], if it exists
                 var kClassifier = it.key.type.classifier as KClass<*>
                 val caster = RacoonConfiguration.Casting.getCaster(kClassifier)
-                if (kClassifier == LazyId::class) kClassifier = it.key.type.arguments[0].type!!.classifier as KClass<*>
+                if (kClassifier == LazyId::class) kClassifier =
+                    it.key.type.arguments[0].type!!.classifier as KClass<*>
 
                 // Casting with the user defined type [ParameterCaster], otherwise casting with the internal caster
-                val value = caster?.uncast(it.value!!, ParameterCasterContext(manager, kClassifier)) ?: castEquivalent(it.key, it.value!!)
+                val value = caster?.uncast(it.value!!, ParameterCasterContext(manager, kClassifier))
+                    ?: castEquivalent(it.key, it.value!!)
 
                 it.key to value
             }.toMap()
