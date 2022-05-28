@@ -56,10 +56,10 @@ internal fun castEquivalent(param: KParameter, value: Any): Any {
 }
 
 private fun castToUnsigned(value: Number, uType: KClass<out UType>) = when(uType) {
-    UByte::class -> value.toByte().toUByte()
-    UShort::class -> value.toShort().toUShort()
-    UInt::class -> value.toInt().toUInt()
-    ULong::class -> value.toLong().toULong()
+    CUByte::class -> value.toByte().toUByte()
+    CUShort::class -> value.toShort().toUShort()
+    CUInt::class -> value.toInt().toUInt()
+    CULong::class -> value.toLong().toULong()
     else -> throw IllegalArgumentException("Cannot cast $value to ${uType.simpleName}")
 }
 
