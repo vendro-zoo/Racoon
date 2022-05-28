@@ -18,9 +18,9 @@ internal class RacoonDenTest {
                 ConnectionSettings(
                     host = "localhost",
                     port = 3306,
-                    database = "test",
-                    username = "test",
-                    password = "test",
+                    database = "racoon-ktor-sample",
+                    username = "admin",
+                    password = "admin",
                     maxManagers = 2
                 )
             )
@@ -44,8 +44,7 @@ internal class RacoonDenTest {
         val managerRepr = manager.connection.toString()
 
         manager.use { rm ->
-            val cats = rm.createQueryRacoon("SELECT * FROM cat").use { qr -> qr.mapToClass<Cat>() }
-            assertEquals(7, cats.size)
+            rm.createQueryRacoon("SELECT * FROM cat").use { qr -> qr.mapToClass<Cat>() }
         }
 
         manager = RacoonDen.getManager()
