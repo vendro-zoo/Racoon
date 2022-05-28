@@ -55,8 +55,8 @@ fun <T: Any> generateUpdateQueryK(clazz: KClass<T>): String {
     val className = clazz.simpleName ?: throw IllegalArgumentException(NULL_CLASS_NAME)
 
     return "UPDATE `${RacoonConfiguration.Naming.getName(className)}` " +
-            "SET ${properties.joinToString(separator = ",") { "`${it.name}` = :${it.name}" }} " +
-            "WHERE id = :id"
+            "SET ${properties.joinToString(separator = ",") { "`${it.name}`=:${it.name}" }} " +
+            "WHERE `id`=:id"
 }
 
 /**
@@ -78,5 +78,5 @@ inline fun <reified T: Any> generateSelectQuery() = generateSelectQueryK(T::clas
 fun <T: Any> generateSelectQueryK(clazz: KClass<T>): String {
     val className = clazz.simpleName ?: throw IllegalArgumentException(NULL_CLASS_NAME)
 
-    return "SELECT * FROM `${RacoonConfiguration.Naming.getName(className)}` where id = :id"
+    return "SELECT * FROM `${RacoonConfiguration.Naming.getName(className)}` WHERE `id`=:id"
 }
