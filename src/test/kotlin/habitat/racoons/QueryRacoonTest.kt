@@ -1,6 +1,7 @@
 package habitat.racoons
 
 import commons.configuration.ConnectionSettings
+import commons.mappers.NameMapper
 import habitat.RacoonDen
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
@@ -29,6 +30,7 @@ internal class QueryRacoonTest {
                     password = "admin"
                 )
             )
+            RacoonConfiguration.Naming.setNameMapper(NameMapper.lowerSnakeCase)
         }
 
         const val verbose = true
