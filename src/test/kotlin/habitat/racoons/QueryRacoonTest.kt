@@ -30,7 +30,7 @@ internal class QueryRacoonTest {
                     password = "admin"
                 )
             )
-            RacoonConfiguration.Naming.setNameMapper(NameMapper.lowerSnakeCase)
+            RacoonConfiguration.Naming.setTableNameMapper(NameMapper.lowerSnakeCase)
         }
 
         const val verbose = true
