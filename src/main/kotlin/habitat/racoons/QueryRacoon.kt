@@ -2,6 +2,9 @@ package habitat.racoons
 
 import commons.casting.RecordCaster
 import commons.casting.castEquivalent
+import commons.expansions.asKClass
+import commons.expansions.asMapEntry
+import commons.expansions.getRuntimeGeneric
 import commons.query.QueryProcessing
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
@@ -106,37 +109,29 @@ class QueryRacoon(
                 // Get the name of the parameter
                 val name = it.name ?: throw ClassCastException("Can't access a property because it's name is null")
 
-                try {
-                    // Try to get the column of the resultSet with the table alias and the parameter name
-                    immutableResultSet.getObject("$sqlAlias.$name")
-                } catch (e: SQLException) {
-                    try {
-                        // Try to get the column of the resultSet with only the parameter name
-                        immutableResultSet.getObject(name)
-                    } catch (e: SQLException) {
-                        // If the column doesn't exist and the parameter is not optional, throw an exception
-                        if (!it.isOptional) {
-                            throw ClassCastException("resultSet has no column '$sqlAlias.$name' or '$name'")
-                        } else null
-                    }
-                }
+                val value = getResultSetValue(immutableResultSet, "$sqlAlias.$name") ?:
+                    getResultSetValue(immutableResultSet, name)
+
+                if (value == null && !it.isOptional)
+                    throw ClassCastException("resultSet has no column '$sqlAlias.$name' or '$name'")
+
+                return@associateWith value
             }.map {
                 val kClass = it.key.type.classifier as KClass<*>
                 @Suppress("UNCHECKED_CAST")
-                if (it.value == null && it.key.type.classifier as KClass<*> == LazyId::class){
-                    return@map listOf(
-                        it.key to LazyId.empty(it.key.type.arguments[0].type!!.classifier as KClass<Table>)
-                    ).toMap().entries.first()
-                }
+                if (it.value == null && it.key.asKClass() == LazyId::class)
+                    return@map (it.key to LazyId.empty(it.key.getRuntimeGeneric() as KClass<Table>)).asMapEntry()
                 it
             }.filter { it.value != null }.map {
                 if (it.value is LazyId<*>) return@map it.toPair()
 
                 // Getting the user defined type [ParameterCaster], if it exists
-                var kClassifier = it.key.type.classifier as KClass<*>
+                var kClassifier = it.key.asKClass()
                 val caster = RacoonConfiguration.Casting.getCaster(kClassifier)
+
+                @Suppress("UNCHECKED_CAST")
                 if (kClassifier == LazyId::class) kClassifier =
-                    it.key.type.arguments[0].type!!.classifier as KClass<*>
+                    it.key.getRuntimeGeneric() as KClass<Table>
 
                 // Casting with the user defined type [ParameterCaster], otherwise casting with the internal caster
                 val value = caster?.uncast(it.value!!, ParameterCasterContext(manager, kClassifier))
@@ -213,5 +208,11 @@ class QueryRacoon(
     override fun close() {
         resultSet?.close()
         super.close()
+    }
+
+    companion object {
+        private fun getResultSetValue(resultSet: ResultSet, columnName: String): Any? {
+            return try { resultSet.getObject(columnName) } catch (_: SQLException) { null }
+        }
     }
 }
