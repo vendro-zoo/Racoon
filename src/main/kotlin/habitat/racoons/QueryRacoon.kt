@@ -11,6 +11,7 @@ import habitat.configuration.RacoonConfiguration
 import habitat.context.ParameterCasterContext
 import habitat.definition.LazyId
 import habitat.definition.Table
+import habitat.definition.TableName
 import java.sql.ResultSet
 import java.sql.SQLException
 import kotlin.reflect.KClass
@@ -89,8 +90,9 @@ class QueryRacoon(
         // Get the class of the type we want to map to
         val clazzName = tClass.simpleName ?: throw ClassCastException("Class name is null")
 
-        // Get the table alias for the class or generate one if it isn't specified
-        val sqlAlias = tableAliases[tClass] ?: RacoonConfiguration.Naming.getTableAlias(clazzName)
+        // Get the table alias for the class specified in either the racoon or the class
+        // If not specified, generate an alias
+        val sqlAlias = tableAliases[tClass] ?: TableName.getAlias(tClass)
 
         // Get the primary constructor of the class and its parameters
         val constructor = tClass.primaryConstructor ?: throw ClassCastException("$clazzName has no primary constructor")

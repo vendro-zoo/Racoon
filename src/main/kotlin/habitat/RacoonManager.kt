@@ -2,18 +2,17 @@ package habitat
 
 import commons.configuration.ConnectionSettings
 import commons.exceptions.connectionClosedException
+import commons.model.getValueK
+import commons.query.generateDeleteQueryK
 import commons.query.generateInsertQueryK
 import commons.query.generateSelectQueryK
 import commons.query.generateUpdateQueryK
-import commons.model.getValueK
-import commons.query.generateDeleteQueryK
+import habitat.definition.ColumnName
 import habitat.definition.Table
-import habitat.definition.getColumnName
 import habitat.racoons.ExecuteRacoon
 import habitat.racoons.InsertRacoon
 import habitat.racoons.QueryRacoon
 import org.intellij.lang.annotations.Language
-import java.lang.IllegalArgumentException
 import java.sql.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
@@ -177,7 +176,7 @@ class RacoonManager(
     fun <T : Table> insertK(obj: T, kClass: KClass<T>) = apply {
         val insertRacoon = createInsertRacoon(generateInsertQueryK(kClass))
         val parameters = kClass.memberProperties
-        for (field in parameters) insertRacoon.setParam(getColumnName(field), field.get(obj))
+        for (field in parameters) insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
         insertRacoon.execute()
 
         obj.id = getLastId()
