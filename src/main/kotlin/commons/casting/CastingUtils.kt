@@ -1,6 +1,8 @@
 package commons.casting
 
 import java.sql.ResultSet
+import java.sql.Timestamp
+import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.superclasses
@@ -24,6 +26,9 @@ internal fun castEquivalent(param: KParameter, value: Any): Any {
 
     // If the classes are the same, we can return the value
     if (vClass == pClass) return value
+
+    if (vClass == Timestamp::class && pClass == Long::class) return (value as Timestamp).time
+    if (vClass == Timestamp::class && pClass == Date::class) return Date((value as Timestamp).time)
 
     val unsignedValue = getUType(value)
     val unsignedPClass = getUType(pClass)
