@@ -81,7 +81,7 @@ class QueryRacoon(
      * @throws ClassCastException If an error occurs during the mapping.
      * See the message of the exception for more details.
      */
-    fun <T : Any> mapToClass(tClass: KClass<T>): List<T> {  // TODO: CHECK IF COGNITIVE COMPLEXITY CAN BE REDUCED
+    fun <T : Any> mapToClass(tClass: KClass<T>): List<T> {
         // If the query has not been executed yet, execute it
         resultSet ?: execute()
         val immutableResultSet = resultSet!!
@@ -117,7 +117,6 @@ class QueryRacoon(
 
                 return@associateWith value
             }.map {
-                val kClass = it.key.type.classifier as KClass<*>
                 @Suppress("UNCHECKED_CAST")
                 if (it.value == null && it.key.asKClass() == LazyId::class)
                     return@map (it.key to LazyId.empty(it.key.getRuntimeGeneric() as KClass<Table>)).asMapEntry()
