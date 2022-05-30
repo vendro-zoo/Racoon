@@ -50,6 +50,14 @@ data class ConnectionSettings(
      * The default value is 10.
      */
     val maxPoolSize: Int = 10,
+    /**
+     * The name of the protocol.
+     *
+     * The default value is "mysql".
+     *
+     * NOTE: Values other than "mysql" are not supported, and so may not work.
+     */
+    val protocol: String = "mysql",
 ) {
     /**
      * Creates a connection string for the database.
@@ -67,10 +75,5 @@ data class ConnectionSettings(
         if (password != null) stringBuilder.append("&password=$password")
 
         return stringBuilder.toString()
-    }
-
-    companion object {
-        // Protocol can't be changed for now, but could be in the future when multiple drivers are supported.
-        private const val protocol: String = "mysql"
     }
 }
