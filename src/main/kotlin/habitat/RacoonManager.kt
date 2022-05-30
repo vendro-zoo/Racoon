@@ -6,11 +6,13 @@ import commons.query.generateInsertQueryK
 import commons.query.generateSelectQueryK
 import commons.query.generateUpdateQueryK
 import commons.model.getValueK
+import commons.query.generateDeleteQueryK
 import habitat.definition.Table
 import habitat.racoons.ExecuteRacoon
 import habitat.racoons.InsertRacoon
 import habitat.racoons.QueryRacoon
 import org.intellij.lang.annotations.Language
+import java.lang.IllegalArgumentException
 import java.sql.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
@@ -199,6 +201,7 @@ class RacoonManager(
      *
      * @param obj The object to update.
      * @param kClass The class of the object to update.
+     * @return The [RacoonManager] instance.
      */
     fun <T : Table> updateK(obj: T, kClass: KClass<T>) = apply {
         val executeRacoon = createExecuteRacoon(generateUpdateQueryK(kClass))
@@ -215,6 +218,31 @@ class RacoonManager(
                 parameter.setter.call(obj, getValueK(updated, parameter.name, kClass))
             }
         }
+    }
+
+    /**
+     * Behaves like [deleteK], but instead of passing the class as a normal parameter, it is passed as a reified type.
+     *
+     * @param T The type that is being deleted.
+     * @param obj The object to delete.
+     * @return The [RacoonManager] instance.
+     */
+    inline fun <reified T : Table> delete(obj: T) = deleteK(obj, T::class)
+
+    /**
+     * Deletes a record from the database with the given object.
+     *
+     * If the object has a property with the name 'id', then a query is executed,
+     * and the record with the given id is deleted.
+     *
+     * @param obj The object to delete.
+     * @param kClass The class of the object to delete.
+     * @return The [RacoonManager] instance.
+     * @throws IllegalArgumentException if the object has no property with the name 'id'.
+     */
+    fun <T : Table> deleteK(obj: T, kClass: KClass<T>) = apply {
+        val id = obj.id ?: throw IllegalArgumentException("Can't delete object without id")
+        createExecuteRacoon(generateDeleteQueryK(kClass)).setParam("id", id).execute()
     }
 
     /**

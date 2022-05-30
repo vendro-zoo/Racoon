@@ -80,3 +80,24 @@ fun <T: Any> generateSelectQueryK(clazz: KClass<T>): String {
 
     return "SELECT * FROM `${RacoonConfiguration.Naming.getName(className)}` WHERE `id`=:id"
 }
+
+
+/**
+ * Behaves like [generateDeleteQueryK], but instead of passing the class as a normal parameter, it is passed as a reified type.
+ *
+ * @see generateDeleteQueryK
+ */
+inline fun <reified T: Any> generateDeleteQuery() = generateDeleteQueryK(T::class)
+
+/**
+ * Creates a delete query for the given class.
+ * The query returned is a delete query where the only filter is the id of the object. The value of the id can be specified with the named parameter "id".
+ *
+ * @param clazz The class to create the delete query for.
+ * @return A string containing the delete query for the given class.
+ */
+fun <T: Any> generateDeleteQueryK(clazz: KClass<T>): String {
+    val className = clazz.simpleName ?: throw IllegalArgumentException(NULL_CLASS_NAME)
+
+    return "DELETE FROM `${RacoonConfiguration.Naming.getName(className)}` WHERE `id`=:id"
+}
