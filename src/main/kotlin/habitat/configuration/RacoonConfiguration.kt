@@ -4,7 +4,7 @@ import commons.casting.ParameterCaster
 import commons.casting.builtin.LazyCaster
 import commons.configuration.ConnectionSettings
 import commons.mappers.NameMapper
-import commons.mappers.TableAliasMappers
+import commons.mappers.TableAliasMapper
 import habitat.definition.LazyId
 import kotlin.reflect.KClass
 import kotlin.reflect.full.superclasses
@@ -27,7 +27,7 @@ object RacoonConfiguration {
     }
 
     object Naming {
-        private var defaultTableAliasMapper: (String) -> String = TableAliasMappers.onlyUpperToLower
+        private var defaultTableAliasMapper: (String) -> String = TableAliasMapper.onlyUpperToLower
         private var defaultNameMapper: (String) -> String = NameMapper.lowerSnakeCase
 
         fun setTableAliasMapper(mapper: (String) -> String) {

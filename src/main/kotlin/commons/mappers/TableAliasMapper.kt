@@ -1,7 +1,7 @@
 package commons.mappers
 
 @Suppress("unused")
-object TableAliasMappers {
+object TableAliasMapper {
     /**
      * Extracts only the uppercase letters from the given string, and converts the resulting string to lowercase.
      *
