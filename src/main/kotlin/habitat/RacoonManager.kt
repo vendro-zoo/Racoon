@@ -160,7 +160,7 @@ class RacoonManager(
      * @param obj The object to insert.
      * @return The [RacoonManager] instance.
      */
-    inline fun <reified T : Any> insertK(obj: T) = insertK(obj, T::class)
+    inline fun <reified T : Any> insert(obj: T) = insertK(obj, T::class)
 
     /**
      * Inserts an object into the database and updates the id.
