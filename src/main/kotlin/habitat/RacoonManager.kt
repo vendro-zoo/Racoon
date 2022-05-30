@@ -2,9 +2,9 @@ package habitat
 
 import commons.configuration.ConnectionSettings
 import commons.exceptions.connectionClosedException
-import commons.model.generateInsertQueryK
-import commons.model.generateSelectQueryK
-import commons.model.generateUpdateQueryK
+import commons.query.generateInsertQueryK
+import commons.query.generateSelectQueryK
+import commons.query.generateUpdateQueryK
 import commons.model.getValueK
 import habitat.definition.Table
 import habitat.racoons.ExecuteRacoon

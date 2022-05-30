@@ -1,4 +1,4 @@
-package commons.model
+package commons.query
 
 import habitat.configuration.RacoonConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals
