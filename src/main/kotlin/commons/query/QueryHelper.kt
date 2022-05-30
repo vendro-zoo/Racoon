@@ -28,7 +28,7 @@ fun <T: Any> generateInsertQueryK(clazz: KClass<T>): String {
 
     val className = clazz.simpleName ?: throw IllegalArgumentException(NULL_CLASS_NAME)
 
-    return "INSERT INTO `${RacoonConfiguration.Naming.getName(className)}` " +
+    return "INSERT INTO `${RacoonConfiguration.Naming.getTableName(className)}` " +
             "(${properties.joinToString(separator = ",") { "`${it.name}`" }}) " +
             "VALUE (${properties.joinToString(",") { ":${it.name}" }})"
 }
@@ -54,7 +54,7 @@ fun <T: Any> generateUpdateQueryK(clazz: KClass<T>): String {
 
     val className = clazz.simpleName ?: throw IllegalArgumentException(NULL_CLASS_NAME)
 
-    return "UPDATE `${RacoonConfiguration.Naming.getName(className)}` " +
+    return "UPDATE `${RacoonConfiguration.Naming.getTableName(className)}` " +
             "SET ${properties.joinToString(separator = ",") { "`${it.name}`=:${it.name}" }} " +
             "WHERE `id`=:id"
 }
@@ -78,7 +78,7 @@ inline fun <reified T: Any> generateSelectQuery() = generateSelectQueryK(T::clas
 fun <T: Any> generateSelectQueryK(clazz: KClass<T>): String {
     val className = clazz.simpleName ?: throw IllegalArgumentException(NULL_CLASS_NAME)
 
-    return "SELECT * FROM `${RacoonConfiguration.Naming.getName(className)}` WHERE `id`=:id"
+    return "SELECT * FROM `${RacoonConfiguration.Naming.getTableName(className)}` WHERE `id`=:id"
 }
 
 
@@ -99,5 +99,5 @@ inline fun <reified T: Any> generateDeleteQuery() = generateDeleteQueryK(T::clas
 fun <T: Any> generateDeleteQueryK(clazz: KClass<T>): String {
     val className = clazz.simpleName ?: throw IllegalArgumentException(NULL_CLASS_NAME)
 
-    return "DELETE FROM `${RacoonConfiguration.Naming.getName(className)}` WHERE `id`=:id"
+    return "DELETE FROM `${RacoonConfiguration.Naming.getTableName(className)}` WHERE `id`=:id"
 }

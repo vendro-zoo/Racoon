@@ -28,7 +28,8 @@ object RacoonConfiguration {
 
     object Naming {
         private var defaultTableAliasMapper: (String) -> String = TableAliasMapper.onlyUpperToLower
-        private var defaultNameMapper: (String) -> String = NameMapper.lowerSnakeCase
+        private var defaultTableNameMapper: (String) -> String = NameMapper.lowerSnakeCase
+        private var defaultColumnNameMapper: (String) -> String = NameMapper.lowerSnakeCase
 
         fun setTableAliasMapper(mapper: (String) -> String) {
             defaultTableAliasMapper = mapper
@@ -38,12 +39,20 @@ object RacoonConfiguration {
             return defaultTableAliasMapper(tableName)
         }
 
-        fun setNameMapper(mapper: (String) -> String) {
-            defaultNameMapper = mapper
+        fun setTableNameMapper(mapper: (String) -> String) {
+            defaultTableNameMapper = mapper
         }
 
-        fun getName(tableAlias: String): String {
-            return defaultNameMapper(tableAlias)
+        fun getTableName(tableAlias: String): String {
+            return defaultTableNameMapper(tableAlias)
+        }
+
+        fun setColumnNameMapper(mapper: (String) -> String) {
+            defaultColumnNameMapper = mapper
+        }
+
+        fun getColumnName(columnName: String): String {
+            return defaultColumnNameMapper(columnName)
         }
     }
 
