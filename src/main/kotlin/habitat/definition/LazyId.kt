@@ -4,6 +4,7 @@ import habitat.RacoonManager
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
+@Suppress("unused")
 class LazyId<T: Table> private constructor(
     val type: KClass<T>,
     var id: Int?,
@@ -37,7 +38,6 @@ class LazyId<T: Table> private constructor(
     constructor(id: Int, manager: RacoonManager, type: KClass<T>) : this(type, id, manager, null, false)
     constructor(value: T, type: KClass<T>) : this(type, value.id, null, value, true)
     constructor(type: KClass<T>) : this(type, -1, null, null, true)
-    constructor(type: KClass<T>, manager: RacoonManager, id: Int, value: LazyId<T>) : this(type, -1, manager, null, false)
 
     companion object {
         inline fun <reified T : Table> lazy(id: Int, manager: RacoonManager) = LazyId(id, manager, T::class)
