@@ -112,7 +112,7 @@ class QueryRacoon(
                 val value = getResultSetValue(immutableResultSet, "$sqlAlias.$name") ?:
                     getResultSetValue(immutableResultSet, name)
 
-                if (value == null && !it.isOptional)
+                if (value == null && !it.isOptional && it.asKClass() != LazyId::class)
                     throw ClassCastException("resultSet has no column '$sqlAlias.$name' or '$name'")
 
                 return@associateWith value
