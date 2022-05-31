@@ -1,5 +1,6 @@
 package commons.query
 
+import habitat.definition.ColumnName
 import habitat.definition.TableName
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
@@ -18,8 +19,8 @@ fun <T: Any> generateInsertQueryK(clazz: KClass<T>): String {
     val properties = clazz.memberProperties
 
     return "INSERT INTO `${TableName.getName(clazz)}` " +
-            "(${properties.joinToString(separator = ",") { "`${it.name}`" }}) " +
-            "VALUE (${properties.joinToString(",") { ":${it.name}" }})"
+            "(${properties.joinToString(separator = ",") { "`${ColumnName.getName(it)}`" }}) " +
+            "VALUE (${properties.joinToString(",") { ":${ColumnName.getName(it)}" }})"
 }
 
 /**
@@ -35,7 +36,7 @@ fun <T: Any> generateUpdateQueryK(clazz: KClass<T>): String {
     val properties = clazz.memberProperties.filter { it.name != "id" }
 
     return "UPDATE `${TableName.getName(clazz)}` " +
-            "SET ${properties.joinToString(separator = ",") { "`${it.name}`=:${it.name}" }} " +
+            "SET ${properties.joinToString(separator = ",") { "`${ColumnName.getName(it)}`=:${ColumnName.getName(it)}" }} " +
             "WHERE `id`=:id"
 }
 
