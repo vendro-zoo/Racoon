@@ -27,37 +27,46 @@ internal fun castEquivalent(param: KParameter, value: Any): Any {
     // If the classes are the same, we can return the value
     if (vClass == pClass) return value
 
+    // Timestamp conversions
     if (vClass == Timestamp::class && pClass == Long::class) return (value as Timestamp).time
     if (vClass == Timestamp::class && pClass == Date::class) return Date((value as Timestamp).time)
 
+    // Get custom unsigned types (if possible)
     val unsignedValue = getUType(value)
     val unsignedPClass = getUType(pClass)
 
     if (unsignedValue != null) {
         if (unsignedPClass != null) {
+            // If both are unsigned, convert to other standard unsigned type
             return unsignedValue.toUType(unsignedPClass)
         }
+
+        // If the parameter is not unsigned but is a number, convert the value
         @Suppress("UNCHECKED_CAST")
-        return unsignedValue.toSType(pClass as KClass<out Number>)
-    } else if (unsignedPClass != null) {
+        if (pSuper == Number::class)
+            return unsignedValue.toSType(pClass as KClass<out Number>)
+    } else if (unsignedPClass != null && vSuper == Number::class) {
+        // If the value is not unsigned but is a number, convert the value
         return castToUnsigned(value as Number, unsignedPClass)
     }
 
     // If are both numbers, we can cast the value
     if (vSuper != null && pSuper != null && vSuper == pSuper && vSuper == Number::class) {
-
-        return when (pClass) {
-            Int::class -> (value as Number).toInt()
-            Long::class -> (value as Number).toLong()
-            Float::class -> (value as Number).toFloat()
-            Double::class -> (value as Number).toDouble()
-            Short::class -> (value as Number).toShort()
-            Byte::class -> (value as Number).toByte()
-            else -> value
-        }
+        @Suppress("UNCHECKED_CAST")
+        return castSigned(value as Number, pClass as KClass<out Number>)
     }
 
     throw IllegalArgumentException("Cannot cast $value from ${vClass.simpleName} to ${pClass.simpleName}")
+}
+
+private fun castSigned(value: Number, pClass: KClass<out Number>) = when (pClass) {
+    Int::class -> value.toInt()
+    Long::class -> value.toLong()
+    Float::class -> value.toFloat()
+    Double::class -> value.toDouble()
+    Short::class -> value.toShort()
+    Byte::class -> value.toByte()
+    else -> value
 }
 
 private fun castToUnsigned(value: Number, uType: KClass<out UType>) = when(uType) {

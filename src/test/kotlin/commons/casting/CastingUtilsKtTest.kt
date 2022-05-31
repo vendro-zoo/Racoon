@@ -1,6 +1,7 @@
 package commons.casting
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import kotlin.reflect.full.primaryConstructor
 
 internal class CastingUtilsKtTest {
@@ -12,6 +13,12 @@ internal class CastingUtilsKtTest {
     fun castEquivalent() {
         val parameter = TestClass::class.primaryConstructor!!.parameters.first()
         val value = 1
+
+        runCatching { castEquivalent(parameter, "test") }
+            .fold(
+                onSuccess = { fail("Should fail") },
+                onFailure = { if (it.message != "Cannot cast test from String to Int") fail("Wrong error message") }
+            )
 
         castEquivalent(parameter, value)
         castEquivalent(parameter, value.toLong())
@@ -30,6 +37,12 @@ internal class CastingUtilsKtTest {
     fun castEquivalent2() {
         val parameter = TestClass2::class.primaryConstructor!!.parameters.first()
         val value = 1
+
+        runCatching { castEquivalent(parameter, "test") }
+            .fold(
+                onSuccess = { fail("Should fail") },
+                onFailure = { if (it.message != "Cannot cast test from String to UInt") fail("Wrong error message") }
+            )
 
         castEquivalent(parameter, value)
         castEquivalent(parameter, value.toLong())
