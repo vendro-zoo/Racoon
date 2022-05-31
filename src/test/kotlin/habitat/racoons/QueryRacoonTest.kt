@@ -125,7 +125,7 @@ internal class QueryRacoonTest {
             }.toMutableList()
 
         cats.forEach {
-            val owner = it.owner
+            val owner = it.owner_id.get()
             if (verbose) println(owner)
         }
     }
