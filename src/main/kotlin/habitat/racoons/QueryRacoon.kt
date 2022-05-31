@@ -1,6 +1,5 @@
 package habitat.racoons
 
-import commons.casting.RecordCaster
 import commons.casting.castEquivalent
 import commons.expansions.asKClass
 import commons.expansions.asMapEntry
@@ -200,9 +199,14 @@ class QueryRacoon(
         return listOfWrappers
     }
 
-    fun <T> mapToCustom(fn: RecordCaster<T>): T {
+    fun <T> mapToCustom(fn: (ResultSet) -> T): List<T> {
         resultSet ?: execute()
-        return fn.cast(resultSet!!)
+        val immutableResultSet = resultSet!!
+
+        val res = mutableListOf<T>()
+        while (immutableResultSet.next()) res.add(fn(immutableResultSet))
+
+        return res
     }
 
 
