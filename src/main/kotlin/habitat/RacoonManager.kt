@@ -89,9 +89,17 @@ class RacoonManager(
     inline fun <T> use(block: (RacoonManager) -> T): T {
         if (closed) throw connectionClosedException()
         if (finalOpExecuted) throw IllegalStateException("Can't use after final operation has been executed")
-        val blockResult = block(this)
-        if (!finalOpExecuted) commit()
-        release()
+        val blockResult = runCatching { block(this) }.fold(
+            {
+                commit()
+                release()
+                it
+            },
+            {
+                rollback()
+                release()
+                throw it
+            })
         return blockResult
     }
 
