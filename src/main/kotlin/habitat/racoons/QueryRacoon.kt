@@ -70,6 +70,7 @@ class QueryRacoon(
      */
     inline fun <reified T : Any> mapToClass(): List<T> = mapToClass(T::class)
 
+    // TODO: Add flag can be null
     /**
      * Maps the result of the query to a class.
      *
@@ -148,6 +149,7 @@ class QueryRacoon(
         return list.toList()
     }
 
+    // TODO: Add flag can be null
     /**
      * Maps the result of the query to a wrapper class.
      *
