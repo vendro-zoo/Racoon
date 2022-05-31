@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class QueryRacoonTest {
@@ -128,5 +129,29 @@ internal class QueryRacoonTest {
             val owner = it.owner_id.get()
             if (verbose) println(owner)
         }
+    }
+
+    @Test
+    internal fun namedParameter() {
+        val cats = racoonManager.createQueryRacoon("SELECT * FROM cat WHERE name = :name")
+            .use {
+                it.setParam("name", "Garfield")
+                    .mapToClass<Cat>()
+            }
+
+        assertEquals(2, cats.size)
+        assertEquals(1, cats[0].id)
+    }
+
+    @Test
+    internal fun indexedParameter() {
+        val cats = racoonManager.createQueryRacoon("SELECT * FROM cat WHERE name = ?")
+            .use {
+                it.setParam(1, "Garfield")
+                    .mapToClass<Cat>()
+            }
+
+        assertEquals(2, cats.size)
+        assertEquals(1, cats[0].id)
     }
 }
