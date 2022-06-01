@@ -6,6 +6,6 @@ import habitat.definition.Table
 class Cat(
     override var id: Int? = null,
     var age: Int,
-    var name: String? = null,
+    var name: String?,
     var owner_id: LazyId<Owner>,
 ) : Table

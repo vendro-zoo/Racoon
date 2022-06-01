@@ -2,8 +2,9 @@ package habitat.racoons
 
 import commons.casting.castEquivalent
 import commons.expansions.asKClass
-import commons.expansions.asMapEntry
 import commons.expansions.getRuntimeGeneric
+import commons.expansions.isMarkedNullable
+import commons.expansions.isNullOrOptional
 import commons.query.QueryProcessing
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
@@ -70,7 +71,6 @@ class QueryRacoon(
      */
     inline fun <reified T : Any> mapToClass(): List<T> = mapToClass(T::class)
 
-    // TODO: Add flag can be null
     /**
      * Maps the result of the query to a class.
      *
@@ -83,6 +83,12 @@ class QueryRacoon(
      * See the message of the exception for more details.
      */
     fun <T : Any> mapToClass(tClass: KClass<T>): List<T> {
+        @Suppress("UNCHECKED_CAST")
+        return mapToNullableClass(tClass) as List<T>
+    }
+
+    @Suppress("kotlin:S3776")
+    fun <T : Any> mapToNullableClass(tClass: KClass<T>, nullable: Boolean = false): List<T?> {
         // If the query has not been executed yet, execute it
         resultSet ?: execute()
         val immutableResultSet = resultSet!!
@@ -99,49 +105,53 @@ class QueryRacoon(
         val parameters = constructor.parameters
 
         // The list to be returned
-        val list = mutableListOf<T>()
+        val list = mutableListOf<T?>()
 
         // Reset the result set pointer to the beginning
         immutableResultSet.beforeFirst()
 
-        // Loop through the result set
-        while (immutableResultSet.next()) {
-            // Create a map of the column names to their values
-            val map: Map<KParameter, Any?> = parameters.associateWith {
-                // Get the name of the parameter
-                val name = it.name ?: throw ClassCastException("Can't access a property because it's name is null")
+        rsWhile@while (immutableResultSet.next()) {
+            val map: MutableMap<KParameter, Any?> = mutableMapOf()
 
-                val value = getResultSetValue(immutableResultSet, "$sqlAlias.$name") ?:
-                    getResultSetValue(immutableResultSet, name)
+            rsFor@for (parameter in parameters) {
+                val name = parameter.name ?: throw ClassCastException("Can't access a property because it's name is null")
 
-                if (value == null && !it.isOptional && it.asKClass() != LazyId::class)
-                    throw ClassCastException("resultSet has no column '$sqlAlias.$name' or '$name'")
+                val kClass = parameter.asKClass()
 
-                return@associateWith value
-            }.map {
+                val isLazy = kClass == LazyId::class
                 @Suppress("UNCHECKED_CAST")
-                if (it.value == null && it.key.asKClass() == LazyId::class)
-                    return@map (it.key to LazyId.empty(it.key.getRuntimeGeneric() as KClass<Table>)).asMapEntry()
-                it
-            }.filter { it.value != null }.map {
-                if (it.value is LazyId<*>) return@map it.toPair()
+                val kGeneric: KClass<Table>? = if(isLazy) parameter.getRuntimeGeneric() as KClass<Table> else null
+
+                var value: Any? = getResultSetValue(immutableResultSet, "$sqlAlias.$name") ?:
+                    getResultSetValue(immutableResultSet, name)
+                ?: if (isLazy) {
+                    map[parameter] = LazyId.empty(kGeneric!!)
+                    continue@rsFor
+                }
+                else if (parameter.isMarkedNullable()) {
+                    map[parameter] = null
+                    continue@rsFor
+                }
+                else if (!parameter.isOptional) {
+                    if (nullable) {
+                        list.add(null)
+                        continue@rsWhile
+                    }
+                    else throw ClassCastException("Can't map $clazzName to $tClass because $name is null")
+                } else continue@rsFor
 
                 // Getting the user defined type [ParameterCaster], if it exists
-                var kClassifier = it.key.asKClass()
-                val caster = RacoonConfiguration.Casting.getCaster(kClassifier)
+                val caster = RacoonConfiguration.Casting.getCaster(kClass)
 
                 @Suppress("UNCHECKED_CAST")
-                if (kClassifier == LazyId::class) kClassifier =
-                    it.key.getRuntimeGeneric() as KClass<Table>
+                val kActual = kGeneric ?: kClass
 
                 // Casting with the user defined type [ParameterCaster], otherwise casting with the internal caster
-                val value = caster?.uncast(it.value!!, ParameterCasterContext(manager, kClassifier))
-                    ?: castEquivalent(it.key, it.value!!)
+                value = caster?.uncast(value!!, ParameterCasterContext(manager, kActual))
+                    ?: castEquivalent(parameter, value!!)
 
-                it.key to value
-            }.toMap()
-
-            // Create a new instance of the class and add it to the list
+                map[parameter] = value
+            }
             list.add(constructor.callBy(map))
         }
 
@@ -149,7 +159,6 @@ class QueryRacoon(
         return list.toList()
     }
 
-    // TODO: Add flag can be null
     /**
      * Maps the result of the query to a wrapper class.
      *
@@ -171,13 +180,19 @@ class QueryRacoon(
         val paramSize = parameters.size
 
         val listOfWrappers = parameters.associateWith {
-            mapToClass(it.type.classifier as KClass<*>)
+            try {
+                mapToNullableClass(it.asKClass(), it.isNullOrOptional())
+            } catch (e: ClassCastException) {
+                throw ClassCastException("An exception occurred while mapping ${it.asKClass().simpleName}. " +
+                        "Did you forget to make the property nullable?\n" +
+                        "The exception's message: ${e.message}")
+            }
         }.map {
             // Convert map of lists to list of maps
             it.value.map { i -> it.key to i }
 
             // Creates a matrix of the parameters and their values
-        }.withIndex().fold(mutableListOf<Array<Pair<KParameter, Any>?>>()) { acc, (i, v) ->
+        }.withIndex().fold(mutableListOf<Array<Pair<KParameter, Any?>?>>()) { acc, (i, v) ->
             // Fill the matrix with the values
             v.withIndex().forEach { (index, value) ->
                 // Add an item to the first layer of the matrix if the size is less than the current index

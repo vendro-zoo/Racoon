@@ -103,10 +103,10 @@ internal class QueryRacoonTest {
      */
     @Test
     internal fun multiQueryMapping() {
-        data class CatAndOwner(val cat: Cat, val owner: Owner)
+        data class CatAndOwner(val cat: Cat, val owner: Owner?)
 
         val catAndOwners =
-            racoonManager.createQueryRacoon("SELECT c.*, o.* FROM cat c JOIN owner o ON c.owner_id = o.id")
+            racoonManager.createQueryRacoon("SELECT c.*, o.* FROM cat c left JOIN owner o ON c.owner_id = o.id")
                 .use {
                     it.multiMapToClass<CatAndOwner>()
                 }
