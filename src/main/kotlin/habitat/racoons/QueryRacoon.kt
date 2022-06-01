@@ -59,6 +59,30 @@ class QueryRacoon(
     }
 
     /**
+     * Returns the number of columns in the result set.
+     *
+     * @return the number of columns in the result set or `null` if the result set has not been created yet.
+     */
+    fun countColumns() = resultSet?.metaData?.columnCount
+
+    /**
+     * Returns the number of rows in the result set.
+     *
+     * This method goes to the last row of the result set and returns its row number.
+     * This operation may be expensive, depending on the size of the result set.
+     *
+     * A better way to get the number of rows is to use the `COUNT(*)` SQL function.
+     *
+     * @return the number of rows in the result set or `null` if the result set has not been created yet.
+     */
+    fun countRows() = resultSet?.let {
+        it.last()
+        val rowCount = it.row
+        it.beforeFirst()
+        rowCount
+    }
+
+    /**
      * Maps the result of the query to a class.
      *
      * If the query has not been executed yet, it is executed first.

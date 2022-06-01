@@ -154,4 +154,13 @@ internal class QueryRacoonTest {
         assertEquals(2, cats.size)
         assertEquals(1, cats[0].id)
     }
+
+    @Test
+    internal fun countRows() {
+        val count = racoonManager.createQueryRacoon("select * from cat")
+            .use {
+                it.execute().countRows()
+            }
+        if (verbose) println(count)
+    }
 }
