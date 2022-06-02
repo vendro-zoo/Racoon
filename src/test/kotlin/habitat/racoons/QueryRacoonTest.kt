@@ -181,4 +181,15 @@ internal class QueryRacoonTest {
             }
         if (verbose) println(name)
     }
+
+    @Test
+    internal fun mapToCustom() {
+        RacoonDen.getManager().use { rm ->
+            val pair = rm.createQueryRacoon("select 5, 3")
+                .mapToCustom { it.getInt(1) to it.getInt(2) }.first()
+
+            assertEquals(5, pair.first)
+            assertEquals(3, pair.second)
+        }
+    }
 }

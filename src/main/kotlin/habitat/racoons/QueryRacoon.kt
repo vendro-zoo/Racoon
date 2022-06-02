@@ -170,7 +170,7 @@ class QueryRacoon(
                 val kActual = kGeneric ?: kClass
 
                 // Casting with the user defined type [ParameterCaster], otherwise casting with the internal caster
-                value = caster?.uncast(value!!, ParameterCasterContext(manager, kActual))
+                value = caster?.fromQuery(value!!, ParameterCasterContext(manager, kActual))
                     ?: castEquivalent(parameter, value!!)
 
                 map[parameter] = value

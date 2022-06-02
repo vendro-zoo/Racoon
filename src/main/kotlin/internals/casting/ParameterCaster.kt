@@ -9,6 +9,16 @@ import habitat.context.ParameterCasterContext
  * @param [K] the type to cast to
  */
 interface ParameterCaster<T: Any, K: Any> {
+    val toQueryPrefix: String
+        get() = ""
+    val toQueryPostfix: String
+        get() = ""
+
+    val fromQueryPrefix: String
+        get() = ""
+    val fromQueryPostfix: String
+        get() = ""
+
     /**
      * Converts the given parameter to another type.
      *
@@ -16,7 +26,7 @@ interface ParameterCaster<T: Any, K: Any> {
      * @return the same parameter converted to the other type
      * that can be used as the value of a query parameter.
      */
-    fun cast(parameter: T, context: ParameterCasterContext): K?
+    fun toQuery(parameter: T, context: ParameterCasterContext): K?
 
     /**
      * Converts the parameter back to its original type.
@@ -24,5 +34,5 @@ interface ParameterCaster<T: Any, K: Any> {
      * @param parameter the parameter to convert to the original type
      * @return the same parameter converted to the original type
      */
-    fun uncast(parameter: K, context: ParameterCasterContext): T
+    fun fromQuery(parameter: K, context: ParameterCasterContext): T
 }

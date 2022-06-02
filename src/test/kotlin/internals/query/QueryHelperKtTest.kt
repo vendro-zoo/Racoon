@@ -31,6 +31,6 @@ internal class QueryHelperKtTest {
     @Test
     fun generateSelectQueryK() {
         val query = generateSelectQueryK(TestClass::class)
-        assertEquals("SELECT * FROM `TestClass` WHERE `id`=:id", query)
+        assertEquals("SELECT `a`,`b` FROM `TestClass` WHERE `id`=:id", query)
     }
 }

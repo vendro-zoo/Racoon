@@ -7,11 +7,11 @@ import internals.casting.ParameterCaster
 import kotlin.reflect.KClass
 
 class LazyCaster : ParameterCaster<LazyId<Table>, Int> {
-    override fun cast(parameter: LazyId<Table>, context: ParameterCasterContext) =
+    override fun toQuery(parameter: LazyId<Table>, context: ParameterCasterContext) =
         if (parameter.id == -1) null else parameter.id
 
     @Suppress("UNCHECKED_CAST")
-    override fun uncast(parameter: Int, context: ParameterCasterContext): LazyId<Table> {
+    override fun fromQuery(parameter: Int, context: ParameterCasterContext): LazyId<Table> {
         return LazyId.lazy(
             parameter,
             context.manager,
