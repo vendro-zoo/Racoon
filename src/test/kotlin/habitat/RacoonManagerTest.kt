@@ -20,7 +20,8 @@ internal class RacoonManagerTest {
                 port = 3306,
                 database = "racoon-ktor-sample",
                 username = "admin",
-                password = "admin"
+                password = "admin",
+                idleTimeout = 3
             )
         )
         RacoonConfiguration.Naming.setTableNameMapper(NameMapper.lowerSnakeCase)
@@ -104,7 +105,7 @@ internal class RacoonManagerTest {
             val cat = rm.find<Cat>(1)
             if(verbose) println(cat?.name)
         }
-        Thread.sleep(6000)
+        Thread.sleep(4000)
         RacoonDen.getManager().use { rm ->
             val cat = rm.find<Cat>(1)
             if(verbose) println(cat?.name)
