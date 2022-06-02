@@ -14,7 +14,7 @@ internal class ConnectionSettingsTest {
         )
 
         assertEquals("jdbc:mysql://localhost:3306/" +
-                "test?characterEncoding=UTF-8&connectionTimeout=100&socketTimeout=30000",
+                "test?characterEncoding=UTF-8&connectionTimeout=100&socketTimeout=2000",
             cs.toString())
     }
 
@@ -29,7 +29,7 @@ internal class ConnectionSettingsTest {
         )
 
         assertEquals("jdbc:mysql://localhost:3306/" +
-                "test?characterEncoding=UTF-8&connectionTimeout=100&socketTimeout=30000" +
+                "test?characterEncoding=UTF-8&connectionTimeout=100&socketTimeout=2000" +
                 "&user=user&password=pass",
             cs.toString())
     }

@@ -7,6 +7,7 @@ import commons.query.generateDeleteQueryK
 import commons.query.generateInsertQueryK
 import commons.query.generateSelectQueryK
 import commons.query.generateUpdateQueryK
+import habitat.configuration.RacoonConfiguration
 import habitat.definition.ColumnName
 import habitat.definition.Table
 import habitat.racoons.ExecuteRacoon
@@ -37,10 +38,6 @@ class RacoonManager(
      */
     var closed = false
         internal set
-
-    init {
-        connection.autoCommit = false
-    }
 
     /**
      * Closes the connection to the database.
@@ -283,7 +280,17 @@ class RacoonManager(
          * @return A [RacoonManager] instance.
          */
         internal fun fromSettings(connectionSettings: ConnectionSettings): RacoonManager {
-            return RacoonManager(DriverManager.getConnection(connectionSettings.toString()))
+            val rm = RacoonManager(DriverManager.getConnection(connectionSettings.toString()))
+            val idleTimeout = RacoonConfiguration.Connection.getDefault().idleTimeout
+
+            rm.connection.autoCommit = false
+
+            if (idleTimeout > 0) {
+                rm.createExecuteRacoon("SET wait_timeout = $idleTimeout, interactive_timeout = $idleTimeout")
+                    .execute()
+            }
+
+            return rm
         }
     }
 }
