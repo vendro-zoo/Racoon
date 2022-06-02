@@ -25,24 +25,23 @@ internal fun castEquivalent(kParameter: KParameter, value: Any): Any =
  * @param value The value retrieved from the [ResultSet]
  */
 internal fun castEquivalentK(kClass: KClass<out Any>, value: Any): Any {
-    // Getting the classes of the parameters
+    // Getting the class of the value
     val vClass: KClass<out Any> = value::class
-    val pClass: KClass<out Any> = kClass
 
     // Getting the super classes of the parameters
     val vSuper: KClass<out Any>? = vClass.superclasses.firstOrNull()
-    val pSuper: KClass<out Any>? = pClass.superclasses.firstOrNull()
+    val pSuper: KClass<out Any>? = kClass.superclasses.firstOrNull()
 
     // If the classes are the same, we can return the value
-    if (vClass == pClass) return value
+    if (vClass == kClass) return value
 
     // Timestamp conversions
-    if (vClass == Timestamp::class && pClass == Long::class) return (value as Timestamp).time
-    if (vClass == Timestamp::class && pClass == Date::class) return Date((value as Timestamp).time)
+    if (vClass == Timestamp::class && kClass == Long::class) return (value as Timestamp).time
+    if (vClass == Timestamp::class && kClass == Date::class) return Date((value as Timestamp).time)
 
     // Get custom unsigned types (if possible)
     val unsignedValue = getUType(value)
-    val unsignedPClass = getUType(pClass)
+    val unsignedPClass = getUType(kClass)
 
     if (unsignedValue != null) {
         if (unsignedPClass != null) {
@@ -53,7 +52,7 @@ internal fun castEquivalentK(kClass: KClass<out Any>, value: Any): Any {
         // If the parameter is not unsigned but is a number, convert the value
         @Suppress("UNCHECKED_CAST")
         if (pSuper == Number::class)
-            return unsignedValue.toSType(pClass as KClass<out Number>)
+            return unsignedValue.toSType(kClass as KClass<out Number>)
     } else if (unsignedPClass != null && vSuper == Number::class) {
         // If the value is not unsigned but is a number, convert the value
         return castToUnsigned(value as Number, unsignedPClass)
@@ -62,10 +61,10 @@ internal fun castEquivalentK(kClass: KClass<out Any>, value: Any): Any {
     // If are both numbers, we can cast the value
     if (vSuper != null && pSuper != null && vSuper == pSuper && vSuper == Number::class) {
         @Suppress("UNCHECKED_CAST")
-        return castSigned(value as Number, pClass as KClass<out Number>)
+        return castSigned(value as Number, kClass as KClass<out Number>)
     }
 
-    throw IllegalArgumentException("Cannot cast $value from ${vClass.simpleName} to ${pClass.simpleName}")
+    throw IllegalArgumentException("Cannot cast $value from ${vClass.simpleName} to ${kClass.simpleName}")
 }
 
 private fun castSigned(value: Number, pClass: KClass<out Number>) = when (pClass) {
