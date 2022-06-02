@@ -1,7 +1,7 @@
 package habitat.racoons
 
-import commons.query.QueryProcessing
 import habitat.RacoonManager
+import internals.query.QueryProcessing
 
 /**
  * A [Racoon] capable of handling DML queries. No result is returned.

@@ -1,9 +1,9 @@
 package habitat
 
-import commons.configuration.ConnectionSettings
-import commons.mappers.NameMapper
 import habitat.configuration.RacoonConfiguration
 import habitat.definition.LazyId
+import internals.configuration.ConnectionSettings
+import internals.mappers.NameMapper
 import models.Cat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach

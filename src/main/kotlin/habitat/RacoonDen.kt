@@ -1,7 +1,7 @@
 package habitat
 
-import commons.query.Ping
 import habitat.configuration.RacoonConfiguration
+import internals.query.Ping
 import java.sql.Connection
 import java.sql.SQLException
 

@@ -1,10 +1,10 @@
 package habitat.racoons
 
-import commons.configuration.ConnectionSettings
-import commons.mappers.NameMapper
 import habitat.RacoonDen
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
+import internals.configuration.ConnectionSettings
+import internals.mappers.NameMapper
 import models.Cat
 import models.Owner
 import org.junit.jupiter.api.AfterEach
