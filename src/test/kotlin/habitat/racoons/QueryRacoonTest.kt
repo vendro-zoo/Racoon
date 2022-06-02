@@ -163,4 +163,22 @@ internal class QueryRacoonTest {
             }
         if (verbose) println(count)
     }
+
+    @Test
+    internal fun mapToNumber() {
+        val count: List<Int> = racoonManager.createQueryRacoon("select count(*) from cat")
+            .use {
+                it.execute().mapToNumber()
+            }
+        if (verbose) println(count)
+    }
+
+    @Test
+    internal fun mapToString() {
+        val name = racoonManager.createQueryRacoon("select name from cat")
+            .use {
+                it.execute().mapToString()
+            }
+        if (verbose) println(name)
+    }
 }

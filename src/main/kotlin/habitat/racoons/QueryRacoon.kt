@@ -167,7 +167,6 @@ class QueryRacoon(
                 // Getting the user defined type [ParameterCaster], if it exists
                 val caster = RacoonConfiguration.Casting.getCaster(kClass)
 
-                @Suppress("UNCHECKED_CAST")
                 val kActual = kGeneric ?: kClass
 
                 // Casting with the user defined type [ParameterCaster], otherwise casting with the internal caster
@@ -238,6 +237,37 @@ class QueryRacoon(
 
         // Return the list of wrappers
         return listOfWrappers
+    }
+
+    inline fun <reified T: Number> mapToNumber() = mapToNumber(T::class)
+
+    fun <T: Number> mapToNumber(kClass: KClass<T>): List<T> {
+        resultSet ?: execute()
+        val immutableResultSet = resultSet!!
+
+        val list = mutableListOf<T>()
+        while (immutableResultSet.next()) {
+            @Suppress("UNCHECKED_CAST", "KotlinRedundantDiagnosticSuppress")
+            list.add(when (kClass) {
+                Int::class -> immutableResultSet.getInt(1) as T
+                Long::class -> immutableResultSet.getLong(1) as T
+                Short::class -> immutableResultSet.getShort(1) as T
+                Byte::class -> immutableResultSet.getByte(1) as T
+                Float::class -> immutableResultSet.getFloat(1) as T
+                Double::class -> immutableResultSet.getDouble(1) as T
+                else -> throw ClassCastException("Can't map to $kClass")
+            })
+        }
+        return list
+    }
+
+    fun mapToString(): List<String> {
+        resultSet ?: execute()
+        val immutableResultSet = resultSet!!
+
+        val list = mutableListOf<String>()
+        while (immutableResultSet.next()) list.add(immutableResultSet.getString(1))
+        return list
     }
 
     fun <T> mapToCustom(fn: (ResultSet) -> T): List<T> {
