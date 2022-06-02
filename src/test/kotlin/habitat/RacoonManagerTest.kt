@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class RacoonManagerTest {
+    val verbose = false
 
     @BeforeEach
     fun setUp() {
@@ -92,6 +93,22 @@ internal class RacoonManagerTest {
             cat.name = "test2"
             it.update(cat)
             assertEquals("test2", it.find<Cat>(cat.id!!)!!.name)
+        }
+    }
+
+    @Test
+    fun timeout() {
+        var hash: Int? = null
+        RacoonDen.getManager().use { rm ->
+            hash = rm.connection.hashCode()
+            val cat = rm.find<Cat>(1)
+            if(verbose) println(cat?.name)
+        }
+        Thread.sleep(6000)
+        RacoonDen.getManager().use { rm ->
+            val cat = rm.find<Cat>(1)
+            if(verbose) println(cat?.name)
+            assertNotEquals(hash, rm.connection.hashCode())
         }
     }
 }

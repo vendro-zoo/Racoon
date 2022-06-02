@@ -28,12 +28,19 @@ data class ConnectionSettings(
      */
     val connectionTimeout: Int = 100,
     /**
-     * The timeout in milliseconds to use when waiting for a response from the database
-     * or when the connection is idle.
+     * The timeout in milliseconds to use when waiting for a response from the database.
      *
-     * The default value is 30000.
+     * The default value is 2000.
      */
-    val idleTimeout: Int = 30000,
+    val socketTimeout: Int = 2000,
+    /**
+     * The number of seconds to wait before closing an idle connection.
+     *
+     * If the number is less than or equal to 0, the connection expires according to the default database settings.
+     *
+     * The default value is 30.
+     */
+    val idleTimeout: Int = 30,
     /**
      * The maximum number of connections to keep open at any one time.
      *
@@ -69,7 +76,7 @@ data class ConnectionSettings(
             .append("$host:$port/$database")
             .append("?characterEncoding=UTF-8&")
             .append("connectionTimeout=$connectionTimeout&")
-            .append("socketTimeout=$idleTimeout")
+            .append("socketTimeout=$socketTimeout")
 
         if (username != null) stringBuilder.append("&user=$username")
         if (password != null) stringBuilder.append("&password=$password")
