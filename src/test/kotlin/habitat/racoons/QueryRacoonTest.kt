@@ -3,6 +3,10 @@ package habitat.racoons
 import habitat.RacoonDen
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
+import habitat.definition.ColumnName
+import habitat.definition.LazyId
+import habitat.definition.Table
+import habitat.definition.TableName
 import internals.configuration.ConnectionSettings
 import internals.mappers.NameMapper
 import models.Cat
@@ -190,6 +194,30 @@ internal class QueryRacoonTest {
 
             assertEquals(5, pair.first)
             assertEquals(3, pair.second)
+        }
+    }
+
+    @Test
+    internal fun customName() {
+        @TableName("cat")
+        data class CustomCat(
+            override var id: Int? = null,
+            @property:ColumnName("age")
+            @param:ColumnName("age")
+            var AGE: Int,
+            @property:ColumnName("name")
+            @param:ColumnName("name")
+            var NAME: String?,
+            @property:ColumnName("owner_id")
+            @param:ColumnName("owner_id")
+            var OWNERID: LazyId<Owner>,
+        ) : Table
+
+        RacoonDen.getManager().use { rm ->
+            val cat = rm.createQueryRacoon("select * from cat")
+                .mapToClass<CustomCat>().first()
+
+            assertNotNull(cat.id)
         }
     }
 }
