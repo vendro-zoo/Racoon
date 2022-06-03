@@ -1,18 +1,18 @@
 package habitat
 
-import commons.configuration.ConnectionSettings
-import commons.exceptions.connectionClosedException
-import commons.model.getValueK
-import commons.query.generateDeleteQueryK
-import commons.query.generateInsertQueryK
-import commons.query.generateSelectQueryK
-import commons.query.generateUpdateQueryK
 import habitat.configuration.RacoonConfiguration
 import habitat.definition.ColumnName
 import habitat.definition.Table
 import habitat.racoons.ExecuteRacoon
 import habitat.racoons.InsertRacoon
 import habitat.racoons.QueryRacoon
+import internals.configuration.ConnectionSettings
+import internals.exceptions.connectionClosedException
+import internals.model.getValueK
+import internals.query.generateDeleteQueryK
+import internals.query.generateInsertQueryK
+import internals.query.generateSelectQueryK
+import internals.query.generateUpdateQueryK
 import org.intellij.lang.annotations.Language
 import java.sql.*
 import kotlin.reflect.KClass

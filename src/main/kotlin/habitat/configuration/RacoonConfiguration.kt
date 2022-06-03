@@ -1,11 +1,11 @@
 package habitat.configuration
 
-import commons.casting.ParameterCaster
-import commons.casting.builtin.LazyCaster
-import commons.configuration.ConnectionSettings
-import commons.mappers.NameMapper
-import commons.mappers.TableAliasMapper
 import habitat.definition.LazyId
+import internals.casting.ParameterCaster
+import internals.casting.builtin.LazyCaster
+import internals.configuration.ConnectionSettings
+import internals.mappers.NameMapper
+import internals.mappers.TableAliasMapper
 import kotlin.reflect.KClass
 import kotlin.reflect.full.superclasses
 

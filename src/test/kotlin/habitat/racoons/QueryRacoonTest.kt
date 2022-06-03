@@ -1,10 +1,10 @@
 package habitat.racoons
 
-import commons.configuration.ConnectionSettings
-import commons.mappers.NameMapper
 import habitat.RacoonDen
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
+import internals.configuration.ConnectionSettings
+import internals.mappers.NameMapper
 import models.Cat
 import models.Owner
 import org.junit.jupiter.api.AfterEach
@@ -180,5 +180,16 @@ internal class QueryRacoonTest {
                 it.execute().mapToString()
             }
         if (verbose) println(name)
+    }
+
+    @Test
+    internal fun mapToCustom() {
+        RacoonDen.getManager().use { rm ->
+            val pair = rm.createQueryRacoon("select 5, 3")
+                .mapToCustom { it.getInt(1) to it.getInt(2) }.first()
+
+            assertEquals(5, pair.first)
+            assertEquals(3, pair.second)
+        }
     }
 }

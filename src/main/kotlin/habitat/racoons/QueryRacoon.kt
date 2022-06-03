@@ -1,11 +1,5 @@
 package habitat.racoons
 
-import commons.casting.castEquivalent
-import commons.expansions.asKClass
-import commons.expansions.getRuntimeGeneric
-import commons.expansions.isMarkedNullable
-import commons.expansions.isNullOrOptional
-import commons.query.QueryProcessing
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
 import habitat.context.ParameterCasterContext
@@ -13,6 +7,12 @@ import habitat.definition.ColumnName
 import habitat.definition.LazyId
 import habitat.definition.Table
 import habitat.definition.TableName
+import internals.casting.castEquivalent
+import internals.expansions.asKClass
+import internals.expansions.getRuntimeGeneric
+import internals.expansions.isMarkedNullable
+import internals.expansions.isNullOrOptional
+import internals.query.QueryProcessing
 import java.sql.ResultSet
 import java.sql.SQLException
 import kotlin.reflect.KClass
@@ -171,7 +171,7 @@ class QueryRacoon(
                 val kActual = kGeneric ?: kClass
 
                 // Casting with the user defined type [ParameterCaster], otherwise casting with the internal caster
-                value = caster?.uncast(value!!, ParameterCasterContext(manager, kActual))
+                value = caster?.fromQuery(value!!, ParameterCasterContext(manager, kActual))
                     ?: castEquivalent(parameter, value!!)
 
                 map[parameter] = value
