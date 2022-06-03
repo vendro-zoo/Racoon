@@ -178,7 +178,7 @@ class RacoonManager(
      * @param kClass The class of the object to insert.
      * @return The [RacoonManager] instance.
      */
-    fun <T : Table> insertK(obj: T, kClass: KClass<T>) = apply {
+    fun <T : Table> insertK(obj: T, kClass: KClass<T>) = obj.apply {
         val insertRacoon = createInsertRacoon(generateInsertQueryK(kClass))
         val parameters = kClass.memberProperties
         for (field in parameters) insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
@@ -206,7 +206,7 @@ class RacoonManager(
      * @param kClass The class of the object to update.
      * @return The [RacoonManager] instance.
      */
-    fun <T : Table> updateK(obj: T, kClass: KClass<T>) = apply {
+    fun <T : Table> updateK(obj: T, kClass: KClass<T>) = obj.apply {
         val executeRacoon = createExecuteRacoon(generateUpdateQueryK(kClass))
         val parameters = kClass.memberProperties
         for (field in parameters) executeRacoon.setParam(field.name, field.get(obj))
