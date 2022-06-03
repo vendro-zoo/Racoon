@@ -31,6 +31,6 @@ class LazyId<T: Table> private constructor(
         fun <T : Table> defined(value: T, type: KClass<T>) = LazyId(type, value.id, null, value, true)
 
         inline fun <reified T: Table> empty() = empty(T::class)
-        fun <T: Table> empty(type: KClass<T>) = LazyId(type, -1, null, null, true)
+        fun <T: Table> empty(type: KClass<T>) = LazyId(type, null, null, null, true)
     }
 }
