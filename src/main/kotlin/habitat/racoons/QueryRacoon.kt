@@ -9,6 +9,7 @@ import commons.query.QueryProcessing
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
 import habitat.context.ParameterCasterContext
+import habitat.definition.ColumnName
 import habitat.definition.LazyId
 import habitat.definition.Table
 import habitat.definition.TableName
@@ -138,7 +139,7 @@ class QueryRacoon(
             val map: MutableMap<KParameter, Any?> = mutableMapOf()
 
             rsFor@for (parameter in parameters) {
-                val name = parameter.name ?: throw ClassCastException("Can't access a property because it's name is null")
+                val name = ColumnName.getName(parameter)
 
                 val kClass = parameter.asKClass()
 
