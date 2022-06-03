@@ -7,5 +7,5 @@ class Cat(
     override var id: Int? = null,
     var age: Int,
     var name: String?,
-    var owner_id: LazyId<Owner>,
+    var owner_id: LazyId<Owner> = LazyId.empty(),
 ) : Table
