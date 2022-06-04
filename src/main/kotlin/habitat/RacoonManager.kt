@@ -209,7 +209,7 @@ class RacoonManager(
     fun <T : Table> updateK(obj: T, kClass: KClass<T>) = obj.apply {
         val executeRacoon = createExecuteRacoon(generateUpdateQueryK(kClass))
         val parameters = kClass.memberProperties
-        for (field in parameters) executeRacoon.setParam(field.name, field.get(obj))
+        for (field in parameters) executeRacoon.setParam(ColumnName.getName(field), field.get(obj))
         executeRacoon.execute()
 
         obj.id?.let {
