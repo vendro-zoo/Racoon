@@ -1,11 +1,12 @@
 package habitat.configuration
 
-import commons.casting.ParameterCaster
-import commons.casting.builtin.LazyCaster
-import commons.configuration.ConnectionSettings
-import commons.mappers.NameMapper
-import commons.mappers.TableAliasMappers
 import habitat.definition.LazyId
+import internals.casting.ParameterCaster
+import internals.casting.builtin.EnumCaster
+import internals.casting.builtin.LazyCaster
+import internals.configuration.ConnectionSettings
+import internals.mappers.NameMapper
+import internals.mappers.TableAliasMapper
 import kotlin.reflect.KClass
 import kotlin.reflect.full.superclasses
 
@@ -27,8 +28,9 @@ object RacoonConfiguration {
     }
 
     object Naming {
-        private var defaultTableAliasMapper: (String) -> String = TableAliasMappers.onlyUpperToLower
-        private var defaultNameMapper: (String) -> String = NameMapper.lowerSnakeCase
+        private var defaultTableAliasMapper: (String) -> String = TableAliasMapper.onlyUpperToLower
+        private var defaultTableNameMapper: (String) -> String = NameMapper.lowerSnakeCase
+        private var defaultColumnNameMapper: (String) -> String = NameMapper.lowerSnakeCase
 
         fun setTableAliasMapper(mapper: (String) -> String) {
             defaultTableAliasMapper = mapper
@@ -38,18 +40,27 @@ object RacoonConfiguration {
             return defaultTableAliasMapper(tableName)
         }
 
-        fun setNameMapper(mapper: (String) -> String) {
-            defaultNameMapper = mapper
+        fun setTableNameMapper(mapper: (String) -> String) {
+            defaultTableNameMapper = mapper
         }
 
-        fun getName(tableAlias: String): String {
-            return defaultNameMapper(tableAlias)
+        fun getTableName(tableAlias: String): String {
+            return defaultTableNameMapper(tableAlias)
+        }
+
+        fun setColumnNameMapper(mapper: (String) -> String) {
+            defaultColumnNameMapper = mapper
+        }
+
+        fun getColumnName(columnName: String): String {
+            return defaultColumnNameMapper(columnName)
         }
     }
 
     object Casting {
         private val parameterCasters: MutableMap<KClass<out Any>, ParameterCaster<out Any, out Any>> = mutableMapOf(
-            LazyId::class to LazyCaster()
+            LazyId::class to LazyCaster(),
+            Enum::class to EnumCaster()
         )
 
         fun <T: Any> setCaster(clazz: KClass<T>, caster: ParameterCaster<T, out Any>) {

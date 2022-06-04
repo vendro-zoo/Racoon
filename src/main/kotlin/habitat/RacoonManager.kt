@@ -1,15 +1,18 @@
 package habitat
 
-import commons.configuration.ConnectionSettings
-import commons.exceptions.connectionClosedException
-import commons.model.generateInsertQueryK
-import commons.model.generateSelectQueryK
-import commons.model.generateUpdateQueryK
-import commons.model.getValueK
+import habitat.configuration.RacoonConfiguration
+import habitat.definition.ColumnName
 import habitat.definition.Table
 import habitat.racoons.ExecuteRacoon
 import habitat.racoons.InsertRacoon
 import habitat.racoons.QueryRacoon
+import internals.configuration.ConnectionSettings
+import internals.exceptions.connectionClosedException
+import internals.model.getValueK
+import internals.query.generateDeleteQueryK
+import internals.query.generateInsertQueryK
+import internals.query.generateSelectQueryK
+import internals.query.generateUpdateQueryK
 import org.intellij.lang.annotations.Language
 import java.sql.*
 import kotlin.reflect.KClass
@@ -35,10 +38,6 @@ class RacoonManager(
      */
     var closed = false
         internal set
-
-    init {
-        connection.autoCommit = false
-    }
 
     /**
      * Closes the connection to the database.
@@ -87,9 +86,17 @@ class RacoonManager(
     inline fun <T> use(block: (RacoonManager) -> T): T {
         if (closed) throw connectionClosedException()
         if (finalOpExecuted) throw IllegalStateException("Can't use after final operation has been executed")
-        val blockResult = block(this)
-        if (!finalOpExecuted) commit()
-        release()
+        val blockResult = runCatching { block(this) }.fold(
+            {
+                commit()
+                release()
+                it
+            },
+            {
+                rollback()
+                release()
+                throw it
+            })
         return blockResult
     }
 
@@ -138,7 +145,7 @@ class RacoonManager(
      * @return The record mapped to the type [T].
      * @see findK
      */
-    inline fun <reified T : Any> find(id: Int): T? = findK(id, T::class)
+    inline fun <reified T : Table> find(id: Int): T? = findK(id, T::class)
 
     /**
      * Finds a record in the database and maps the result to the given class.
@@ -147,7 +154,7 @@ class RacoonManager(
      * @param kClass The class of the record to find.
      * @return The record mapped to the type [T].
      */
-    fun <T : Any> findK(id: Int, kClass: KClass<T>): T? {
+    fun <T : Table> findK(id: Int, kClass: KClass<T>): T? {
         val queryRacoon = createQueryRacoon(generateSelectQueryK(kClass))
         queryRacoon.setParam("id", id)
         return queryRacoon.mapToClass(kClass).firstOrNull()
@@ -160,7 +167,7 @@ class RacoonManager(
      * @param obj The object to insert.
      * @return The [RacoonManager] instance.
      */
-    inline fun <reified T : Any> insert(obj: T) = insertK(obj, T::class)
+    inline fun <reified T : Table> insert(obj: T) = insertK(obj, T::class)
 
     /**
      * Inserts an object into the database and updates the id.
@@ -171,15 +178,13 @@ class RacoonManager(
      * @param kClass The class of the object to insert.
      * @return The [RacoonManager] instance.
      */
-    fun <T : Any> insertK(obj: T, kClass: KClass<T>) = apply {
+    fun <T : Table> insertK(obj: T, kClass: KClass<T>) = obj.apply {
         val insertRacoon = createInsertRacoon(generateInsertQueryK(kClass))
         val parameters = kClass.memberProperties
-        for (field in parameters) insertRacoon.setParam(field.name, field.get(obj))
+        for (field in parameters) insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
         insertRacoon.execute()
 
-        obj::class.memberProperties.find { it.name == "id" }?.let {
-            if (it is KMutableProperty<*>) it.setter.call(obj, getLastId())
-        }
+        obj.id = getLastId()
     }
 
     /**
@@ -199,11 +204,12 @@ class RacoonManager(
      *
      * @param obj The object to update.
      * @param kClass The class of the object to update.
+     * @return The [RacoonManager] instance.
      */
-    fun <T : Table> updateK(obj: T, kClass: KClass<T>) = apply {
+    fun <T : Table> updateK(obj: T, kClass: KClass<T>) = obj.apply {
         val executeRacoon = createExecuteRacoon(generateUpdateQueryK(kClass))
         val parameters = kClass.memberProperties
-        for (field in parameters) executeRacoon.setParam(field.name, field.get(obj))
+        for (field in parameters) executeRacoon.setParam(ColumnName.getName(field), field.get(obj))
         executeRacoon.execute()
 
         obj.id?.let {
@@ -215,6 +221,31 @@ class RacoonManager(
                 parameter.setter.call(obj, getValueK(updated, parameter.name, kClass))
             }
         }
+    }
+
+    /**
+     * Behaves like [deleteK], but instead of passing the class as a normal parameter, it is passed as a reified type.
+     *
+     * @param T The type that is being deleted.
+     * @param obj The object to delete.
+     * @return The [RacoonManager] instance.
+     */
+    inline fun <reified T : Table> delete(obj: T) = deleteK(obj, T::class)
+
+    /**
+     * Deletes a record from the database with the given object.
+     *
+     * If the object has a property with the name 'id', then a query is executed,
+     * and the record with the given id is deleted.
+     *
+     * @param obj The object to delete.
+     * @param kClass The class of the object to delete.
+     * @return The [RacoonManager] instance.
+     * @throws IllegalArgumentException if the object has no property with the name 'id'.
+     */
+    fun <T : Table> deleteK(obj: T, kClass: KClass<T>) = apply {
+        val id = obj.id ?: throw IllegalArgumentException("Can't delete object without id")
+        createExecuteRacoon(generateDeleteQueryK(kClass)).setParam("id", id).execute()
     }
 
     /**
@@ -249,7 +280,17 @@ class RacoonManager(
          * @return A [RacoonManager] instance.
          */
         internal fun fromSettings(connectionSettings: ConnectionSettings): RacoonManager {
-            return RacoonManager(DriverManager.getConnection(connectionSettings.toString()))
+            val rm = RacoonManager(DriverManager.getConnection(connectionSettings.toString()))
+            val idleTimeout = RacoonConfiguration.Connection.getDefault().idleTimeout
+
+            rm.connection.autoCommit = false
+
+            if (idleTimeout > 0) {
+                rm.createExecuteRacoon("SET wait_timeout = $idleTimeout, interactive_timeout = $idleTimeout")
+                    .execute()
+            }
+
+            return rm
         }
     }
 }

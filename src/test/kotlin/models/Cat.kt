@@ -3,8 +3,9 @@ package models
 import habitat.definition.LazyId
 import habitat.definition.Table
 
-data class Cat(
+class Cat(
     override var id: Int? = null,
-    var name: String? = null,
+    var age: Int,
+    var name: String?,
     var owner_id: LazyId<Owner>? = null
 ) : Table
