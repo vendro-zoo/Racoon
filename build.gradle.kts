@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "it.zoo.vendro"
-version = "0.1.2b"
+version = "0.1.3"
 
 repositories {
     mavenCentral()
