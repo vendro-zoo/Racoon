@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS cat;
+DROP TABLE IF EXISTS dog;
 DROP TABLE IF EXISTS owner;
 
 CREATE TABLE owner
@@ -6,6 +7,14 @@ CREATE TABLE owner
     id      INT AUTO_INCREMENT PRIMARY KEY,
     name    VARCHAR(255) NULL,
     surname VARCHAR(255) NULL
+);
+
+CREATE TABLE dog
+(
+    id    INT AUTO_INCREMENT PRIMARY KEY,
+    name  VARCHAR(255)                      NULL,
+    size  ENUM ('SMALL', 'MEDIUM', 'LARGE') NOT NULL,
+    color ENUM ('LIGHT', 'DARK')            NULL
 );
 
 CREATE TABLE cat
