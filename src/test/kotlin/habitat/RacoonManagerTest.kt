@@ -34,7 +34,7 @@ internal class RacoonManagerTest {
             val cat = Cat(
                 name = "test",
                 age = 10,
-                owner_id = LazyId.empty()
+                owner_id = null
             )
             it.insert(cat)
             catId = cat.id
@@ -74,7 +74,7 @@ internal class RacoonManagerTest {
             val cat = Cat(
                 name = "test",
                 age = 10,
-                owner_id = LazyId.empty()
+                owner_id = null
             )
             it.insert(cat)
             it.delete(cat)
@@ -88,7 +88,7 @@ internal class RacoonManagerTest {
             val cat = Cat(
                 name = "test",
                 age = 10,
-                owner_id = LazyId.empty()
+                owner_id = null
             )
             it.insert(cat)
             cat.name = "test2"
