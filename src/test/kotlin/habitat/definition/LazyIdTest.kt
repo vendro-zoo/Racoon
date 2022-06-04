@@ -41,7 +41,7 @@ internal class LazyIdTest {
                 )
             )
 
-            assertNotNull(cat.owner_id.id)
+            assertNotNull(cat.owner_id?.id)
             assertNotNull(cat.id)
         }
     }
@@ -58,7 +58,7 @@ internal class LazyIdTest {
                 )
             )
 
-            assertNotNull(cat.owner_id.id)
+            assertNotNull(cat.owner_id?.id)
             assertNotNull(cat.id)
         }
     }
@@ -73,7 +73,7 @@ internal class LazyIdTest {
                 )
             )
 
-            assertNull(cat.owner_id.id)
+            assertNull(cat.owner_id?.id)
             assertNotNull(cat.id)
         }
     }
@@ -83,8 +83,8 @@ internal class LazyIdTest {
         RacoonDen.getManager().use { rm ->
             val cat = rm.find<Cat>(1)!!
 
-            assertNotNull(cat.owner_id.id)
-            assertNotNull(cat.owner_id.get())
+            assertNotNull(cat.owner_id?.id)
+            assertNotNull(cat.owner_id?.get())
             assertNotNull(cat.id)
         }
     }

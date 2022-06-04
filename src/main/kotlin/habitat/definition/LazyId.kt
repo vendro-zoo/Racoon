@@ -6,21 +6,21 @@ import kotlin.reflect.KClass
 @Suppress("unused")
 class LazyId<T: Table> private constructor(
     val type: KClass<T>,
-    var id: Int?,
+    val id: Int?,
 
-    var manager: RacoonManager? = null,
+    val manager: RacoonManager? = null,
 
-    var value: T? = null,
+    var value: T?,
     var isLoaded: Boolean = false
 ) {
-    fun get(): T? {
+    fun get(): T {
         if (!isLoaded) {
-            val manager = manager ?: throw IllegalArgumentException("No manager available")
-            val id = id ?: throw IllegalArgumentException("No id available")
+            manager ?: throw IllegalArgumentException("No manager available")
+            id ?: throw IllegalArgumentException("No id available")
             value = manager.findK(id, type)
             isLoaded = true
         }
-        return value
+        return value ?: throw IllegalArgumentException("No value found of type ${type.simpleName} with id $id")
     }
 
     companion object {
@@ -29,8 +29,5 @@ class LazyId<T: Table> private constructor(
 
         inline fun <reified T : Table> defined(value: T) = defined(value, T::class)
         fun <T : Table> defined(value: T, type: KClass<T>) = LazyId(type, value.id, null, value, true)
-
-        inline fun <reified T: Table> empty() = empty(T::class)
-        fun <T: Table> empty(type: KClass<T>) = LazyId(type, null, null, null, true)
     }
 }

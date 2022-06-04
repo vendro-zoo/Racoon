@@ -30,7 +30,7 @@ internal class ParameterCasterTest {
         override var id: Int? = null,
         var age: Int2,
         var name: String?,
-        var owner_id: LazyId<Owner>,
+        var owner_id: LazyId<Owner>? = null,
     ) : Table
 
     companion object {
@@ -54,7 +54,7 @@ internal class ParameterCasterTest {
     @Test
     fun customParameterInsert() {
         RacoonDen.getManager().use { rm ->
-            val cat = Cat2(age = Int2(2), name = "cat", owner_id = LazyId.empty())
+            val cat = Cat2(age = Int2(2), name = "cat")
             rm.insert(cat)
 
             val ncat = rm.find<Cat2>(cat.id!!)

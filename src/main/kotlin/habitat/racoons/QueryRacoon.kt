@@ -149,11 +149,7 @@ class QueryRacoon(
 
                 var value: Any? = getResultSetValue(immutableResultSet, "$sqlAlias.$name") ?:
                     getResultSetValue(immutableResultSet, name)
-                ?: if (isLazy) {
-                    map[parameter] = LazyId.empty(kGeneric!!)
-                    continue@rsFor
-                }
-                else if (parameter.isMarkedNullable()) {
+                ?: if (parameter.isMarkedNullable()) {
                     map[parameter] = null
                     continue@rsFor
                 }

@@ -130,7 +130,7 @@ internal class QueryRacoonTest {
             }.toMutableList()
 
         cats.forEach {
-            val owner = it.owner_id.get()
+            val owner = it.owner_id?.get()
             if (verbose) println(owner)
         }
     }
@@ -210,7 +210,7 @@ internal class QueryRacoonTest {
             var NAME: String?,
             @property:ColumnName("owner_id")
             @param:ColumnName("owner_id")
-            var OWNERID: LazyId<Owner>,
+            var OWNERID: LazyId<Owner>? = null,
         ) : Table
 
         RacoonDen.getManager().use { rm ->
