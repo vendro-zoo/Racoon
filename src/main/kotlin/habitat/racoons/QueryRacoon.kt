@@ -6,9 +6,9 @@ import habitat.context.FromParameterCasterContext
 import habitat.definition.ColumnName
 import habitat.definition.TableName
 import internals.casting.castEquivalent
-import internals.expansions.asKClass
-import internals.expansions.isMarkedNullable
-import internals.expansions.isNullOrOptional
+import internals.extensions.asKClass
+import internals.extensions.isMarkedNullable
+import internals.extensions.isNullOrOptional
 import internals.query.QueryProcessing
 import java.sql.ResultSet
 import java.sql.SQLException

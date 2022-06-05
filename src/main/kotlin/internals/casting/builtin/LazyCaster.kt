@@ -5,8 +5,8 @@ import habitat.context.ToParameterCasterContext
 import habitat.definition.LazyId
 import habitat.definition.Table
 import internals.casting.ParameterCaster
-import internals.expansions.asKClass
-import internals.expansions.getRuntimeGeneric
+import internals.extensions.asKClass
+import internals.extensions.getRuntimeGeneric
 import kotlin.reflect.KClass
 
 class LazyCaster : ParameterCaster<LazyId<Table>, Int> {

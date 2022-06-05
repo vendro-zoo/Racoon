@@ -1,4 +1,4 @@
-package internals.expansions
+package internals.extensions
 
 /**
  * Converts a the [Pair] to a [Map.Entry],

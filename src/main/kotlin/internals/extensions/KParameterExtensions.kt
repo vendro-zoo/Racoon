@@ -1,4 +1,4 @@
-package internals.expansions
+package internals.extensions
 
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter

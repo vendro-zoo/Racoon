@@ -4,7 +4,7 @@ import habitat.context.FromParameterCasterContext
 import habitat.context.ToParameterCasterContext
 import habitat.definition.ColumnName
 import internals.casting.ParameterCaster
-import internals.expansions.asKClass
+import internals.extensions.asKClass
 import kotlin.reflect.KClass
 
 class EnumCaster : ParameterCaster<Enum<*>, String> {

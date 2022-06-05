@@ -1,6 +1,6 @@
 package internals.query
 
-import internals.expansions.isInQuotes
+import internals.extensions.isInQuotes
 
 object QueryProcessing {
     /**
