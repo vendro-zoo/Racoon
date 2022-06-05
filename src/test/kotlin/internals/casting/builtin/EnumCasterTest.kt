@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 internal class EnumCasterTest {
     @BeforeEach
     fun setUp() {
-        RacoonConfiguration.Connection.setDefault(
+        RacoonConfiguration.Connection.connectionSettings =
             ConnectionSettings(
                 host = "localhost",
                 port = 3306,
@@ -23,8 +23,7 @@ internal class EnumCasterTest {
                 password = "admin",
                 idleTimeout = 3
             )
-        )
-        RacoonConfiguration.Naming.setTableNameMapper(NameMapper.lowerSnakeCase)
+        RacoonConfiguration.Naming.tableNameMapper = NameMapper.lowerSnakeCase
     }
 
     @Test

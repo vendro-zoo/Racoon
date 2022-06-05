@@ -26,7 +26,7 @@ internal class QueryRacoonTest {
         @BeforeAll
         @JvmStatic
         internal fun setUpClass() {
-            RacoonConfiguration.Connection.setDefault(
+            RacoonConfiguration.Connection.connectionSettings =
                 ConnectionSettings(
                     host = "localhost",
                     port = 3306,
@@ -34,8 +34,7 @@ internal class QueryRacoonTest {
                     username = "admin",
                     password = "admin"
                 )
-            )
-            RacoonConfiguration.Naming.setTableNameMapper(NameMapper.lowerSnakeCase)
+            RacoonConfiguration.Naming.tableNameMapper = NameMapper.lowerSnakeCase
         }
 
         const val verbose = true

@@ -20,7 +20,7 @@ object RacoonDen {
      * @throws SQLException If the number of available managers exceeds the maximum number of managers.
      */
     fun getManager(): RacoonManager {
-        val settings = RacoonConfiguration.Connection.getDefault()
+        val settings = RacoonConfiguration.Connection.connectionSettings
 
         if (settings.maxManagers != 0 &&
             availableConnections.isEmpty() &&
@@ -56,7 +56,7 @@ object RacoonDen {
      */
     fun releaseManager(manager: RacoonManager): Boolean {
         // Moves the manager to the available list
-        if (availableConnections.size >= RacoonConfiguration.Connection.getDefault().maxPoolSize) return false
+        if (availableConnections.size >= RacoonConfiguration.Connection.connectionSettings.maxPoolSize) return false
         unavailableManagers.remove(manager)
         availableConnections.addLast(manager.connection)
         return true

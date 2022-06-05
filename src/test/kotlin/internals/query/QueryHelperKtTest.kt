@@ -12,7 +12,7 @@ internal class QueryHelperKtTest {
         @JvmStatic
         @BeforeAll
         fun setUp() {
-            RacoonConfiguration.Naming.setTableNameMapper { it }
+            RacoonConfiguration.Naming.tableNameMapper = { it }
         }
     }
 

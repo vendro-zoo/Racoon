@@ -11,12 +11,12 @@ annotation class TableName(val name: String, val alias: String = "") {
     companion object {
         fun getName(kClass: KClass<*>): String =
             kClass.findAnnotation<TableName>()?.name ?:
-            RacoonConfiguration.Naming.getTableName(kClass.simpleName ?:
+            RacoonConfiguration.Naming.tableNameMapper(kClass.simpleName ?:
             throw IllegalArgumentException("The class does not have a name"))
 
         fun getAlias(kClass: KClass<*>): String =
             kClass.findAnnotation<TableName>()?.alias ?:
-            RacoonConfiguration.Naming.getTableAlias(kClass.simpleName ?:
+            RacoonConfiguration.Naming.tableAliasMapper(kClass.simpleName ?:
             throw IllegalArgumentException("The class does not have a name"))
 
     }

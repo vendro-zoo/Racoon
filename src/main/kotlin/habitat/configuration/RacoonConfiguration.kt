@@ -5,56 +5,33 @@ import internals.casting.ParameterCaster
 import internals.casting.builtin.EnumCaster
 import internals.casting.builtin.LazyCaster
 import internals.configuration.ConnectionSettings
-import internals.mappers.NameMapper
-import internals.mappers.TableAliasMapper
 import kotlin.reflect.KClass
 import kotlin.reflect.full.superclasses
 
+/**
+ * An object containing the configuration for Racoon.
+ */
 @Suppress("unused")
 object RacoonConfiguration {
+    /**
+     * All the configuration relative to the connection to the database.
+     */
     object Connection {
-        private var defaultConnectionSettings: ConnectionSettings = ConnectionSettings(
+        /**
+         * The settings for the connection to the database.
+         *
+         * The default value is a [ConnectionSettings] with host "localhost" and database "test".
+         */
+        var connectionSettings: ConnectionSettings = ConnectionSettings(
             host = "localhost",
             database = "test"
         )
-
-        fun setDefault(settings: ConnectionSettings) {
-            defaultConnectionSettings = settings
-        }
-
-        fun getDefault(): ConnectionSettings {
-            return defaultConnectionSettings
-        }
     }
 
     object Naming {
-        private var defaultTableAliasMapper: (String) -> String = TableAliasMapper.onlyUpperToLower
-        private var defaultTableNameMapper: (String) -> String = NameMapper.lowerSnakeCase
-        private var defaultColumnNameMapper: (String) -> String = NameMapper.lowerSnakeCase
-
-        fun setTableAliasMapper(mapper: (String) -> String) {
-            defaultTableAliasMapper = mapper
-        }
-
-        fun getTableAlias(tableName: String): String {
-            return defaultTableAliasMapper(tableName)
-        }
-
-        fun setTableNameMapper(mapper: (String) -> String) {
-            defaultTableNameMapper = mapper
-        }
-
-        fun getTableName(tableAlias: String): String {
-            return defaultTableNameMapper(tableAlias)
-        }
-
-        fun setColumnNameMapper(mapper: (String) -> String) {
-            defaultColumnNameMapper = mapper
-        }
-
-        fun getColumnName(columnName: String): String {
-            return defaultColumnNameMapper(columnName)
-        }
+        var tableAliasMapper: (String) -> String = { it }
+        var tableNameMapper: (String) -> String = { it }
+        var columnNameMapper: (String) -> String = { it }
     }
 
     object Casting {
@@ -63,7 +40,7 @@ object RacoonConfiguration {
             Enum::class to EnumCaster()
         )
 
-        fun <T: Any> setCaster(clazz: KClass<T>, caster: ParameterCaster<T, out Any>) {
+        fun <T: Any> setCaster(clazz: KClass<T>, caster: ParameterCaster<T, out Any>) = apply {
             parameterCasters[clazz] = caster
         }
 

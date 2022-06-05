@@ -281,7 +281,7 @@ class RacoonManager(
          */
         internal fun fromSettings(connectionSettings: ConnectionSettings): RacoonManager {
             val rm = RacoonManager(DriverManager.getConnection(connectionSettings.toString()))
-            val idleTimeout = RacoonConfiguration.Connection.getDefault().idleTimeout
+            val idleTimeout = RacoonConfiguration.Connection.connectionSettings.idleTimeout
 
             rm.connection.autoCommit = false
 

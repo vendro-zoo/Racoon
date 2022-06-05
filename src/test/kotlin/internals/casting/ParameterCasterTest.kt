@@ -37,7 +37,7 @@ internal class ParameterCasterTest {
         @BeforeAll
         @JvmStatic
         fun setUp() {
-            RacoonConfiguration.Connection.setDefault(
+            RacoonConfiguration.Connection.connectionSettings =
                 ConnectionSettings(
                     host = "localhost",
                     port = 3306,
@@ -46,7 +46,6 @@ internal class ParameterCasterTest {
                     password = "admin",
                     idleTimeout = 3
                 )
-            )
             RacoonConfiguration.Casting.setCaster(Int2::class, Int2Caster())
         }
     }

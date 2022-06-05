@@ -11,8 +11,8 @@ import kotlin.reflect.full.findAnnotation
 annotation class ColumnName(val name: String) {
     companion object {
         fun getName(field: KProperty1<*, *>) =
-            field.findAnnotation<ColumnName>()?.name ?: RacoonConfiguration.Naming.getColumnName(field.name)
+            field.findAnnotation<ColumnName>()?.name ?: RacoonConfiguration.Naming.columnNameMapper(field.name)
         fun getName(field: KParameter) =
-            field.findAnnotation<ColumnName>()?.name ?: RacoonConfiguration.Naming.getColumnName(field.name!!)
+            field.findAnnotation<ColumnName>()?.name ?: RacoonConfiguration.Naming.columnNameMapper(field.name!!)
     }
 }
