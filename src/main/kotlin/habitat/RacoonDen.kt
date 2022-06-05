@@ -70,7 +70,7 @@ object RacoonDen {
     fun releaseManager(manager: RacoonManager): Boolean {
         // Moves the manager to the available list
         if (availableConnections.size >= RacoonConfiguration.Connection.connectionSettings.maxPoolSize) {
-            manager.close()
+            manager.connection.close()
             return false
         }
         unavailableManagers.remove(manager)
