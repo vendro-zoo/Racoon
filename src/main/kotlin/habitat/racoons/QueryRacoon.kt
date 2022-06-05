@@ -2,14 +2,11 @@ package habitat.racoons
 
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
-import habitat.context.ParameterCasterContext
+import habitat.context.FromParameterCasterContext
 import habitat.definition.ColumnName
-import habitat.definition.LazyId
-import habitat.definition.Table
 import habitat.definition.TableName
 import internals.casting.castEquivalent
 import internals.expansions.asKClass
-import internals.expansions.getRuntimeGeneric
 import internals.expansions.isMarkedNullable
 import internals.expansions.isNullOrOptional
 import internals.query.QueryProcessing
@@ -23,12 +20,14 @@ import kotlin.reflect.full.primaryConstructor
 class QueryRacoon(
     manager: RacoonManager,
     originalQuery: String,
-) : Racoon<QueryRacoon>(manager, originalQuery), AutoCloseable {
+) : Racoon<QueryRacoon>(manager, originalQuery) {
     private var resultSet: ResultSet? = null
     private val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf()
 
     /**
      * Adds a table alias to be used when mapping the result of the query to a class.
+     *
+     * This overrides any annotation and defaults mapping from the class to a table.
      *
      * If the query contains the same table multiple times,
      * the alias must be re-set before each mapping.
@@ -84,36 +83,42 @@ class QueryRacoon(
     }
 
     /**
-     * Maps the result of the query to a class.
+     * Behaves like [mapToClassK], but instead of passing the class as a normal parameter, it is passed as a reified type.
      *
-     * If the query has not been executed yet, it is executed first.
-     *
-     * @param T The class to map to.
-     *
-     * @return A list of [T] containing the result of the mapping.
-     * @throws ClassCastException If an error occurs during the mapping.
-     * See the message of the exception for more details.
+     * @see mapToClassK
      */
-    inline fun <reified T : Any> mapToClass(): List<T> = mapToClass(T::class)
+    inline fun <reified T : Any> mapToClass(): List<T> = mapToClassK(T::class)
 
     /**
      * Maps the result of the query to a class.
      *
      * If the query has not been executed yet, it is executed first.
      *
-     * @param T The class to map to.
+     * @param tClass The class to map to.
      *
      * @return A list of [T] containing the result of the mapping.
      * @throws ClassCastException If an error occurs during the mapping.
      * See the message of the exception for more details.
      */
-    fun <T : Any> mapToClass(tClass: KClass<T>): List<T> {
+    fun <T : Any> mapToClassK(tClass: KClass<T>): List<T> {
         @Suppress("UNCHECKED_CAST")
-        return mapToNullableClass(tClass) as List<T>
+        return mapToNullableClassK(tClass) as List<T>
     }
 
+    /**
+     * Maps the result of the query to a class.
+     *
+     * If the query has not been executed yet, it is executed first.
+     *
+     * An optional parameter `nullable` can be used to specify if the result of the mapping can contain `null` values.
+     *
+     * @param tClass The class to map to.
+     * @param nullable If `true`, the result of the mapping can contain `null` values. The default value is `false`.
+     * @return A list of [T] containing the result of the mapping.
+     * @throws ClassCastException If an error occurs during the mapping. See the message of the exception for more details.
+     */
     @Suppress("kotlin:S3776")
-    fun <T : Any> mapToNullableClass(tClass: KClass<T>, nullable: Boolean = false): List<T?> {
+    fun <T : Any> mapToNullableClassK(tClass: KClass<T>, nullable: Boolean = false): List<T?> {
         // If the query has not been executed yet, execute it
         resultSet ?: execute()
         val immutableResultSet = resultSet!!
@@ -135,43 +140,51 @@ class QueryRacoon(
         // Reset the result set pointer to the beginning
         immutableResultSet.beforeFirst()
 
+        // For each record in the result set
         rsWhile@while (immutableResultSet.next()) {
+            // Create an empty map for the parameters of the constructor
             val map: MutableMap<KParameter, Any?> = mutableMapOf()
 
+            // For each parameter of the constructor
             rsFor@for (parameter in parameters) {
+                // Get the column name
                 val name = ColumnName.getName(parameter)
 
+                // Get the column type
                 val kClass = parameter.asKClass()
+                val kType = parameter.type
 
-                val isLazy = kClass == LazyId::class
-                @Suppress("UNCHECKED_CAST")
-                val kGeneric: KClass<Table>? = if(isLazy) parameter.getRuntimeGeneric() as KClass<Table> else null
-
+                // Getting the value from the result set
                 var value: Any? = getResultSetValue(immutableResultSet, "$sqlAlias.$name") ?:
                     getResultSetValue(immutableResultSet, name)
                 ?: if (parameter.isMarkedNullable()) {
+                    // If no value is found and the parameter is nullable, set it to null
                     map[parameter] = null
                     continue@rsFor
                 }
                 else if (!parameter.isOptional) {
+                    // If the parameter is not nullable and is not optional
                     if (nullable) {
+                        // If the list can contain null values, insert a null and skip to the next record
                         list.add(null)
                         continue@rsWhile
                     }
+                    // If the list cannot contain null values, throw an exception
                     else throw ClassCastException("Can't map $clazzName to $tClass because $name is null")
+                // Else if it is optional, continue to the next parameter
                 } else continue@rsFor
 
-                // Getting the user defined type [ParameterCaster], if it exists
+                // Getting the user defined type caster, if it exists
                 val caster = RacoonConfiguration.Casting.getCaster(kClass)
 
-                val kActual = kGeneric ?: kClass
-
-                // Casting with the user defined type [ParameterCaster], otherwise casting with the internal caster
-                value = caster?.fromQuery(value!!, ParameterCasterContext(manager, kActual))
+                // Casting with the user defined type caster, otherwise casting with the internal caster
+                value = caster?.fromQuery(value!!, FromParameterCasterContext(manager, kType))
                     ?: castEquivalent(parameter, value!!)
 
+                // Set the value as the constructor parameter
                 map[parameter] = value
             }
+            // Create the object from the map and add it to the list
             list.add(constructor.callBy(map))
         }
 
@@ -182,7 +195,7 @@ class QueryRacoon(
     /**
      * Maps the result of the query to a wrapper class.
      *
-     * Each property of the wrapper class is mapped to the result of [mapToClass].
+     * Each property of the wrapper class is mapped to the result of [mapToClassK].
      *
      * @param T The wrapper class to map to.
      *
@@ -201,7 +214,7 @@ class QueryRacoon(
 
         val listOfWrappers = parameters.associateWith {
             try {
-                mapToNullableClass(it.asKClass(), it.isNullOrOptional())
+                mapToNullableClassK(it.asKClass(), it.isNullOrOptional())
             } catch (e: ClassCastException) {
                 throw ClassCastException("An exception occurred while mapping ${it.asKClass().simpleName}. " +
                         "Did you forget to make the property nullable?\n" +
@@ -236,14 +249,28 @@ class QueryRacoon(
         return listOfWrappers
     }
 
-    inline fun <reified T: Number> mapToNumber() = mapToNumber(T::class)
+    inline fun <reified T: Number> mapToNumber() = mapToNumberK(T::class)
 
-    fun <T: Number> mapToNumber(kClass: KClass<T>): List<T> {
+    /**
+     * Maps the result of the query to the specified number class.
+     *
+     * Only the first column of each record is mapped to the number class.
+     *
+     * @param T The wrapper class to map to.
+     * @return A list of [T] containing the result of the mapping.
+     * @throws ClassCastException If an error occurs during the mapping.
+     */
+    fun <T: Number> mapToNumberK(kClass: KClass<T>): List<T> {
+        // If the query has not been executed yet, execute it
         resultSet ?: execute()
         val immutableResultSet = resultSet!!
 
+        // Create the list to then return
         val list = mutableListOf<T>()
+
+        // For each record in the result set
         while (immutableResultSet.next()) {
+            // Map the first column of the result set to the number class
             @Suppress("UNCHECKED_CAST", "KotlinRedundantDiagnosticSuppress")
             list.add(when (kClass) {
                 Int::class -> immutableResultSet.getInt(1) as T
@@ -255,31 +282,46 @@ class QueryRacoon(
                 else -> throw ClassCastException("Can't map to $kClass")
             })
         }
+
+        // Return the list
         return list
     }
 
     fun mapToString(): List<String> {
+        // If the query has not been executed yet, execute it
         resultSet ?: execute()
         val immutableResultSet = resultSet!!
 
+        // Create the list to then return
         val list = mutableListOf<String>()
+
+        // For each record in the result set, map the first column to a string
         while (immutableResultSet.next()) list.add(immutableResultSet.getString(1))
+
+        // Return the list
         return list
     }
 
     fun <T> mapToCustom(fn: (ResultSet) -> T): List<T> {
+        // If the query has not been executed yet, execute it
         resultSet ?: execute()
         val immutableResultSet = resultSet!!
 
+        // Create the list to then return
         val res = mutableListOf<T>()
+
+        // For each record in the result set, map the first column by using the provided function
         while (immutableResultSet.next()) res.add(fn(immutableResultSet))
 
+        // Return the list
         return res
     }
 
-
     override fun close() {
+        // Close the result set
         resultSet?.close()
+
+        // Close the statement
         super.close()
     }
 

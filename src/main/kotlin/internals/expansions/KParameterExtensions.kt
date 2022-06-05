@@ -4,7 +4,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 
 fun KParameter.asKClass() =
-    this.type.classifier as KClass<*>
+    type.asKClass()
 
 fun KParameter.getRuntimeGeneric(genericIndex: Int = 0) =
     this.type.arguments[genericIndex].type!!.classifier as KClass<*>

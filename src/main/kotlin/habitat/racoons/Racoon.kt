@@ -2,7 +2,7 @@ package habitat.racoons
 
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
-import habitat.context.ParameterCasterContext
+import habitat.context.ToParameterCasterContext
 import java.sql.PreparedStatement
 import java.sql.SQLException
 
@@ -100,7 +100,7 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
         val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
         @Suppress("UNCHECKED_CAST")
-        map[index] = if (caster == null) value else caster.toQuery(value, ParameterCasterContext(manager, value::class))
+        map[index] = if (caster == null) value else caster.toQuery(value, ToParameterCasterContext(manager, value::class))
         return self()
     }
 

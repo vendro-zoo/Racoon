@@ -2,7 +2,8 @@ package internals.casting
 
 import habitat.RacoonDen
 import habitat.configuration.RacoonConfiguration
-import habitat.context.ParameterCasterContext
+import habitat.context.FromParameterCasterContext
+import habitat.context.ToParameterCasterContext
 import habitat.definition.LazyId
 import habitat.definition.Table
 import habitat.definition.TableName
@@ -21,8 +22,8 @@ internal class ParameterCasterTest {
         override val fromQueryPostfix: String
             get() = "*2"
 
-        override fun toQuery(parameter: Int2, context: ParameterCasterContext): Int = parameter.i
-        override fun fromQuery(parameter: Int, context: ParameterCasterContext): Int2 = Int2(parameter)
+        override fun toQuery(parameter: Int2, context: ToParameterCasterContext): Int = parameter.i
+        override fun fromQuery(parameter: Int, context: FromParameterCasterContext): Int2 = Int2(parameter)
     }
 
     @TableName("cat")
