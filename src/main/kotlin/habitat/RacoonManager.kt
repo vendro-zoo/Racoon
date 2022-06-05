@@ -175,11 +175,9 @@ class RacoonManager(
     /**
      * Inserts an object into the database and updates the id.
      *
-     * If the object has no property with the name 'id', no error is thrown, but the id is not updated.
-     *
      * @param obj The object to insert.
      * @param kClass The class of the object to insert.
-     * @return The [RacoonManager] instance.
+     * @return The object with the id updated. Any old reference to the object will still be valid.
      */
     fun <T : Table> insertK(obj: T, kClass: KClass<T>) = obj.apply {
         val parameters = kClass.memberProperties
@@ -203,8 +201,8 @@ class RacoonManager(
     /**
      * Updates a record in the database with the given object.
      *
-     * If the object has a property with the name 'id', then a query is executed,
-     * and all the mutable properties are updated with the values of the record with the given id.
+     * After executing the `update` statement, a query is executed,
+     * and all the mutable properties are updated with the values returned by the query.
      *
      * @param obj The object to update.
      * @param kClass The class of the object to update.
@@ -240,9 +238,6 @@ class RacoonManager(
 
     /**
      * Deletes a record from the database with the given object.
-     *
-     * If the object has a property with the name 'id', then a query is executed,
-     * and the record with the given id is deleted.
      *
      * @param obj The object to delete.
      * @param kClass The class of the object to delete.
