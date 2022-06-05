@@ -182,12 +182,13 @@ class RacoonManager(
      * @return The [RacoonManager] instance.
      */
     fun <T : Table> insertK(obj: T, kClass: KClass<T>) = obj.apply {
-        val insertRacoon = createInsertRacoon(generateInsertQueryK(kClass))
         val parameters = kClass.memberProperties
-        for (field in parameters) insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
-        insertRacoon.execute()
 
-        obj.id = getLastId()
+        createInsertRacoon(generateInsertQueryK(kClass)).use { insertRacoon ->
+            for (field in parameters) insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
+            insertRacoon.execute()
+            obj.id = getLastId()
+        }
     }
 
     /**
@@ -224,6 +225,7 @@ class RacoonManager(
                 parameter.setter.call(obj, getValueK(updated, parameter.name, kClass))
             }
         }
+        executeRacoon.close()
     }
 
     /**
