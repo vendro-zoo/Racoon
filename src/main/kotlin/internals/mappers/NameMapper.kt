@@ -5,6 +5,9 @@ import internals.extensions.lowerSnakeCase
 import internals.extensions.upperCamelCase
 import internals.extensions.upperSnakeCase
 
+/**
+ * An object containing a set of lambdas used to map a string to the same string in a different case.
+ */
 @Suppress("unused")
 object NameMapper {
     /**
