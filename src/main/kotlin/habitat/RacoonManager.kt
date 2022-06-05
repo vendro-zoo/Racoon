@@ -157,9 +157,10 @@ class RacoonManager(
      * @return The record mapped to the type [T].
      */
     fun <T : Table> findK(id: Int, kClass: KClass<T>): T? {
-        val queryRacoon = createQueryRacoon(generateSelectQueryK(kClass))
-        queryRacoon.setParam("id", id)
-        return queryRacoon.mapToClass(kClass).firstOrNull()
+        createQueryRacoon(generateSelectQueryK(kClass)).use { queryRacoon ->
+            queryRacoon.setParam("id", id)
+            return queryRacoon.mapToClassK(kClass).firstOrNull()
+        }
     }
 
     /**
