@@ -14,7 +14,7 @@ import kotlin.reflect.full.superclasses
 object RacoonConfiguration {
     object Connection {
         private var defaultConnectionSettings: ConnectionSettings = ConnectionSettings(
-            host = "test",
+            host = "localhost",
             database = "test"
         )
 
