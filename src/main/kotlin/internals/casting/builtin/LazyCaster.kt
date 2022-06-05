@@ -12,7 +12,7 @@ class LazyCaster : ParameterCaster<LazyId<Table>, Int> {
 
     @Suppress("UNCHECKED_CAST")
     override fun fromQuery(parameter: Int, context: ParameterCasterContext): LazyId<Table> {
-        return LazyId.lazy(
+        return LazyId.lazyK(
             parameter,
             context.manager,
             context.actualType as KClass<Table>
