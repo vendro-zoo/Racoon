@@ -5,6 +5,7 @@ import habitat.context.ToParameterCasterContext
 import habitat.definition.LazyId
 import habitat.definition.Table
 import internals.casting.ParameterCaster
+import internals.expansions.asKClass
 import internals.expansions.getRuntimeGeneric
 import kotlin.reflect.KClass
 
@@ -17,7 +18,7 @@ class LazyCaster : ParameterCaster<LazyId<Table>, Int> {
         return LazyId.lazyK(
             parameter,
             context.manager,
-            context.actualType.getRuntimeGeneric() as KClass<Table>
+            context.actualType.getRuntimeGeneric()?.asKClass() as KClass<Table>
         )
     }
 }
