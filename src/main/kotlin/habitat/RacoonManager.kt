@@ -251,7 +251,10 @@ class RacoonManager(
      */
     fun <T : Table> deleteK(obj: T, kClass: KClass<T>) = apply {
         val id = obj.id ?: throw IllegalArgumentException("Can't delete object without id")
-        createExecuteRacoon(generateDeleteQueryK(kClass)).setParam("id", id).execute()
+
+        createExecuteRacoon(generateDeleteQueryK(kClass)).use { executeRacoon ->
+            executeRacoon.setParam("id", id).execute()
+        }
     }
 
     /**
