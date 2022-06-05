@@ -1,9 +1,19 @@
 package habitat.definition
 
+import habitat.configuration.RacoonConfiguration
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class TableNameTest {
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun setup() {
+            RacoonConfiguration.Naming.tableAliasMapper = { it }
+        }
+    }
+
     @TableName("testClass")
     class TestClass(override var id: Int? = null) : Table
 
