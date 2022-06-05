@@ -131,10 +131,12 @@ class RacoonManager(
      * @return The last inserted id.
      */
     fun getLastId(): Int {
-        val statement = prepare("SELECT LAST_INSERT_ID()")
-        val result = statement.executeQuery()
-        result.next()
-        return result.getInt(1)
+        prepare("SELECT LAST_INSERT_ID()") .use { statement ->
+            statement.executeQuery().use { resultSet ->
+                resultSet.next()
+                return resultSet.getInt(1)
+            }
+        }
     }
 
     /**
