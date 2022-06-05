@@ -211,21 +211,22 @@ class RacoonManager(
      * @return The [RacoonManager] instance.
      */
     fun <T : Table> updateK(obj: T, kClass: KClass<T>) = obj.apply {
-        val executeRacoon = createExecuteRacoon(generateUpdateQueryK(kClass))
         val parameters = kClass.memberProperties
-        for (field in parameters) executeRacoon.setParam(ColumnName.getName(field), field.get(obj))
-        executeRacoon.execute()
 
-        obj.id?.let {
-            val updated = findK(it, kClass) ?: throw SQLException("Could not find object with id '$it' " +
-                    "while updating the fields")
+        createExecuteRacoon(generateUpdateQueryK(kClass)).use { executeRacoon ->
+            for (field in parameters) executeRacoon.setParam(ColumnName.getName(field), field.get(obj))
+            executeRacoon.execute()
 
-            for (parameter in parameters) {
-                if (parameter !is KMutableProperty<*>) continue
-                parameter.setter.call(obj, getValueK(updated, parameter.name, kClass))
+            obj.id?.let {
+                val updated = findK(it, kClass) ?: throw SQLException("Could not find object with id '$it' " +
+                        "while updating the fields")
+
+                for (parameter in parameters) {
+                    if (parameter !is KMutableProperty<*>) continue
+                    parameter.setter.call(obj, getValueK(updated, parameter.name, kClass))
+                }
             }
         }
-        executeRacoon.close()
     }
 
     /**
