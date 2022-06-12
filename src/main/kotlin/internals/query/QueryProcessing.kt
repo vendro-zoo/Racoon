@@ -1,5 +1,6 @@
 package internals.query
 
+import habitat.racoons.parameters.ParameterMapping
 import internals.extensions.isInQuotes
 
 object QueryProcessing {
@@ -8,7 +9,7 @@ object QueryProcessing {
      * @param query the query to be converted.
      * @return the converted query, the indexed parameter mappings and the named parameter mappings.
      */
-    fun reconstructQuery(query: String): Triple<String, Map<Int, Int>, Map<String, Int>> {
+    fun reconstructQuery(query: String): Pair<String, ParameterMapping> {
         // Regex to find the parameters in the query
         val indexRegex = Regex("\\?")
         val namedRegex = Regex(":\\w+")
@@ -21,12 +22,12 @@ object QueryProcessing {
         val matches = (indexMatches + namedMatches).sortedBy { it.range.first }
 
         // Generating the mapping for the parameters
-        val (indexedMapping, namedMapping) = generateParametersMapping(matches)
+        val mapping = generateParametersMapping(matches)
 
         // Generating the query without the parameters
         val processedQuery = removeNamedParameters(query, namedMatches)
 
-        return Triple(processedQuery, indexedMapping, namedMapping)
+        return Pair(processedQuery, mapping)
     }
 
     /**
@@ -34,26 +35,25 @@ object QueryProcessing {
      * @param matches The list of matches for all the parameters in the query.
      * @return A [Pair] containing the indexed and named mappings.
      */
-    private fun generateParametersMapping(matches: List<MatchResult>): Pair<MutableMap<Int, Int>, MutableMap<String, Int>> {
-        // Creating the mapping maps to keep track of the correspondence between the new query and the original query
-        val indexMapping = mutableMapOf<Int, Int>()
-        val namedMapping = mutableMapOf<String, Int>()
+    private fun generateParametersMapping(matches: List<MatchResult>): ParameterMapping {
+        // Creating the mapping to keep track of the correspondence between the new query and the original query
+        val parameterMapping = ParameterMapping()
 
         var offset = 0  // Counter of named parameters encountered so far
         var counter = 1  // Counter of the indexed parameters encountered so far (starting from 1)
         for (m in matches) {
             // Checks if is an indexed parameter
             if (m.range.first == m.range.last) {
-                indexMapping[counter] = counter + offset
+                parameterMapping.addIndexed(counter, counter + offset)
                 counter++
             }
             else {
-                namedMapping[m.value.substring(1)] = counter + offset
+                parameterMapping.addNamed(m.value.substring(1), counter + offset)
                 offset++
             }
         }
 
-        return Pair(indexMapping, namedMapping)
+        return parameterMapping
     }
 
     /**

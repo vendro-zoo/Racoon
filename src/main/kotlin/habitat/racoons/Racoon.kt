@@ -1,8 +1,8 @@
 package habitat.racoons
 
 import habitat.RacoonManager
-import habitat.configuration.RacoonConfiguration
-import habitat.context.ToParameterCasterContext
+import habitat.racoons.parameters.ParameterMapping
+import habitat.racoons.parameters.Parameters
 import java.sql.PreparedStatement
 import java.sql.SQLException
 
@@ -20,12 +20,10 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
     var processedQuery: String? = null
 
     // Parameters mappings
-    var indexedParametersMappings: Map<Int, Int>? = null
-    var namedParametersMappings: Map<String, Int>? = null
+    var parameterMapping: ParameterMapping? = null
 
     // Query parameters
-    private val indexedParameters: MutableMap<Int, Any?> = mutableMapOf()
-    private val namedParameters: MutableMap<String, Any?> = mutableMapOf()
+    private val parameters: Parameters = Parameters(manager)
 
     /**
      * Executes the query to the database.
@@ -44,30 +42,10 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
         val preparedStatement = preparedStatement ?:
             throw IllegalStateException("A prepared statement must be set before binding parameters.")
 
-        val indexedParametersMappings = indexedParametersMappings ?:
-            throw IllegalStateException("Indexed parameters mappings must be set before binding parameters.")
+        val parameterMapping = parameterMapping ?:
+            throw IllegalStateException("Parameter mappings must be set before binding parameters.")
 
-        val namedParametersMappings = namedParametersMappings ?:
-            throw IllegalStateException("Named parameters mappings must be set before binding parameters.")
-
-
-        // Binding the indexed parameters
-        indexedParameters.forEach{
-            if (!indexedParametersMappings.keys.contains(it.key))
-                throw SQLException("Indexed parameter ${it.key} not found")
-
-            val realIndex = indexedParametersMappings[it.key]!!
-
-            preparedStatement.setObject(realIndex, it.value)
-        }
-
-        // Binding the named parameters
-        namedParameters.forEach{
-            val realIndex = namedParametersMappings[it.key] ?:
-            throw SQLException("Named parameter ${it.key} not found")
-
-            preparedStatement.setObject(realIndex, it.value)
-        }
+        parameters.bind(preparedStatement, parameterMapping)
     }
 
 
@@ -79,7 +57,10 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
      *
      * @return The [QueryRacoon] instance.
      */
-    fun <T : Any> setParam(index: Int, value: T?): R = setParam(indexedParameters, index, value)
+    fun <T : Any> setParam(index: Int, value: T?): R {
+        parameters.setParam(index, value)
+        return self()
+    }
 
     /**
      * Sets the value of a named parameter of the query.
@@ -89,18 +70,8 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
      *
      * @return The [QueryRacoon] instance.
      */
-    fun <T : Any> setParam(name: String, value: T?): R = setParam(namedParameters, name, value)
-
-    private fun <T, K: Any> setParam(map: MutableMap<T, Any?>, index: T, value: K?): R {
-        if (value == null) {
-            map[index] = null
-            return self()
-        }
-
-        val caster = RacoonConfiguration.Casting.getCaster(value::class)
-
-        @Suppress("UNCHECKED_CAST")
-        map[index] = if (caster == null) value else caster.toQuery(value, ToParameterCasterContext(manager, value::class))
+    fun <T : Any> setParam(name: String, value: T?): R {
+        parameters.setParam(name, value)
         return self()
     }
 
