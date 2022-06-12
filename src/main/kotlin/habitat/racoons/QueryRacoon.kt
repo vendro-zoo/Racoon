@@ -50,7 +50,7 @@ class QueryRacoon(
         val processedQuery = queryProcessingResult.first
         parameterMapping = queryProcessingResult.second
 
-        preparedStatement = manager.prepare(processedQuery)
+        preparedStatement = manager.prepareScrollable(processedQuery)
 
         bindParameters()
 

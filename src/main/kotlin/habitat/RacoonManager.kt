@@ -119,24 +119,28 @@ class RacoonManager(
      * @param query The query to execute.
      * @return The prepared statement.
      */
-    internal fun prepare(query: String): PreparedStatement {
+    internal fun prepareScrollable(query: String): PreparedStatement {
         return connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)
     }
 
     /**
-     * Gets the last inserted id.
+     * Creates a prepared statement for the given query, where the [ResultSet] contains the inserted keys.
      *
-     * This is done by executing the query '`SELECT LAST_INSERT_ID()`'.
-     *
-     * @return The last inserted id.
+     * @param query The query to execute.
+     * @return The prepared statement.
      */
-    fun getLastId(): Int {
-        prepare("SELECT LAST_INSERT_ID()") .use { statement ->
-            statement.executeQuery().use { resultSet ->
-                resultSet.next()
-                return resultSet.getInt(1)
-            }
-        }
+    internal fun prepareInserted(query: String): PreparedStatement {
+        return connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)
+    }
+
+    /**
+     * Creates a prepared statement for the given query.
+     *
+     * @param query The query to execute.
+     * @return The prepared statement.
+     */
+    internal fun prepare(query: String): PreparedStatement {
+        return connection.prepareStatement(query)
     }
 
     /**
@@ -185,7 +189,7 @@ class RacoonManager(
         createInsertRacoon(generateInsertQueryK(kClass)).use { insertRacoon ->
             for (field in parameters) insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
             insertRacoon.execute()
-            obj.id = getLastId()
+            obj.id = insertRacoon.generatedKeys[0]
         }
     }
 

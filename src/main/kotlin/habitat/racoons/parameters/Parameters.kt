@@ -7,8 +7,8 @@ import java.sql.PreparedStatement
 
 class Parameters(val manager: RacoonManager) {
     // Query parameters
-    private val indexedParameters: MutableMap<Int, Any?> = mutableMapOf()
-    private val namedParameters: MutableMap<String, Any?> = mutableMapOf()
+    val indexedParameters: MutableMap<Int, Any?> = mutableMapOf()
+    val namedParameters: MutableMap<String, Any?> = mutableMapOf()
 
     /**
      * Sets the value of an indexed parameter of the query.
