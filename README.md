@@ -1,5 +1,4 @@
-# Racoon
-
+<img width="656" alt="CleanShot 2022-06-14 at 21 40 58@2x" src="https://user-images.githubusercontent.com/87706822/173674995-e9edc956-33e7-44ce-a205-5bafbd253887.png">
 Racoon is a wrapper for the MySQL connector.
 It makes communicating with the database easier by providing a bunch of functionalities:
 
