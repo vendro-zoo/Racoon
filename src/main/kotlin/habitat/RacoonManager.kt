@@ -88,7 +88,7 @@ class RacoonManager(
         if (finalOpExecuted) throw IllegalStateException("Can't use after final operation has been executed")
         val blockResult = runCatching { block(this) }.fold(
             {
-                commit()
+                if (!finalOpExecuted) commit()
                 release()
                 it
             },
