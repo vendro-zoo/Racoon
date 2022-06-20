@@ -15,13 +15,17 @@ internal fun toValueForQuery(kProperty1: KProperty1<*, *>): String {
     else ":${ColumnName.getName(kProperty1)}"
 }
 
-internal fun fromValueForQuery(kProperty1: KProperty1<*, *>): String {
+internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, _alias: String = ""): String {
     val kClass = kProperty1.returnType.classifier as KClass<*>
     val caster = RacoonConfiguration.Casting.getCaster(kClass)
 
-    return if (caster != null) "${caster.fromQueryPrefix}`${ColumnName.getName(kProperty1)}`${caster.fromQueryPostfix} " +
-            "as `${ColumnName.getName(kProperty1)}`"
-    else "`${ColumnName.getName(kProperty1)}`"
+    val alias = if (_alias.isEmpty()) "" else "`$_alias`."
+    val asAlias = if (_alias.isEmpty()) "" else "${_alias}_"
+
+    return if (caster != null && caster.fromQueryPostfix.isNotBlank() && caster.fromQueryPrefix.isNotBlank())
+        "${caster.fromQueryPrefix}$alias`${ColumnName.getName(kProperty1)}`${caster.fromQueryPostfix} " +
+            "as `$asAlias${ColumnName.getName(kProperty1)}`"
+    else "$alias`${ColumnName.getName(kProperty1)}`"
 }
 
 /**
@@ -69,11 +73,14 @@ fun <T: Any> generateUpdateQueryK(clazz: KClass<T>): String {
  * @return A string containing the select query for the given class.
  */
 fun <T: Any> generateSelectQueryK(clazz: KClass<T>): String {
-    val properties = clazz.memberProperties
-
-    return "SELECT ${properties.joinToString(separator = ",") { fromValueForQuery(it) }} " +
+    return "SELECT ${generateSelectColumnsK(clazz)} " +
             "FROM `${TableName.getName(clazz)}` WHERE `id`=:id"
 }
+
+inline fun <reified T: Any> generateSelectColumns(alias: String = "") = generateSelectColumnsK(T::class, alias)
+
+fun <T: Any> generateSelectColumnsK(clazz: KClass<T>, alias: String = "") =
+    clazz.memberProperties.joinToString(separator = ",") { fromValueForQuery(it, alias) }
 
 /**
  * Creates a delete query for the given class.

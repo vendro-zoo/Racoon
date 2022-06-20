@@ -155,8 +155,9 @@ class QueryRacoon(
                 val kType = parameter.type
 
                 // Getting the value from the result set
-                var value: Any? = getResultSetValue(immutableResultSet, "$sqlAlias.$name") ?:
-                    getResultSetValue(immutableResultSet, name)
+                var value: Any? = getResultSetValue(immutableResultSet, "$sqlAlias.$name")
+                    ?: getResultSetValue(immutableResultSet, name)
+                    ?: getResultSetValue(immutableResultSet, "${sqlAlias}_$name")
                 ?: if (parameter.isMarkedNullable()) {
                     // If no value is found and the parameter is nullable, set it to null
                     map[parameter] = null
@@ -260,25 +261,25 @@ class QueryRacoon(
      * @return A list of [T] containing the result of the mapping.
      * @throws ClassCastException If an error occurs during the mapping.
      */
-    fun <T: Number> mapToNumberK(kClass: KClass<T>): List<T> {
+    fun <T: Number> mapToNumberK(kClass: KClass<T>): List<T?> {
         // If the query has not been executed yet, execute it
         resultSet ?: execute()
         val immutableResultSet = resultSet!!
 
         // Create the list to then return
-        val list = mutableListOf<T>()
+        val list = mutableListOf<T?>()
 
         // For each record in the result set
         while (immutableResultSet.next()) {
             // Map the first column of the result set to the number class
             @Suppress("UNCHECKED_CAST", "KotlinRedundantDiagnosticSuppress")
             list.add(when (kClass) {
-                Int::class -> immutableResultSet.getInt(1) as T
-                Long::class -> immutableResultSet.getLong(1) as T
-                Short::class -> immutableResultSet.getShort(1) as T
-                Byte::class -> immutableResultSet.getByte(1) as T
-                Float::class -> immutableResultSet.getFloat(1) as T
-                Double::class -> immutableResultSet.getDouble(1) as T
+                Int::class -> numberOrNull(immutableResultSet, immutableResultSet.getInt(1) as T)
+                Long::class -> numberOrNull(immutableResultSet, immutableResultSet.getLong(1) as T)
+                Short::class -> numberOrNull(immutableResultSet, immutableResultSet.getShort(1) as T)
+                Byte::class -> numberOrNull(immutableResultSet, immutableResultSet.getByte(1) as T)
+                Float::class -> numberOrNull(immutableResultSet, immutableResultSet.getFloat(1) as T)
+                Double::class -> numberOrNull(immutableResultSet, immutableResultSet.getDouble(1) as T)
                 else -> throw ClassCastException("Can't map to $kClass")
             })
         }
@@ -286,6 +287,9 @@ class QueryRacoon(
         // Return the list
         return list
     }
+
+    private fun <T: Number> numberOrNull(rs: ResultSet, value: T): T? =
+        if (value == 0 && rs.wasNull()) null else value
 
     fun mapToString(): List<String> {
         // If the query has not been executed yet, execute it
