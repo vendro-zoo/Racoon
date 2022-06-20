@@ -2,9 +2,11 @@ package habitat.configuration
 
 import habitat.definition.LazyId
 import internals.casting.ParameterCaster
+import internals.casting.builtin.DateCaster
 import internals.casting.builtin.EnumCaster
 import internals.casting.builtin.LazyCaster
 import internals.configuration.ConnectionSettings
+import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.superclasses
 
@@ -61,7 +63,8 @@ object RacoonConfiguration {
     object Casting {
         private val parameterCasters: MutableMap<KClass<out Any>, ParameterCaster<out Any, out Any>> = mutableMapOf(
             LazyId::class to LazyCaster(),
-            Enum::class to EnumCaster()
+            Enum::class to EnumCaster(),
+            Date::class to DateCaster()
         )
 
         /**
