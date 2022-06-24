@@ -48,10 +48,9 @@ class QueryRacoon(
         val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery)
 
         val processedQuery = queryProcessingResult.first
-        indexedParametersMappings = queryProcessingResult.second
-        namedParametersMappings = queryProcessingResult.third
+        parameterMapping = queryProcessingResult.second
 
-        preparedStatement = manager.prepare(processedQuery)
+        preparedStatement = manager.prepareScrollable(processedQuery)
 
         bindParameters()
 

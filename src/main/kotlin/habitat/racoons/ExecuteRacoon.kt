@@ -11,8 +11,7 @@ open class ExecuteRacoon(manager: RacoonManager, query: String) : Racoon<Execute
         val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery)
 
         val processedQuery = queryProcessingResult.first
-        indexedParametersMappings = queryProcessingResult.second
-        namedParametersMappings = queryProcessingResult.third
+        parameterMapping = queryProcessingResult.second
 
         preparedStatement = manager.prepare(processedQuery)
 
