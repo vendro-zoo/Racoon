@@ -22,7 +22,7 @@ internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, _alias: String = ""
     val alias = if (_alias.isEmpty()) "" else "`$_alias`."
     val asAlias = if (_alias.isEmpty()) "" else "${_alias}_"
 
-    return if (caster != null && caster.fromQueryPostfix.isNotBlank() && caster.fromQueryPrefix.isNotBlank())
+    return if (caster != null && (caster.fromQueryPostfix.isNotBlank() || caster.fromQueryPrefix.isNotBlank()))
         "${caster.fromQueryPrefix}$alias`${ColumnName.getName(kProperty1)}`${caster.fromQueryPostfix} " +
             "as `$asAlias${ColumnName.getName(kProperty1)}`"
     else "$alias`${ColumnName.getName(kProperty1)}`"
