@@ -23,7 +23,7 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
     var parameterMapping: ParameterMapping? = null
 
     // Query parameters
-    private val parameters: Parameters = Parameters(manager)
+    val parameters: Parameters = Parameters(manager)
 
     /**
      * Executes the query to the database.

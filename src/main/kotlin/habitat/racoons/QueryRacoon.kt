@@ -45,7 +45,7 @@ class QueryRacoon(
      * @return the [QueryRacoon] itself
      */
     override fun execute() = apply {
-        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery)
+        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters)
 
         val processedQuery = queryProcessingResult.first
         parameterMapping = queryProcessingResult.second

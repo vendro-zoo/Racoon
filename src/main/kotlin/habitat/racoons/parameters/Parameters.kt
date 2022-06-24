@@ -35,19 +35,36 @@ class Parameters(val manager: RacoonManager) {
 
         val caster = RacoonConfiguration.Casting.getCaster(value::class)
 
-        @Suppress("UNCHECKED_CAST")
         map[index] = if (caster == null) value else caster.toQuery(value, ToParameterCasterContext(manager, value::class))
     }
 
     fun bind(preparedStatement: PreparedStatement, mapping: ParameterMapping) {
         indexedParameters.forEach{
-            val realIndex = mapping.getIndexed(it.key)
-            preparedStatement.setObject(realIndex, it.value)
+            val value = it.value
+            if (value is List<*>) {
+                value.withIndex().map { v ->
+                    val s = "racoon_internal_ip_${it.key}_${v.index}"
+                    val realIndex = mapping.getNamed(s)
+                    preparedStatement.setObject(realIndex, v.value)
+                }
+            } else {
+                val realIndex =  mapping.getIndexed(it.key)
+                preparedStatement.setObject(realIndex, it.value)
+            }
         }
 
         namedParameters.forEach{
-            val realIndex = mapping.getNamed(it.key)
-            preparedStatement.setObject(realIndex, it.value)
+            val value = it.value
+            if (value is List<*>) {
+                value.withIndex().map { v ->
+                    val s = "racoon_internal_ni_${it.key}_${v.index}"
+                    val realIndex = mapping.getNamed(s)
+                    preparedStatement.setObject(realIndex, v.value)
+                }
+            } else {
+                val realIndex = mapping.getNamed(it.key)
+                preparedStatement.setObject(realIndex, it.value)
+            }
         }
     }
 }

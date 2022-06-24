@@ -15,7 +15,7 @@ class InsertRacoon(manager: RacoonManager, query: String) : BatchableRacoon<Inse
     val generatedKeys: MutableList<Int> = mutableListOf()
 
     override fun executeBatch() = apply {
-        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery)
+        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters)
 
         val processedQuery = queryProcessingResult.first
         parameterMapping = queryProcessingResult.second
@@ -33,7 +33,7 @@ class InsertRacoon(manager: RacoonManager, query: String) : BatchableRacoon<Inse
      * Executes the query to the database and saves the last inserted id.
      */
     override fun execute() = apply {
-        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery)
+        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters)
 
         val processedQuery = queryProcessingResult.first
         parameterMapping = queryProcessingResult.second
