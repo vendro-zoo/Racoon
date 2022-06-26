@@ -177,6 +177,15 @@ internal class QueryRacoonTest {
     }
 
     @Test
+    internal fun mapToNullNumber() {
+        val count: List<Int?> = racoonManager.createQueryRacoon("SELECT null")
+            .use {
+                it.execute().mapToNumber()
+            }
+        if (verbose) println(count)
+    }
+
+    @Test
     internal fun mapToString() {
         val name = racoonManager.createQueryRacoon("SELECT name FROM cat")
             .use {
@@ -227,6 +236,25 @@ internal class QueryRacoonTest {
                 .setParam("names", listOf("Tom",
                         "Garfield",
                         "Jim"
+                ))
+                .mapToClass<Cat>()
+        }
+
+        cats.forEach {
+            assert(listOf("Tom",
+                "Garfield",
+                "Jim"
+            ).contains(it.name))
+        }
+    }
+
+    @Test
+    internal fun inQuery2() {
+        val cats = RacoonDen.getManager().use { rm ->
+            rm.createQueryRacoon("SELECT * FROM cat WHERE name IN (?)")
+                .setParam(1, listOf("Tom",
+                    "Garfield",
+                    "Jim"
                 ))
                 .mapToClass<Cat>()
         }
