@@ -288,7 +288,7 @@ class QueryRacoon(
     }
 
     private fun <T: Number> numberOrNull(rs: ResultSet, value: T): T? =
-        if (value == 0 && rs.wasNull()) null else value
+        if (value.toInt() == 0 && rs.wasNull()) null else value
 
     fun mapToString(): List<String> {
         // If the query has not been executed yet, execute it
