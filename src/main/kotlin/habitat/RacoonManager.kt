@@ -1,5 +1,6 @@
 package habitat
 
+import habitat.cache.RacoonCache
 import habitat.configuration.RacoonConfiguration
 import habitat.definition.ColumnName
 import habitat.definition.Table
@@ -38,6 +39,8 @@ class RacoonManager(
      */
     var closed = false
         internal set
+
+    private val cache = RacoonCache()
 
     /**
      * Closes the connection to the database.
@@ -144,6 +147,30 @@ class RacoonManager(
     }
 
     /**
+     * Behaves like [findUncachedK], but instead of passing the class as a normal parameter, it is passed as a reified type.
+     *
+     * @param T The type to map the result to.
+     * @param id The id of the record to find.
+     * @return The record mapped to the type [T].
+     * @see findUncachedK
+     */
+    inline fun <reified T : Table> findUncached(id: Int): T? = findUncachedK(id, T::class)
+
+    /**
+     * Finds a record in the database and maps the result to the given class.
+     *
+     * @param id The id of the record to find.
+     * @param kClass The class of the record to find.
+     * @return The record mapped to the type [T].
+     */
+    fun <T: Table> findUncachedK(id: Int, kClass: KClass<T>): T? {
+        createQueryRacoon(generateSelectQueryK(kClass)).use { queryRacoon ->
+            queryRacoon.setParam("id", id)
+            return queryRacoon.mapToClassK(kClass).firstOrNull()
+        }
+    }
+
+    /**
      * Behaves like [findK], but instead of passing the class as a normal parameter, it is passed as a reified type.
      *
      * @param T The type to map the result to.
@@ -156,15 +183,20 @@ class RacoonManager(
     /**
      * Finds a record in the database and maps the result to the given class.
      *
+     * If the record has already been found by calling this method, it will be returned from the cache.
+     * If the record has not been found by previous calls, the query will be executed again and the result will be cached.
+     *
      * @param id The id of the record to find.
      * @param kClass The class of the record to find.
      * @return The record mapped to the type [T].
+     * @see findUncachedK
      */
     fun <T : Table> findK(id: Int, kClass: KClass<T>): T? {
-        createQueryRacoon(generateSelectQueryK(kClass)).use { queryRacoon ->
-            queryRacoon.setParam("id", id)
-            return queryRacoon.mapToClassK(kClass).firstOrNull()
-        }
+        cache.getK(id, kClass)?.let { return it }
+
+        val found = findUncachedK(id, kClass)
+        if (found != null) cache.putK(found, kClass)
+        return found
     }
 
     /**
