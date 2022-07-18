@@ -1,5 +1,6 @@
 package habitat.configuration
 
+import habitat.RacoonManager
 import habitat.definition.LazyId
 import internals.casting.ParameterCaster
 import internals.casting.builtin.DateCaster
@@ -28,6 +29,24 @@ object RacoonConfiguration {
             host = "localhost",
             database = "test"
         )
+    }
+
+    object Caching {
+        /**
+         * The maximum number of entries in the cache of each [RacoonManager].
+         *
+         * The default value is 100.
+         */
+        var maxEntries: Int = 100
+
+        /**
+         * The number of entries to remove from the cache when it is full.
+         *
+         * Note: the entries removed are the oldest ones.
+         *
+         * The default value is 20.
+         */
+        var cleaningBatchSize: Int = 20
     }
 
     /**

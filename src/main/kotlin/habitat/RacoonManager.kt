@@ -1,5 +1,6 @@
 package habitat
 
+import habitat.cache.RacoonCache
 import habitat.configuration.RacoonConfiguration
 import habitat.definition.ColumnName
 import habitat.definition.Table
@@ -38,6 +39,8 @@ class RacoonManager(
      */
     var closed = false
         internal set
+
+    internal val cache = RacoonCache()
 
     /**
      * Closes the connection to the database.
@@ -110,6 +113,7 @@ class RacoonManager(
         if (closed) throw connectionClosedException()
         if (!finalOpExecuted) throw IllegalStateException("Can't release before final operation has been executed")
         this.closed = true
+        this.cache.clean()
         RacoonDen.releaseManager(this)
     }
 
@@ -144,6 +148,30 @@ class RacoonManager(
     }
 
     /**
+     * Behaves like [findUncachedK], but instead of passing the class as a normal parameter, it is passed as a reified type.
+     *
+     * @param T The type to map the result to.
+     * @param id The id of the record to find.
+     * @return The record mapped to the type [T].
+     * @see findUncachedK
+     */
+    inline fun <reified T : Table> findUncached(id: Int): T? = findUncachedK(id, T::class)
+
+    /**
+     * Finds a record in the database and maps the result to the given class.
+     *
+     * @param id The id of the record to find.
+     * @param kClass The class of the record to find.
+     * @return The record mapped to the type [T].
+     */
+    fun <T: Table> findUncachedK(id: Int, kClass: KClass<T>): T? {
+        createQueryRacoon(generateSelectQueryK(kClass)).use { queryRacoon ->
+            queryRacoon.setParam("id", id)
+            return queryRacoon.mapToClassK(kClass).firstOrNull()
+        }
+    }
+
+    /**
      * Behaves like [findK], but instead of passing the class as a normal parameter, it is passed as a reified type.
      *
      * @param T The type to map the result to.
@@ -156,25 +184,30 @@ class RacoonManager(
     /**
      * Finds a record in the database and maps the result to the given class.
      *
+     * If the record has already been found by calling this method, it will be returned from the cache.
+     * If the record has not been found by previous calls, the query will be executed again and the result will be cached.
+     *
      * @param id The id of the record to find.
      * @param kClass The class of the record to find.
      * @return The record mapped to the type [T].
+     * @see findUncachedK
      */
     fun <T : Table> findK(id: Int, kClass: KClass<T>): T? {
-        createQueryRacoon(generateSelectQueryK(kClass)).use { queryRacoon ->
-            queryRacoon.setParam("id", id)
-            return queryRacoon.mapToClassK(kClass).firstOrNull()
-        }
+        cache.getK(id, kClass)?.let { return it }
+
+        val found = findUncachedK(id, kClass)
+        if (found != null) cache.putK(found, kClass)
+        return found
     }
 
     /**
-     * Behaves like [insertK], but instead of passing the class as a normal parameter, it is passed as a reified type.
+     * Behaves like [insertUncachedK], but instead of passing the class as a normal parameter, it is passed as a reified type.
      *
      * @param T The type that is being inserted.
      * @param obj The object to insert.
      * @return The [RacoonManager] instance.
      */
-    inline fun <reified T : Table> insert(obj: T) = insertK(obj, T::class)
+    inline fun <reified T : Table> insertUncached(obj: T) = insertUncachedK(obj, T::class)
 
     /**
      * Inserts an object into the database and updates the id.
@@ -183,15 +216,36 @@ class RacoonManager(
      * @param kClass The class of the object to insert.
      * @return The object with the id updated. Any old reference to the object will still be valid.
      */
-    fun <T : Table> insertK(obj: T, kClass: KClass<T>) = obj.apply {
+    fun <T : Table> insertUncachedK(obj: T, kClass: KClass<T>) = obj.apply {
         val parameters = kClass.memberProperties
 
         createInsertRacoon(generateInsertQueryK(kClass)).use { insertRacoon ->
             for (field in parameters) insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
             insertRacoon.execute()
             obj.id = insertRacoon.generatedKeys[0]
+
+            refreshK(obj, kClass)
         }
     }
+
+    /**
+     * Behaves like [insertK], but instead of passing the class as a normal parameter, it is passed as a reified type.
+     *
+     * @param T The type that is being inserted.
+     * @param obj The object to insert.
+     */
+    inline fun <reified T : Table> insert(obj: T) = insertK(obj, T::class)
+
+    /**
+     * Inserts an object into the database and updates the id.
+     *
+     * The inserted object is also inserted into the cache.
+     *
+     * @param obj The object to insert.
+     * @param kClass The class of the object to insert.
+     */
+    fun <T : Table> insertK(obj: T, kClass: KClass<T>) =
+        insertUncachedK(obj, kClass).also { cache.putK(obj, kClass) }
 
     /**
      * Behaves like [updateK], but instead of passing the class as a normal parameter, it is passed as a reified type.
@@ -200,7 +254,7 @@ class RacoonManager(
      * @param obj The object to update.
      * @return The [RacoonManager] instance.
      */
-    inline fun <reified T : Table> update(obj: T) = updateK(obj, T::class)
+    inline fun <reified T : Table> updateUncached(obj: T) = updateUncachedK(obj, T::class)
 
     /**
      * Updates a record in the database with the given object.
@@ -212,23 +266,39 @@ class RacoonManager(
      * @param kClass The class of the object to update.
      * @return The [RacoonManager] instance.
      */
-    fun <T : Table> updateK(obj: T, kClass: KClass<T>) = obj.apply {
+    fun <T : Table> updateUncachedK(obj: T, kClass: KClass<T>) = obj.apply {
         val parameters = kClass.memberProperties
 
         createExecuteRacoon(generateUpdateQueryK(kClass)).use { executeRacoon ->
             for (field in parameters) executeRacoon.setParam(ColumnName.getName(field), field.get(obj))
             executeRacoon.execute()
 
-            obj.id?.let {
-                val updated = findK(it, kClass) ?: throw SQLException("Could not find object with id '$it' " +
-                        "while updating the fields")
-
-                for (parameter in parameters) {
-                    if (parameter !is KMutableProperty<*>) continue
-                    parameter.setter.call(obj, getValueK(updated, parameter.name, kClass))
-                }
-            }
+            refreshK(obj, kClass)
         }
+    }
+
+    /**
+     * Behaves like [updateK], but instead of passing the class as a normal parameter, it is passed as a reified type.
+     *
+     * @param T The type that is being updated.
+     * @param obj The object to update.
+     */
+    inline fun <reified T : Table> update(obj: T) = updateK(obj, T::class)
+
+    /**
+     * Updates a record in the database with the given object.
+     *
+     * After executing the `update` statement, a query is executed,
+     * and all the mutable properties are updated with the values returned by the query.
+     *
+     * The updated object is also updated in the cache.
+     *
+     * @param obj The object to update.
+     * @param kClass The class of the object to update.
+     */
+    fun <T : Table> updateK(obj: T, kClass: KClass<T>) {
+        updateUncachedK(obj, kClass)
+        cache.putK(obj, kClass)
     }
 
     /**
@@ -238,21 +308,60 @@ class RacoonManager(
      * @param obj The object to delete.
      * @return The [RacoonManager] instance.
      */
-    inline fun <reified T : Table> delete(obj: T) = deleteK(obj, T::class)
+    inline fun <reified T : Table> deleteUncached(obj: T) = deleteUncachedK(obj, T::class)
 
     /**
      * Deletes a record from the database with the given object.
+     *
+     * NOTE: using this method while using [findK] is extremely not recommended.
+     * Doing so will cause the cache to be outdated,
+     * and may result in a find operation returning an object that is not in the database.
+     * Use [deleteK] instead.
      *
      * @param obj The object to delete.
      * @param kClass The class of the object to delete.
      * @return The [RacoonManager] instance.
      * @throws IllegalArgumentException if the object has no property with the name 'id'.
      */
-    fun <T : Table> deleteK(obj: T, kClass: KClass<T>) = apply {
+    fun <T : Table> deleteUncachedK(obj: T, kClass: KClass<T>) = apply {
         val id = obj.id ?: throw IllegalArgumentException("Can't delete object without id")
 
         createExecuteRacoon(generateDeleteQueryK(kClass)).use { executeRacoon ->
             executeRacoon.setParam("id", id).execute()
+        }
+    }
+
+    /**
+     * Behaves like [deleteK], but instead of passing the class as a normal parameter, it is passed as a reified type.
+     *
+     * @param T The type that is being deleted.
+     * @param obj The object to delete.
+     */
+    inline fun <reified T : Table> delete(obj: T) = deleteK(obj, T::class)
+
+    /**
+     * Deletes a record from the database with the given object.
+     *
+     * The deleted object is also deleted from the cache.
+     *
+     * @param obj The object to delete.
+     * @param kClass The class of the object to delete.
+     */
+    fun <T : Table> deleteK(obj: T, kClass: KClass<T>) {
+        deleteUncachedK(obj, kClass)
+        cache.removeK(obj.id!!, kClass)
+    }
+
+    inline fun <reified T : Table> refresh(obj: T) = refreshK(obj, T::class)
+
+    fun <T : Table> refreshK(obj: T, kClass: KClass<T>) = obj.apply {
+        val id = this.id ?: throw IllegalArgumentException("Can't refresh object without id")
+        val updated = findUncachedK(id, kClass) ?: throw SQLException("Could not find object with id '$id' " +
+                "while refreshing the fields")
+
+        for (parameter in kClass.memberProperties) {
+            if (parameter !is KMutableProperty<*>) continue
+            parameter.setter.call(this, getValueK(updated, parameter.name, kClass))
         }
     }
 
