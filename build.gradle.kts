@@ -1,5 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val version: String by project
+
 plugins {
     kotlin("jvm") version "1.6.20"
     id("maven-publish")  // Used to publish to the local maven repository
@@ -8,7 +10,6 @@ plugins {
 }
 
 group = "it.zoo.vendro"
-version = "0.1.4"
 
 repositories {
     mavenCentral()
