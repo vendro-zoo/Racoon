@@ -21,6 +21,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+trap "exit" INT
+
+spinner() {
+  local pid=$!
+
+  local spin='-\|/'
+  local i=0
+
+  while kill -0 $pid 2>/dev/null; do
+    i=$(((i + 1) % 4))
+    printf "\r%s - \e[1m\e[30m\e[43mIN PROGRESS\e[0m %s" "$1" "${spin:$i:1}"
+    sleep .1
+  done &
+  if wait $pid; then
+    printf "\033[2K\r%s - \e[1m\e[30m\e[42mCOMPLETED\e[0m\n" "$1"
+  else
+    printf "\033[2K\r%s - \e[1m\e[30m\e[41mFAILED\e[0m\n" "$1"
+    exit 1
+  fi
+}
+
 DYNAMIC_NAMING=false
 PUBLISH_LOCAL=false
 SHADOW_BUILD=false
@@ -51,26 +72,34 @@ while getopts ":hdps" opt; do
   esac
 done
 
+
+FCONT=$(cat ./gradle.properties.base)
 if $DYNAMIC_NAMING; then
   BNAME=$(git branch --show-current)
   CHASH=$(git rev-parse --short HEAD)
 
-  FCONT=$(cat ./gradle.properties.base)
   FCONT="${FCONT/__branch_name__/${BNAME}}"
   FCONT="${FCONT/__commit_hash__/${CHASH}}"
 
   touch ./gradle.properties
   echo "${FCONT}" > ./gradle.properties
 fi
-
-set -x
+VERSION=$(grep "version" ./gradle.properties | cut -d '=' -f 2 2> /dev/null)
+if [ $? -ne 0 ]; then
+  echo "Error: gradle.properties is not valid."
+  exit 1
+fi
 
 if $SHADOW_BUILD; then
-  ./gradlew clean shadowJar
+  ./gradlew clean shadowJar >& /dev/null & spinner "Building ShadowJar"
 else
-  ./gradlew clean build -x test
+  ./gradlew clean build -x test >& /dev/null & spinner "Building normally"
 fi
 
 if $PUBLISH_LOCAL; then
-  ./gradlew publishToMavenLocal
+  ./gradlew publishToMavenLocal >& /dev/null & spinner "Publishing to maven local"
 fi
+echo ""
+echo "Successfully built. Version built: ${VERSION}"
+
+exit 0
