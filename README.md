@@ -15,14 +15,9 @@ Racoon is developed with freedom of use in mind from the beginning.
 This means that there are multiple ways to achieve the same result, so that it can be used in different contexts.
 ## Installation
 
-To build the library, run the following command:
+To build the library and make it available in other projects, run the following command:
 
 ```
-$ ./gradlew clean build -x test
+./kbuild.sh -cp
 ```
 
-To publish the library to the local Maven repository, run the following command:
-
-```
-$ ./gradlew publishToMavenLocal
-```

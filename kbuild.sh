@@ -44,16 +44,20 @@ spinner() {
 
 DYNAMIC_NAMING=false
 PUBLISH_LOCAL=false
+BUILD=false
 SHADOW_BUILD=false
+CLEAN=false
 
-while getopts ":hdps" opt; do
+while getopts ":hdpbsc" opt; do
   case $opt in
     h)
       echo "Usage: kbuild.sh [-h] [-d] [-p]"
       echo " -h Show this help message and exit."
       echo " -d Use dynamic naming. Overwrites gradle.properties with a generated one starting from gradle.properties.base"
       echo " -p Publish to maven local."
+      echo " -b Normal build."
       echo " -s Creates a FatJar using the ShadowJar."
+      echo " -c Clean the build."
       exit 0
       ;;
     d)
@@ -62,8 +66,14 @@ while getopts ":hdps" opt; do
     p)
       PUBLISH_LOCAL=true
       ;;
+    b)
+      BUILD=true
+      ;;
     s)
       SHADOW_BUILD=true
+      ;;
+    c)
+      CLEAN=true
       ;;
     ?)
       echo "Invalid option: -$OPTARG"
@@ -90,15 +100,22 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+if $CLEAN; then
+  ./gradlew clean >& /dev/null & spinner "Cleaning"
+fi
+
+if $BUILD; then
+  ./gradlew build -x test >& /dev/null & spinner "Building normally"
+fi
+
 if $SHADOW_BUILD; then
-  ./gradlew clean shadowJar >& /dev/null & spinner "Building ShadowJar"
-else
-  ./gradlew clean build -x test >& /dev/null & spinner "Building normally"
+  ./gradlew shadowJar >& /dev/null & spinner "Building ShadowJar"
 fi
 
 if $PUBLISH_LOCAL; then
   ./gradlew publishToMavenLocal >& /dev/null & spinner "Publishing to maven local"
 fi
+
 echo ""
 echo "Successfully built. Version built: ${VERSION}"
 

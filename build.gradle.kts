@@ -1,12 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val version: String by project
+val vers: String by project
 
 plugins {
     kotlin("jvm") version "1.6.20"
     id("maven-publish")  // Used to publish to the local maven repository
     id("org.jetbrains.dokka") version "1.6.21"  // Used to generate the API documentation
     id("org.sonarqube") version "3.3"  // Used to perform cloud-based analysis
+    id("com.github.johnrengelman.shadow") version "7.1.2"  // Used to compile a shadow jar
 }
 
 group = "it.zoo.vendro"
@@ -28,6 +29,7 @@ dependencies {
 val sourcesJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
     dependsOn(JavaPlugin.CLASSES_TASK_NAME)
     archiveClassifier.set("sources")
+    archiveVersion.set(vers)
     from(sourceSets["main"].allSource)
 }
 
@@ -35,6 +37,7 @@ val sourcesJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
 val javadocJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
     dependsOn("dokkaJavadoc")
     archiveClassifier.set("javadoc")
+    archiveVersion.set(vers)
     from(tasks.javadoc)
 }
 
@@ -44,6 +47,13 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+val sJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
+    dependsOn("shadowJar")
+    archiveClassifier.set("")
+    archiveVersion.set(vers)
+    from(tasks.shadowJar)
 }
 
 sonarqube {
@@ -60,9 +70,9 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "it.zoo.vendro"
             artifactId = "racoon"
-            version = version
+            version = vers
 
-            artifact(tasks.jar)
+            artifact(sJar)
             artifact(sourcesJar)
             artifact(javadocJar)
         }
