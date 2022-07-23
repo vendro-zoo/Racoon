@@ -40,3 +40,4 @@ bin/
 
 ### Custom ###
 /Roadmap.sheetplanner/
+/gradle.properties
