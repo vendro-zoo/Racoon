@@ -8,11 +8,10 @@ import internals.query.QueryProcessing
  */
 open class ExecuteRacoon(manager: RacoonManager, query: String) : Racoon<ExecuteRacoon>(manager, query) {
     override fun execute() = apply {
-        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery)
+        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters)
 
         val processedQuery = queryProcessingResult.first
-        indexedParametersMappings = queryProcessingResult.second
-        namedParametersMappings = queryProcessingResult.third
+        parameterMapping = queryProcessingResult.second
 
         preparedStatement = manager.prepare(processedQuery)
 

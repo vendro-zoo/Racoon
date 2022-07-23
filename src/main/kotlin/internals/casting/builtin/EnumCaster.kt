@@ -1,16 +1,18 @@
 package internals.casting.builtin
 
-import habitat.context.ParameterCasterContext
+import habitat.context.FromParameterCasterContext
+import habitat.context.ToParameterCasterContext
 import habitat.definition.ColumnName
 import internals.casting.ParameterCaster
+import internals.extensions.asKClass
 import kotlin.reflect.KClass
 
 class EnumCaster : ParameterCaster<Enum<*>, String> {
-    override fun toQuery(parameter: Enum<*>, context: ParameterCasterContext): String =
+    override fun toQuery(parameter: Enum<*>, context: ToParameterCasterContext): String =
         getNameFromEnum(parameter)
 
-    override fun fromQuery(parameter: String, context: ParameterCasterContext): Enum<*> =
-        getEnumFromName(parameter, context.actualType)
+    override fun fromQuery(parameter: String, context: FromParameterCasterContext): Enum<*> =
+        getEnumFromName(parameter, context.actualType.asKClass())
 
     private companion object {
         inline fun <reified T: Annotation> Array<Annotation>.findAnnotation(): T? =

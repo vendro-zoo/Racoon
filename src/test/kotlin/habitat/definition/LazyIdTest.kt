@@ -17,7 +17,7 @@ internal class LazyIdTest {
         @BeforeAll
         @JvmStatic
         fun setUp() {
-            RacoonConfiguration.Connection.setDefault(
+            RacoonConfiguration.Connection.connectionSettings =
                 ConnectionSettings(
                     host = "localhost",
                     port = 3306,
@@ -26,8 +26,8 @@ internal class LazyIdTest {
                     password = "admin",
                     idleTimeout = 3
                 )
-            )
-            RacoonConfiguration.Naming.setTableNameMapper(NameMapper.lowerSnakeCase)        }
+            RacoonConfiguration.Naming.tableNameMapper = NameMapper.lowerSnakeCase
+        }
     }
 
     @Test

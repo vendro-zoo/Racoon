@@ -88,7 +88,7 @@ class RacoonManager(
         if (finalOpExecuted) throw IllegalStateException("Can't use after final operation has been executed")
         val blockResult = runCatching { block(this) }.fold(
             {
-                commit()
+                if (!finalOpExecuted) commit()
                 release()
                 it
             },
@@ -119,22 +119,28 @@ class RacoonManager(
      * @param query The query to execute.
      * @return The prepared statement.
      */
-    internal fun prepare(query: String): PreparedStatement {
+    internal fun prepareScrollable(query: String): PreparedStatement {
         return connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)
     }
 
     /**
-     * Gets the last inserted id.
+     * Creates a prepared statement for the given query, where the [ResultSet] contains the inserted keys.
      *
-     * This is done by executing the query '`SELECT LAST_INSERT_ID()`'.
-     *
-     * @return The last inserted id.
+     * @param query The query to execute.
+     * @return The prepared statement.
      */
-    fun getLastId(): Int {
-        val statement = prepare("SELECT LAST_INSERT_ID()")
-        val result = statement.executeQuery()
-        result.next()
-        return result.getInt(1)
+    internal fun prepareInserted(query: String): PreparedStatement {
+        return connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)
+    }
+
+    /**
+     * Creates a prepared statement for the given query.
+     *
+     * @param query The query to execute.
+     * @return The prepared statement.
+     */
+    internal fun prepare(query: String): PreparedStatement {
+        return connection.prepareStatement(query)
     }
 
     /**
@@ -155,9 +161,10 @@ class RacoonManager(
      * @return The record mapped to the type [T].
      */
     fun <T : Table> findK(id: Int, kClass: KClass<T>): T? {
-        val queryRacoon = createQueryRacoon(generateSelectQueryK(kClass))
-        queryRacoon.setParam("id", id)
-        return queryRacoon.mapToClass(kClass).firstOrNull()
+        createQueryRacoon(generateSelectQueryK(kClass)).use { queryRacoon ->
+            queryRacoon.setParam("id", id)
+            return queryRacoon.mapToClassK(kClass).firstOrNull()
+        }
     }
 
     /**
@@ -172,19 +179,18 @@ class RacoonManager(
     /**
      * Inserts an object into the database and updates the id.
      *
-     * If the object has no property with the name 'id', no error is thrown, but the id is not updated.
-     *
      * @param obj The object to insert.
      * @param kClass The class of the object to insert.
-     * @return The [RacoonManager] instance.
+     * @return The object with the id updated. Any old reference to the object will still be valid.
      */
     fun <T : Table> insertK(obj: T, kClass: KClass<T>) = obj.apply {
-        val insertRacoon = createInsertRacoon(generateInsertQueryK(kClass))
         val parameters = kClass.memberProperties
-        for (field in parameters) insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
-        insertRacoon.execute()
 
-        obj.id = getLastId()
+        createInsertRacoon(generateInsertQueryK(kClass)).use { insertRacoon ->
+            for (field in parameters) insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
+            insertRacoon.execute()
+            obj.id = insertRacoon.generatedKeys[0]
+        }
     }
 
     /**
@@ -199,26 +205,28 @@ class RacoonManager(
     /**
      * Updates a record in the database with the given object.
      *
-     * If the object has a property with the name 'id', then a query is executed,
-     * and all the mutable properties are updated with the values of the record with the given id.
+     * After executing the `update` statement, a query is executed,
+     * and all the mutable properties are updated with the values returned by the query.
      *
      * @param obj The object to update.
      * @param kClass The class of the object to update.
      * @return The [RacoonManager] instance.
      */
     fun <T : Table> updateK(obj: T, kClass: KClass<T>) = obj.apply {
-        val executeRacoon = createExecuteRacoon(generateUpdateQueryK(kClass))
         val parameters = kClass.memberProperties
-        for (field in parameters) executeRacoon.setParam(ColumnName.getName(field), field.get(obj))
-        executeRacoon.execute()
 
-        obj.id?.let {
-            val updated = findK(it, kClass) ?: throw SQLException("Could not find object with id '$it' " +
-                    "while updating the fields")
+        createExecuteRacoon(generateUpdateQueryK(kClass)).use { executeRacoon ->
+            for (field in parameters) executeRacoon.setParam(ColumnName.getName(field), field.get(obj))
+            executeRacoon.execute()
 
-            for (parameter in parameters) {
-                if (parameter !is KMutableProperty<*>) continue
-                parameter.setter.call(obj, getValueK(updated, parameter.name, kClass))
+            obj.id?.let {
+                val updated = findK(it, kClass) ?: throw SQLException("Could not find object with id '$it' " +
+                        "while updating the fields")
+
+                for (parameter in parameters) {
+                    if (parameter !is KMutableProperty<*>) continue
+                    parameter.setter.call(obj, getValueK(updated, parameter.name, kClass))
+                }
             }
         }
     }
@@ -235,9 +243,6 @@ class RacoonManager(
     /**
      * Deletes a record from the database with the given object.
      *
-     * If the object has a property with the name 'id', then a query is executed,
-     * and the record with the given id is deleted.
-     *
      * @param obj The object to delete.
      * @param kClass The class of the object to delete.
      * @return The [RacoonManager] instance.
@@ -245,7 +250,10 @@ class RacoonManager(
      */
     fun <T : Table> deleteK(obj: T, kClass: KClass<T>) = apply {
         val id = obj.id ?: throw IllegalArgumentException("Can't delete object without id")
-        createExecuteRacoon(generateDeleteQueryK(kClass)).setParam("id", id).execute()
+
+        createExecuteRacoon(generateDeleteQueryK(kClass)).use { executeRacoon ->
+            executeRacoon.setParam("id", id).execute()
+        }
     }
 
     /**
@@ -281,7 +289,7 @@ class RacoonManager(
          */
         internal fun fromSettings(connectionSettings: ConnectionSettings): RacoonManager {
             val rm = RacoonManager(DriverManager.getConnection(connectionSettings.toString()))
-            val idleTimeout = RacoonConfiguration.Connection.getDefault().idleTimeout
+            val idleTimeout = RacoonConfiguration.Connection.connectionSettings.idleTimeout
 
             rm.connection.autoCommit = false
 

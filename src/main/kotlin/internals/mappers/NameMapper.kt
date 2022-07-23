@@ -1,10 +1,13 @@
 package internals.mappers
 
-import internals.expansions.camelCase
-import internals.expansions.lowerSnakeCase
-import internals.expansions.upperCamelCase
-import internals.expansions.upperSnakeCase
+import internals.extensions.camelCase
+import internals.extensions.lowerSnakeCase
+import internals.extensions.upperCamelCase
+import internals.extensions.upperSnakeCase
 
+/**
+ * An object containing a set of lambdas used to map a string to the same string in a different case.
+ */
 @Suppress("unused")
 object NameMapper {
     /**

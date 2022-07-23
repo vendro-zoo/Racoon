@@ -1,6 +1,7 @@
 package internals.casting
 
-import habitat.context.ParameterCasterContext
+import habitat.context.FromParameterCasterContext
+import habitat.context.ToParameterCasterContext
 
 /**
  * A class that casts a query parameter of a given type to another given type.
@@ -26,7 +27,7 @@ interface ParameterCaster<T: Any, K: Any> {
      * @return the same parameter converted to the other type
      * that can be used as the value of a query parameter.
      */
-    fun toQuery(parameter: T, context: ParameterCasterContext): K?
+    fun toQuery(parameter: T, context: ToParameterCasterContext): K?
 
     /**
      * Converts the parameter back to its original type.
@@ -34,5 +35,5 @@ interface ParameterCaster<T: Any, K: Any> {
      * @param parameter the parameter to convert to the original type
      * @return the same parameter converted to the original type
      */
-    fun fromQuery(parameter: K, context: ParameterCasterContext): T
+    fun fromQuery(parameter: K, context: FromParameterCasterContext): T
 }

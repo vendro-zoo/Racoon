@@ -1,6 +1,6 @@
 package internals.casting
 
-import internals.expansions.asKClass
+import internals.extensions.asKClass
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.util.*

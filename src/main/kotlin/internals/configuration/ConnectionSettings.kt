@@ -1,5 +1,8 @@
 package internals.configuration
 
+/**
+ * The settings used to configure the connection to the database.
+ */
 data class ConnectionSettings(
     /**
      * The hostname of the database.

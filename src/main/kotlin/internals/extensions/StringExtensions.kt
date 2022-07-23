@@ -1,4 +1,4 @@
-package internals.expansions
+package internals.extensions
 
 /**
  * Checks if the character at the given index is in quotes.

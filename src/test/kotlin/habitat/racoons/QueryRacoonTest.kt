@@ -26,7 +26,7 @@ internal class QueryRacoonTest {
         @BeforeAll
         @JvmStatic
         internal fun setUpClass() {
-            RacoonConfiguration.Connection.setDefault(
+            RacoonConfiguration.Connection.connectionSettings =
                 ConnectionSettings(
                     host = "localhost",
                     port = 3306,
@@ -34,8 +34,7 @@ internal class QueryRacoonTest {
                     username = "admin",
                     password = "admin"
                 )
-            )
-            RacoonConfiguration.Naming.setTableNameMapper(NameMapper.lowerSnakeCase)
+            RacoonConfiguration.Naming.tableNameMapper = NameMapper.lowerSnakeCase
         }
 
         const val verbose = true
@@ -110,7 +109,7 @@ internal class QueryRacoonTest {
         data class CatAndOwner(val cat: Cat, val owner: Owner?)
 
         val catAndOwners =
-            racoonManager.createQueryRacoon("SELECT c.*, o.* FROM cat c left JOIN owner o ON c.owner_id = o.id")
+            racoonManager.createQueryRacoon("SELECT c.*, o.* FROM cat c LEFT JOIN owner o ON c.owner_id = o.id")
                 .use {
                     it.multiMapToClass<CatAndOwner>()
                 }
@@ -161,7 +160,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun countRows() {
-        val count = racoonManager.createQueryRacoon("select * from cat")
+        val count = racoonManager.createQueryRacoon("SELECT * FROM cat")
             .use {
                 it.execute().countRows()
             }
@@ -170,7 +169,16 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun mapToNumber() {
-        val count: List<Int> = racoonManager.createQueryRacoon("select count(*) from cat")
+        val count: List<Int?> = racoonManager.createQueryRacoon("SELECT COUNT(*) FROM cat")
+            .use {
+                it.execute().mapToNumber()
+            }
+        if (verbose) println(count)
+    }
+
+    @Test
+    internal fun mapToNullNumber() {
+        val count: List<Int?> = racoonManager.createQueryRacoon("SELECT null")
             .use {
                 it.execute().mapToNumber()
             }
@@ -179,7 +187,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun mapToString() {
-        val name = racoonManager.createQueryRacoon("select name from cat")
+        val name = racoonManager.createQueryRacoon("SELECT name FROM cat")
             .use {
                 it.execute().mapToString()
             }
@@ -189,7 +197,7 @@ internal class QueryRacoonTest {
     @Test
     internal fun mapToCustom() {
         RacoonDen.getManager().use { rm ->
-            val pair = rm.createQueryRacoon("select 5, 3")
+            val pair = rm.createQueryRacoon("SELECT 5, 3")
                 .mapToCustom { it.getInt(1) to it.getInt(2) }.first()
 
             assertEquals(5, pair.first)
@@ -214,10 +222,48 @@ internal class QueryRacoonTest {
         ) : Table
 
         RacoonDen.getManager().use { rm ->
-            val cat = rm.createQueryRacoon("select * from cat")
+            val cat = rm.createQueryRacoon("SELECT * FROM cat")
                 .mapToClass<CustomCat>().first()
 
             assertNotNull(cat.id)
+        }
+    }
+
+    @Test
+    internal fun inQuery() {
+        val cats = RacoonDen.getManager().use { rm ->
+            rm.createQueryRacoon("SELECT * FROM cat WHERE name IN (:names)")
+                .setParam("names", listOf("Tom",
+                        "Garfield",
+                        "Jim"
+                ))
+                .mapToClass<Cat>()
+        }
+
+        cats.forEach {
+            assert(listOf("Tom",
+                "Garfield",
+                "Jim"
+            ).contains(it.name))
+        }
+    }
+
+    @Test
+    internal fun inQuery2() {
+        val cats = RacoonDen.getManager().use { rm ->
+            rm.createQueryRacoon("SELECT * FROM cat WHERE name IN (?)")
+                .setParam(1, listOf("Tom",
+                    "Garfield",
+                    "Jim"
+                ))
+                .mapToClass<Cat>()
+        }
+
+        cats.forEach {
+            assert(listOf("Tom",
+                "Garfield",
+                "Jim"
+            ).contains(it.name))
         }
     }
 }

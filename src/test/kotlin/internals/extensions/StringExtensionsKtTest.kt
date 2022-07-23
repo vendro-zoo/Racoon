@@ -1,9 +1,9 @@
-package internals.expansions
+package internals.extensions
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-internal class StringExpansionsKtTest {
+internal class StringExtensionsKtTest {
 
     @Test
     fun isInQuotes() {
