@@ -7,7 +7,6 @@ plugins {
     id("maven-publish")  // Used to publish to the local maven repository
     id("org.jetbrains.dokka") version "1.6.21"  // Used to generate the API documentation
     id("org.sonarqube") version "3.3"  // Used to perform cloud-based analysis
-    id("com.github.johnrengelman.shadow") version "7.1.2"  // Used to compile a shadow jar
 }
 
 group = "it.zoo.vendro"
@@ -18,7 +17,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
-    implementation("mysql:mysql-connector-java:8.0.29")
+    testImplementation("mysql:mysql-connector-java:8.0.29")
 
     dokkaJavadocPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.6.21")  // Used to generate the API documentation as javadoc
 
@@ -49,13 +48,6 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-val sJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
-    dependsOn("shadowJar")
-    archiveClassifier.set("")
-    archiveVersion.set(vers)
-    from(tasks.shadowJar)
-}
-
 sonarqube {
     properties {
         property("sonar.projectKey", "vendro-zoo_racoon")
@@ -72,7 +64,7 @@ publishing {
             artifactId = "racoon"
             version = vers
 
-            artifact(sJar)
+            from(components["java"])
             artifact(sourcesJar)
             artifact(javadocJar)
         }

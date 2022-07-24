@@ -94,7 +94,7 @@ if $DYNAMIC_NAMING; then
   touch ./gradle.properties
   echo "${FCONT}" > ./gradle.properties
 fi
-VERSION=$(grep "version" ./gradle.properties | cut -d '=' -f 2 2> /dev/null)
+VERSION=$(grep "vers" ./gradle.properties | cut -d '=' -f 2 2> /dev/null)
 if [ $? -ne 0 ]; then
   echo "Error: gradle.properties is not valid."
   exit 1
