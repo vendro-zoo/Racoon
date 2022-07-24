@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val version: String by project
+val vers: String by project
 
 plugins {
     kotlin("jvm") version "1.6.20"
@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
-    implementation("mysql:mysql-connector-java:8.0.29")
+    testImplementation("mysql:mysql-connector-java:8.0.29")
 
     dokkaJavadocPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.6.21")  // Used to generate the API documentation as javadoc
 
@@ -28,6 +28,7 @@ dependencies {
 val sourcesJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
     dependsOn(JavaPlugin.CLASSES_TASK_NAME)
     archiveClassifier.set("sources")
+    archiveVersion.set(vers)
     from(sourceSets["main"].allSource)
 }
 
@@ -35,6 +36,7 @@ val sourcesJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
 val javadocJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
     dependsOn("dokkaJavadoc")
     archiveClassifier.set("javadoc")
+    archiveVersion.set(vers)
     from(tasks.javadoc)
 }
 
@@ -60,9 +62,9 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "it.zoo.vendro"
             artifactId = "racoon"
-            version = version
+            version = vers
 
-            artifact(tasks.jar)
+            from(components["java"])
             artifact(sourcesJar)
             artifact(javadocJar)
         }
