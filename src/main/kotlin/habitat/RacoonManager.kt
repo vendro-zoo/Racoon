@@ -14,6 +14,7 @@ import internals.query.generateDeleteQueryK
 import internals.query.generateInsertQueryK
 import internals.query.generateSelectQueryK
 import internals.query.generateUpdateQueryK
+import internals.utils.retryUntilNotNull
 import org.intellij.lang.annotations.Language
 import java.sql.*
 import kotlin.reflect.KClass
@@ -397,7 +398,7 @@ class RacoonManager(
          * @return A [RacoonManager] instance.
          */
         internal fun fromSettings(connectionSettings: ConnectionSettings): RacoonManager {
-            val rm = RacoonManager(DriverManager.getConnection(connectionSettings.toString()))
+            val rm = RacoonManager(retryUntilNotNull { DriverManager.getConnection(connectionSettings.toString()) })
             val idleTimeout = RacoonConfiguration.Connection.connectionSettings.idleTimeout
 
             rm.connection.autoCommit = false
