@@ -80,16 +80,33 @@ object RacoonConfiguration {
     }
 
     object Casting {
-        val parameterCasters: MutableMap<KClass<out Any>, MutableMap<KClass<out Any>, ParameterCaster<out Any, out Any>>> =
+        data class WKClass<T : Any>(val klass: KClass<T>) {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+
+                other as WKClass<*>
+
+                if (klass != other.klass) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                return klass.qualifiedName?.hashCode() ?: 0
+            }
+        }
+
+        val parameterCasters: MutableMap<WKClass<out Any>, MutableMap<WKClass<out Any>, ParameterCaster<out Any, out Any>>> =
             mutableMapOf(
-                LazyId::class to mutableMapOf(
-                    Int::class to LazyCaster(),
-                    Long::class to LazyLongCaster()
+                WKClass(LazyId::class) to mutableMapOf(
+                    WKClass(Int::class) to LazyCaster(),
+                    WKClass(Long::class) to LazyLongCaster()
                 ),
-                Enum::class to mutableMapOf(String::class to EnumCaster()),
-                Date::class to mutableMapOf(
-                    java.sql.Date::class to DateCaster(),
-                    java.sql.Timestamp::class to DateTimestampCaster()
+                WKClass(Enum::class) to mutableMapOf(WKClass(String::class) to EnumCaster()),
+                WKClass(Date::class) to mutableMapOf(
+                    WKClass(java.sql.Date::class) to DateCaster(),
+                    WKClass(java.sql.Timestamp::class) to DateTimestampCaster()
                 )
             )
 
@@ -110,11 +127,14 @@ object RacoonConfiguration {
          * @see [internals.casting.ParameterCaster]
          */
         fun <J : Any, S : Any> setCaster(jClass: KClass<J>, sClass: KClass<S>, caster: ParameterCaster<J, S>) = apply {
-            val m1 = parameterCasters[jClass]
-                ?: mutableMapOf<KClass<out Any>, ParameterCaster<out Any, out Any>>().apply {
-                    parameterCasters[jClass] = this
+            val wJClass = WKClass(jClass)
+            val wSClass = WKClass(sClass)
+
+            val m1 = parameterCasters[wJClass]
+                ?: mutableMapOf<WKClass<out Any>, ParameterCaster<out Any, out Any>>().apply {
+                    parameterCasters[wJClass] = this
                 }
-            m1.putIfAbsent(sClass, caster)
+            m1.putIfAbsent(wSClass, caster)
         }
 
         /**
@@ -130,12 +150,15 @@ object RacoonConfiguration {
          * @see [internals.casting.ParameterCaster]
          */
         fun getCaster(jClass: KClass<*>, sClass: KClass<*>): ParameterCaster<Any, Any>? {
-            val m1 = parameterCasters[jClass]
-                ?: jClass.superclasses.firstNotNullOfOrNull { parameterCasters[it] }
+            val wJClass = WKClass(jClass)
+            val wSClass = WKClass(sClass)
+
+            val m1 = parameterCasters[wJClass]
+                ?: jClass.superclasses.firstNotNullOfOrNull { parameterCasters[WKClass(it)] }
                 ?: return null
 
-            val m2 = m1[sClass]
-                ?: sClass.superclasses.firstNotNullOfOrNull { m1[it] }
+            val m2 = m1[wSClass]
+                ?: sClass.superclasses.firstNotNullOfOrNull { m1[WKClass(it)] }
                 ?: return null
 
             @Suppress("UNCHECKED_CAST")
@@ -143,8 +166,10 @@ object RacoonConfiguration {
         }
 
         fun getFirstCaster(jClass: KClass<*>): ParameterCaster<Any, Any>? {
-            val m1 = parameterCasters[jClass]
-                ?: jClass.superclasses.firstNotNullOfOrNull { parameterCasters[it] }
+            val wJClass = WKClass(jClass)
+
+            val m1 = parameterCasters[wJClass]
+                ?: jClass.superclasses.firstNotNullOfOrNull { parameterCasters[WKClass(it)] }
                 ?: return null
 
             @Suppress("UNCHECKED_CAST")
