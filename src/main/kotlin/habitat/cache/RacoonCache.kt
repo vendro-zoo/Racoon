@@ -40,10 +40,10 @@ class RacoonCache {
         if (cacheSize < RacoonConfiguration.Caching.maxEntries) {
             // Creating the secondary map if it doesn't exist
             tableCache = tableCache ?: mutableMapOf<Int, Pair<Table?, Long>>().apply { cache[kClass] = this }
+            // Incrementing the cache size
+            if (!tableCache.containsKey(id)) cacheSize++
             // Saving the entity in the cache
             tableCache[id] = table to System.currentTimeMillis()
-            // Incrementing the cache size
-            cacheSize++
         }
     }
 
