@@ -42,9 +42,10 @@ object RacoonDen {
 
 
         // If there are available managers, return the first still available one, if exists
-        while (availableConnections.isNotEmpty()) {
+        do {
             // Get the first available manager
-            val manager = RacoonManager(availableConnections.removeLast())
+            val c = availableConnections.removeLastOrNull() ?: break
+            val manager = RacoonManager(c)
 
             // Check if the manager is still available, if not, check the next one
             if (!this.ping(manager)) continue
@@ -53,7 +54,7 @@ object RacoonDen {
             unavailableManagers.add(manager)
 
             return manager
-        }
+        } while (true)
 
         // Return a new manager
         val manager = RacoonManager.fromSettings(settings)
