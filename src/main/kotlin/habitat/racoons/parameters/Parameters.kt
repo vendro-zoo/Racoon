@@ -33,7 +33,7 @@ class Parameters(val manager: RacoonManager) {
             return
         }
 
-        val caster = RacoonConfiguration.Casting.getCaster(value::class)
+        val caster = RacoonConfiguration.Casting.getFirstCaster(value::class)
 
         map[index] = if (caster == null) value else caster.toQuery(value, ToParameterCasterContext(manager, value::class))
     }

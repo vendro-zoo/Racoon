@@ -154,7 +154,7 @@ class QueryRacoon(
                 val kType = parameter.type
 
                 // Getting the value from the result set
-                var value: Any? = getResultSetValue(immutableResultSet, "$sqlAlias.$name")
+                var value = getResultSetValue(immutableResultSet, "$sqlAlias.$name")
                     ?: getResultSetValue(immutableResultSet, name)
                     ?: getResultSetValue(immutableResultSet, "${sqlAlias}_$name")
                 ?: if (parameter.isMarkedNullable()) {
@@ -175,11 +175,11 @@ class QueryRacoon(
                 } else continue@rsFor
 
                 // Getting the user defined type caster, if it exists
-                val caster = RacoonConfiguration.Casting.getCaster(kClass)
+                val caster = RacoonConfiguration.Casting.getCaster(kClass, value::class)
 
                 // Casting with the user defined type caster, otherwise casting with the internal caster
-                value = caster?.fromQuery(value!!, FromParameterCasterContext(manager, kType))
-                    ?: castEquivalent(parameter, value!!)
+                value = caster?.fromQuery(value, FromParameterCasterContext(manager, kType))
+                    ?: castEquivalent(parameter, value)
 
                 // Set the value as the constructor parameter
                 map[parameter] = value

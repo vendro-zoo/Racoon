@@ -9,7 +9,7 @@ import kotlin.reflect.full.memberProperties
 
 internal fun toValueForQuery(kProperty1: KProperty1<*, *>): String {
     val kClass = kProperty1.returnType.classifier as KClass<*>
-    val caster = RacoonConfiguration.Casting.getCaster(kClass)
+    val caster = RacoonConfiguration.Casting.getFirstCaster(kClass)
 
     return if (caster != null) "${caster.toQueryPrefix}:${ColumnName.getName(kProperty1)}${caster.toQueryPostfix}"
     else ":${ColumnName.getName(kProperty1)}"
@@ -17,7 +17,7 @@ internal fun toValueForQuery(kProperty1: KProperty1<*, *>): String {
 
 internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, _alias: String = ""): String {
     val kClass = kProperty1.returnType.classifier as KClass<*>
-    val caster = RacoonConfiguration.Casting.getCaster(kClass)
+    val caster = RacoonConfiguration.Casting.getFirstCaster(kClass)
 
     val alias = if (_alias.isEmpty()) "" else "`$_alias`."
     val asAlias = if (_alias.isEmpty()) "" else "${_alias}_"

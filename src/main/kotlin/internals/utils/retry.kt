@@ -12,7 +12,7 @@ fun <T> retryUntilNotNull(
 
         attempts++
         if (attempts >= times) throw IllegalStateException("Failed to execute after $attempts attempts")
-        
+
         Thread.sleep(delay)
     }
 }

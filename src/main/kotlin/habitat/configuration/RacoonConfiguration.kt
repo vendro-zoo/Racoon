@@ -3,9 +3,7 @@ package habitat.configuration
 import habitat.RacoonManager
 import habitat.definition.LazyId
 import internals.casting.ParameterCaster
-import internals.casting.builtin.DateCaster
-import internals.casting.builtin.EnumCaster
-import internals.casting.builtin.LazyCaster
+import internals.casting.builtin.*
 import internals.configuration.ConnectionSettings
 import java.util.*
 import kotlin.reflect.KClass
@@ -61,6 +59,7 @@ object RacoonConfiguration {
          * @see [internals.mappers.TableAliasMapper] for a list of built-in mappers.
          */
         var tableAliasMapper: (String) -> String = { it }
+
         /**
          * A lambda that will be used to map the name of the table from the name of a given class.
          *
@@ -69,6 +68,7 @@ object RacoonConfiguration {
          * @see [internals.mappers.NameMapper] for a list of built-in mappers.
          */
         var tableNameMapper: (String) -> String = { it }
+
         /**
          * A lambda that will be used to map the name of the column from the name of a given property.
          *
@@ -80,11 +80,18 @@ object RacoonConfiguration {
     }
 
     object Casting {
-        private val parameterCasters: MutableMap<KClass<out Any>, ParameterCaster<out Any, out Any>> = mutableMapOf(
-            LazyId::class to LazyCaster(),
-            Enum::class to EnumCaster(),
-            Date::class to DateCaster()
-        )
+        val parameterCasters: MutableMap<KClass<out Any>, MutableMap<KClass<out Any>, ParameterCaster<out Any, out Any>>> =
+            mutableMapOf(
+                LazyId::class to mutableMapOf(
+                    Int::class to LazyCaster(),
+                    Long::class to LazyLongCaster()
+                ),
+                Enum::class to mutableMapOf(String::class to EnumCaster()),
+                Date::class to mutableMapOf(
+                    java.sql.Date::class to DateCaster(),
+                    java.sql.Timestamp::class to DateTimestampCaster()
+                )
+            )
 
         /**
          * Adds the given [ParameterCaster] to the list of registered list of [ParameterCaster]s.
@@ -94,15 +101,20 @@ object RacoonConfiguration {
          * Example:
          * ```
          * // Adds a custom caster for [LazyId]
-         * RacoonConfiguration.Casting.setCaster(LazyId::class, LazyCaster())
+         * RacoonConfiguration.Casting.setCaster(LazyId::class, Int::class, LazyCaster())
          * ```
          *
-         * @param clazz The class of the parameter to cast.
+         * @param jClass The class of the parameter to cast (Java type).
+         * @param sClass The class of the parameter to cast to (SQL type).
          * @param caster The caster to use to cast the parameter.
          * @see [internals.casting.ParameterCaster]
          */
-        fun <T: Any> setCaster(clazz: KClass<T>, caster: ParameterCaster<T, out Any>) = apply {
-            parameterCasters[clazz] = caster
+        fun <J : Any, S : Any> setCaster(jClass: KClass<J>, sClass: KClass<S>, caster: ParameterCaster<J, S>) = apply {
+            val m1 = parameterCasters[jClass]
+                ?: mutableMapOf<KClass<out Any>, ParameterCaster<out Any, out Any>>().apply {
+                    parameterCasters[jClass] = this
+                }
+            m1.putIfAbsent(sClass, caster)
         }
 
         /**
@@ -112,14 +124,31 @@ object RacoonConfiguration {
          * it will try searching for a caster for the superclasses of the given [KClass].
          * If still no caster is found, it will return `null`.
          *
-         * @param clazz The class of the parameter to cast.
+         * @param jClass The class of the parameter to cast (Java type).
+         * @param sClass The class of the parameter to cast to (SQL type).
          * @return The [ParameterCaster] for the given [KClass] or `null` if no caster is found.
          * @see [internals.casting.ParameterCaster]
          */
-        fun getCaster(clazz: KClass<*>): ParameterCaster<Any, Any>? {
+        fun getCaster(jClass: KClass<*>, sClass: KClass<*>): ParameterCaster<Any, Any>? {
+            val m1 = parameterCasters[jClass]
+                ?: jClass.superclasses.firstNotNullOfOrNull { parameterCasters[it] }
+                ?: return null
+
+            val m2 = m1[sClass]
+                ?: sClass.superclasses.firstNotNullOfOrNull { m1[it] }
+                ?: return null
+
             @Suppress("UNCHECKED_CAST")
-            return (parameterCasters[clazz] as ParameterCaster<Any, Any>?)
-                ?: (clazz.superclasses.firstNotNullOfOrNull { parameterCasters[it] } as ParameterCaster<Any, Any>?)
+            return m2 as ParameterCaster<Any, Any>
+        }
+
+        fun getFirstCaster(jClass: KClass<*>): ParameterCaster<Any, Any>? {
+            val m1 = parameterCasters[jClass]
+                ?: jClass.superclasses.firstNotNullOfOrNull { parameterCasters[it] }
+                ?: return null
+
+            @Suppress("UNCHECKED_CAST")
+            return m1.values.first() as ParameterCaster<Any, Any>
         }
     }
 }
