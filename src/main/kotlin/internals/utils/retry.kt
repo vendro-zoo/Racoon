@@ -3,7 +3,7 @@ package internals.utils
 fun <T> retryUntilNotNull(
     times: Int = 3,
     delay: Long = 500,
-    block: () -> T,
+    block: () -> T?,
 ): T {
     var attempts = 0
     while (true) {
