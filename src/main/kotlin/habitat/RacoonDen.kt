@@ -1,12 +1,14 @@
 package habitat
 
 import habitat.configuration.RacoonConfiguration
+import internals.extensions.removeLastOrNull
 import internals.query.Ping
 import java.sql.Connection
 import java.sql.SQLException
+import java.util.concurrent.ConcurrentLinkedDeque
 
 object RacoonDen {
-    private val availableConnections: ArrayDeque<Connection> = ArrayDeque()
+    private val availableConnections: ConcurrentLinkedDeque<Connection> = ConcurrentLinkedDeque()
     private val unavailableManagers: MutableSet<RacoonManager> = mutableSetOf()
 
     /**
