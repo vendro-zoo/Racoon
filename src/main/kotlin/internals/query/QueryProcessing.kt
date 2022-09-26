@@ -27,7 +27,7 @@ object QueryProcessing {
     private fun calculateMatches(query: String): Pair<List<MatchResult>, List<MatchResult>> {
         // Regex to find the parameters in the query
         val indexRegex = Regex("\\?")
-        val namedRegex = Regex(":\\w+")
+        val namedRegex = Regex(":[\\w\\u0080-\\u00FF]+")
 
         // Finding only the parameters that are not quoted
         val indexMatches = indexRegex.findAll(query).toList().filter { !query.isInQuotes(it.range.first) }
