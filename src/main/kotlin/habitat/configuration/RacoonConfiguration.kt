@@ -5,6 +5,7 @@ import habitat.definition.LazyId
 import internals.casting.ParameterCaster
 import internals.casting.builtin.*
 import internals.configuration.ConnectionSettings
+import java.math.BigInteger
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.superclasses
@@ -101,7 +102,8 @@ object RacoonConfiguration {
             mutableMapOf(
                 WKClass(LazyId::class) to mutableMapOf(
                     WKClass(Int::class) to LazyCaster(),
-                    WKClass(Long::class) to LazyLongCaster()
+                    WKClass(Long::class) to LazyLongCaster(),
+                    WKClass(BigInteger::class) to LazyBigIntegerCaster()
                 ),
                 WKClass(Enum::class) to mutableMapOf(WKClass(String::class) to EnumCaster()),
                 WKClass(Date::class) to mutableMapOf(
