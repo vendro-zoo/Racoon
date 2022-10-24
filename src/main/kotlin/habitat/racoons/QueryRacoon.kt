@@ -3,13 +3,16 @@ package habitat.racoons
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
 import habitat.context.FromParameterCasterContext
+import habitat.definition.ColumnExtractionMethod
 import habitat.definition.ColumnName
+import habitat.definition.ExtractionMethod
 import habitat.definition.TableName
 import internals.casting.castEquivalent
 import internals.extensions.asKClass
 import internals.extensions.isMarkedNullable
 import internals.extensions.isNullOrOptional
 import internals.query.QueryProcessing
+import java.math.BigDecimal
 import java.sql.ResultSet
 import java.sql.SQLException
 import kotlin.reflect.KClass
@@ -140,12 +143,12 @@ class QueryRacoon(
         immutableResultSet.beforeFirst()
 
         // For each record in the result set
-        rsWhile@while (immutableResultSet.next()) {
+        rsWhile@ while (immutableResultSet.next()) {
             // Create an empty map for the parameters of the constructor
             val map: MutableMap<KParameter, Any?> = mutableMapOf()
 
             // For each parameter of the constructor
-            rsFor@for (parameter in parameters) {
+            rsFor@ for (parameter in parameters) {
                 // Get the column name
                 val name = ColumnName.getName(parameter)
 
@@ -153,26 +156,27 @@ class QueryRacoon(
                 val kClass = parameter.asKClass()
                 val kType = parameter.type
 
+                val extractionMethod = ColumnExtractionMethod.getExtractionMethod(parameter)
+
                 // Getting the value from the result set
-                var value = getResultSetValue(immutableResultSet, "$sqlAlias.$name")
-                    ?: getResultSetValue(immutableResultSet, name)
-                    ?: getResultSetValue(immutableResultSet, "${sqlAlias}_$name")
-                ?: if (parameter.isMarkedNullable()) {
-                    // If no value is found and the parameter is nullable, set it to null
-                    map[parameter] = null
-                    continue@rsFor
-                }
-                else if (!parameter.isOptional) {
-                    // If the parameter is not nullable and is not optional
-                    if (nullable) {
-                        // If the list can contain null values, insert a null and skip to the next record
-                        list.add(null)
-                        continue@rsWhile
-                    }
-                    // If the list cannot contain null values, throw an exception
-                    else throw ClassCastException("Can't map $clazzName to $tClass because $name is null")
-                // Else if it is optional, continue to the next parameter
-                } else continue@rsFor
+                var value = getResultSetValue(extractionMethod, immutableResultSet, "$sqlAlias.$name")
+                    ?: getResultSetValue(extractionMethod, immutableResultSet, name)
+                    ?: getResultSetValue(extractionMethod, immutableResultSet, "${sqlAlias}_$name")
+                    ?: if (parameter.isMarkedNullable()) {
+                        // If no value is found and the parameter is nullable, set it to null
+                        map[parameter] = null
+                        continue@rsFor
+                    } else if (!parameter.isOptional) {
+                        // If the parameter is not nullable and is not optional
+                        if (nullable) {
+                            // If the list can contain null values, insert a null and skip to the next record
+                            list.add(null)
+                            continue@rsWhile
+                        }
+                        // If the list cannot contain null values, throw an exception
+                        else throw ClassCastException("Can't map $clazzName to $tClass because $name is null")
+                        // Else if it is optional, continue to the next parameter
+                    } else continue@rsFor
 
                 // Getting the user defined type caster, if it exists
                 val caster = RacoonConfiguration.Casting.getCaster(kClass, value::class)
@@ -216,9 +220,11 @@ class QueryRacoon(
             try {
                 mapToNullableClassK(it.asKClass(), it.isNullOrOptional())
             } catch (e: ClassCastException) {
-                throw ClassCastException("An exception occurred while mapping ${it.asKClass().simpleName}. " +
-                        "Did you forget to make the property nullable?\n" +
-                        "The exception's message: ${e.message}")
+                throw ClassCastException(
+                    "An exception occurred while mapping ${it.asKClass().simpleName}. " +
+                            "Did you forget to make the property nullable?\n" +
+                            "The exception's message: ${e.message}"
+                )
             }
         }.map {
             // Convert map of lists to list of maps
@@ -249,7 +255,7 @@ class QueryRacoon(
         return listOfWrappers
     }
 
-    inline fun <reified T: Number> mapToNumber() = mapToNumberK(T::class)
+    inline fun <reified T : Number> mapToNumber() = mapToNumberK(T::class)
 
     /**
      * Maps the result of the query to the specified number class.
@@ -260,7 +266,7 @@ class QueryRacoon(
      * @return A list of [T] containing the result of the mapping.
      * @throws ClassCastException If an error occurs during the mapping.
      */
-    fun <T: Number> mapToNumberK(kClass: KClass<T>): List<T?> {
+    fun <T : Number> mapToNumberK(kClass: KClass<T>): List<T?> {
         // If the query has not been executed yet, execute it
         resultSet ?: execute()
         val immutableResultSet = resultSet!!
@@ -272,22 +278,25 @@ class QueryRacoon(
         while (immutableResultSet.next()) {
             // Map the first column of the result set to the number class
             @Suppress("UNCHECKED_CAST", "KotlinRedundantDiagnosticSuppress")
-            list.add(when (kClass) {
-                Int::class -> numberOrNull(immutableResultSet, immutableResultSet.getInt(1) as T)
-                Long::class -> numberOrNull(immutableResultSet, immutableResultSet.getLong(1) as T)
-                Short::class -> numberOrNull(immutableResultSet, immutableResultSet.getShort(1) as T)
-                Byte::class -> numberOrNull(immutableResultSet, immutableResultSet.getByte(1) as T)
-                Float::class -> numberOrNull(immutableResultSet, immutableResultSet.getFloat(1) as T)
-                Double::class -> numberOrNull(immutableResultSet, immutableResultSet.getDouble(1) as T)
-                else -> throw ClassCastException("Can't map to $kClass")
-            })
+            list.add(
+                when (kClass) {
+                    Int::class -> numberOrNull(immutableResultSet, immutableResultSet.getInt(1) as T)
+                    Long::class -> numberOrNull(immutableResultSet, immutableResultSet.getLong(1) as T)
+                    Short::class -> numberOrNull(immutableResultSet, immutableResultSet.getShort(1) as T)
+                    Byte::class -> numberOrNull(immutableResultSet, immutableResultSet.getByte(1) as T)
+                    Float::class -> numberOrNull(immutableResultSet, immutableResultSet.getFloat(1) as T)
+                    Double::class -> numberOrNull(immutableResultSet, immutableResultSet.getDouble(1) as T)
+                    BigDecimal::class -> immutableResultSet.getBigDecimal(1) as T?
+                    else -> throw ClassCastException("Can't map to $kClass")
+                }
+            )
         }
 
         // Return the list
         return list
     }
 
-    private fun <T: Number> numberOrNull(rs: ResultSet, value: T): T? =
+    private fun <T : Number> numberOrNull(rs: ResultSet, value: T): T? =
         if (value.toInt() == 0 && rs.wasNull()) null else value
 
     fun mapToString(): List<String> {
@@ -329,8 +338,16 @@ class QueryRacoon(
     }
 
     companion object {
-        private fun getResultSetValue(resultSet: ResultSet, columnName: String): Any? {
-            return try { resultSet.getObject(columnName) } catch (_: SQLException) { null }
+        private fun getResultSetValue(
+            extractionMethod: ExtractionMethod<*>,
+            resultSet: ResultSet,
+            columnName: String
+        ): Any? {
+            return try {
+                extractionMethod.extract(resultSet, columnName)
+            } catch (_: SQLException) {
+                null
+            }
         }
     }
 }

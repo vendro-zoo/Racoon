@@ -3,6 +3,8 @@ package habitat
 import habitat.cache.RacoonCache
 import habitat.configuration.RacoonConfiguration
 import habitat.definition.ColumnName
+import habitat.definition.IgnoreColumn
+import habitat.definition.IgnoreTarget
 import habitat.definition.Table
 import habitat.racoons.ExecuteRacoon
 import habitat.racoons.InsertRacoon
@@ -221,7 +223,10 @@ class RacoonManager(
         val parameters = kClass.memberProperties
 
         createInsertRacoon(generateInsertQueryK(kClass)).use { insertRacoon ->
-            for (field in parameters) insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
+            for (field in parameters) {
+                if (IgnoreColumn.shouldIgnore(field, IgnoreTarget.INSERT)) continue
+                insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
+            }
             insertRacoon.execute()
             obj.id = insertRacoon.generatedKeys[0]
 
@@ -271,7 +276,10 @@ class RacoonManager(
         val parameters = kClass.memberProperties
 
         createExecuteRacoon(generateUpdateQueryK(kClass)).use { executeRacoon ->
-            for (field in parameters) executeRacoon.setParam(ColumnName.getName(field), field.get(obj))
+            for (field in parameters) {
+                if (IgnoreColumn.shouldIgnore(field, IgnoreTarget.UPDATE)) continue
+                executeRacoon.setParam(ColumnName.getName(field), field.get(obj))
+            }
             executeRacoon.execute()
 
             refreshK(obj, kClass)
