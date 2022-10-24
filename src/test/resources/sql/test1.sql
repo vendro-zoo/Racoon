@@ -1,0 +1,1 @@
+SELECT 'TEST VALUE';

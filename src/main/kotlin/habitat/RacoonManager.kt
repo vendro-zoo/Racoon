@@ -18,6 +18,7 @@ import internals.query.generateSelectQueryK
 import internals.query.generateUpdateQueryK
 import internals.utils.retryUntilNotNull
 import org.intellij.lang.annotations.Language
+import java.io.FileNotFoundException
 import java.sql.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
@@ -167,7 +168,7 @@ class RacoonManager(
      * @param kClass The class of the record to find.
      * @return The record mapped to the type [T].
      */
-    fun <T: Table> findUncachedK(id: Int, kClass: KClass<T>): T? {
+    fun <T : Table> findUncachedK(id: Int, kClass: KClass<T>): T? {
         createQueryRacoon(generateSelectQueryK(kClass)).use { queryRacoon ->
             queryRacoon.setParam("id", id)
             return queryRacoon.mapToClassK(kClass).firstOrNull()
@@ -365,8 +366,10 @@ class RacoonManager(
 
     fun <T : Table> refreshK(obj: T, kClass: KClass<T>) = obj.apply {
         val id = this.id ?: throw IllegalArgumentException("Can't refresh object without id")
-        val updated = findUncachedK(id, kClass) ?: throw SQLException("Could not find object with id '$id' " +
-                "while refreshing the fields")
+        val updated = findUncachedK(id, kClass) ?: throw SQLException(
+            "Could not find object with id '$id' " +
+                    "while refreshing the fields"
+        )
 
         for (parameter in kClass.memberProperties) {
             if (parameter !is KMutableProperty<*>) continue
@@ -383,6 +386,14 @@ class RacoonManager(
     fun createQueryRacoon(@Language("mysql") query: String): QueryRacoon = QueryRacoon(this, query)
 
     /**
+     * Creates a [QueryRacoon] with the given sql file.
+     *
+     * @param fileName The name of the file to execute.
+     * @return A [QueryRacoon] capable of handling the query and its results.
+     */
+    fun importQueryRacoon(fileName: String): QueryRacoon = createQueryRacoon(readSQLResourceFile(fileName))
+
+    /**
      * Creates an [InsertRacoon] with the given query.
      *
      * @param query The query to execute.
@@ -391,12 +402,28 @@ class RacoonManager(
     fun createInsertRacoon(@Language("mysql") query: String): InsertRacoon = InsertRacoon(this, query)
 
     /**
+     * Creates an [InsertRacoon] with the given sql file.
+     *
+     * @param fileName The name of the file to execute.
+     * @return An [InsertRacoon] capable of handling the query and its results.
+     */
+    fun importInsertRacoon(fileName: String): InsertRacoon = createInsertRacoon(readSQLResourceFile(fileName))
+    /**
      * Creates an [ExecuteRacoon] with the given query.
      *
      * @param query The query to execute.
      * @return An [ExecuteRacoon] capable of handling the query.
      */
+
     fun createExecuteRacoon(@Language("mysql") query: String): ExecuteRacoon = ExecuteRacoon(this, query)
+
+    /**
+     * Creates an [ExecuteRacoon] with the given sql file.
+     *
+     * @param fileName The name of the file to execute.
+     * @return An [ExecuteRacoon] capable of handling the query.
+     */
+    fun importExecuteRacoon(fileName: String): ExecuteRacoon = createExecuteRacoon(readSQLResourceFile(fileName))
 
     internal companion object {
         /**
@@ -417,6 +444,12 @@ class RacoonManager(
             }
 
             return rm
+        }
+
+        fun readSQLResourceFile(fileName: String): String {
+            val filePath = "/${RacoonConfiguration.Resourcing.baseSQLPath}/${fileName}"
+            return RacoonManager::class.java.getResource(filePath)?.readText()
+                ?: throw FileNotFoundException(filePath)
         }
     }
 }
