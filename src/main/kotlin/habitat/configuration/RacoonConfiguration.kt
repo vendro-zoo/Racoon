@@ -178,4 +178,14 @@ object RacoonConfiguration {
             return m1.values.first() as ParameterCaster<Any, Any>
         }
     }
+
+    /**
+     * All the configuration for resource handling.
+     */
+    object Resourcing {
+        /**
+         * The base path for sql files.
+         */
+        var baseSQLPath: String = "sql"
+    }
 }

@@ -112,4 +112,15 @@ internal class RacoonManagerTest {
             assertNotEquals(hash, rm.connection.hashCode())
         }
     }
+
+    @Test
+    fun importSQLQuery() {
+        RacoonDen.getManager().use { rm ->
+            val res = rm.importQueryRacoon("test1.sql")
+                .mapToString()
+                .first()
+
+            assertEquals("TEST VALUE", res)
+        }
+    }
 }

@@ -4,9 +4,7 @@ import habitat.RacoonDen
 import habitat.configuration.RacoonConfiguration
 import habitat.context.FromParameterCasterContext
 import habitat.context.ToParameterCasterContext
-import habitat.definition.LazyId
-import habitat.definition.Table
-import habitat.definition.TableName
+import habitat.definition.*
 import internals.configuration.ConnectionSettings
 import models.Owner
 import org.junit.jupiter.api.BeforeAll
@@ -29,6 +27,7 @@ internal class ParameterCasterTest {
     @TableName("cat")
     class Cat2(
         override var id: Int? = null,
+        @ColumnExtractionMethod(ExtractionMethodType.Int)
         var age: Int2,
         var name: String?,
         var owner_id: LazyId<Owner>? = null,
@@ -45,9 +44,9 @@ internal class ParameterCasterTest {
                     database = "racoon-ktor-sample",
                     username = "admin",
                     password = "admin",
-                    idleTimeout = 3
+                    idleTimeout = 300
                 )
-            RacoonConfiguration.Casting.setCaster(Int2::class, Int2Caster())
+            RacoonConfiguration.Casting.setCaster(Int2::class, Int::class, Int2Caster())
         }
     }
 
