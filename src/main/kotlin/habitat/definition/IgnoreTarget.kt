@@ -3,7 +3,8 @@ package habitat.definition
 enum class IgnoreTarget(val children: List<IgnoreTarget> = listOf()) {
     INSERT,
     UPDATE,
-    ALL(listOf(INSERT, UPDATE)),
+    SELECT,
+    ALL(listOf(INSERT, UPDATE, SELECT)),
     ;
 
     fun getList(): List<IgnoreTarget> {

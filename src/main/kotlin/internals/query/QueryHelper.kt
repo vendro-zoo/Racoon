@@ -2,6 +2,8 @@ package internals.query
 
 import habitat.configuration.RacoonConfiguration
 import habitat.definition.ColumnName
+import habitat.definition.IgnoreColumn
+import habitat.definition.IgnoreTarget
 import habitat.definition.TableName
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
@@ -39,7 +41,9 @@ internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, _alias: String = ""
  * @throws IllegalArgumentException If the class name is null.
  */
 fun <T: Any> generateInsertQueryK(clazz: KClass<T>): String {
-    val properties = clazz.memberProperties
+    val properties = clazz.memberProperties.filter { mp ->
+        IgnoreColumn.shouldIgnore(mp, IgnoreTarget.INSERT)
+    }
 
     return "INSERT INTO `${TableName.getName(clazz)}` " +
             "(${properties.joinToString(separator = ",") { "`${ColumnName.getName(it)}`" }}) " +
@@ -56,7 +60,9 @@ fun <T: Any> generateInsertQueryK(clazz: KClass<T>): String {
  * @return A string containing the update query for the given class.
  */
 fun <T: Any> generateUpdateQueryK(clazz: KClass<T>): String {
-    val properties = clazz.memberProperties.filter { it.name != "id" }
+    val properties = clazz.memberProperties.filter { it.name != "id" }.filter { mp ->
+        IgnoreColumn.shouldIgnore(mp, IgnoreTarget.UPDATE)
+    }
 
     return "UPDATE `${TableName.getName(clazz)}` " +
             "SET ${properties.joinToString(separator = ",") { "`${ColumnName.getName(it)}`=${toValueForQuery(it)}" }} " +
@@ -80,7 +86,9 @@ fun <T: Any> generateSelectQueryK(clazz: KClass<T>): String {
 inline fun <reified T: Any> generateSelectColumns(alias: String = "") = generateSelectColumnsK(T::class, alias)
 
 fun <T: Any> generateSelectColumnsK(clazz: KClass<T>, alias: String = "") =
-    clazz.memberProperties.joinToString(separator = ",") { fromValueForQuery(it, alias) }
+    clazz.memberProperties.filter { mp ->
+        IgnoreColumn.shouldIgnore(mp, IgnoreTarget.SELECT)
+    }.joinToString(separator = ",") { fromValueForQuery(it, alias) }
 
 /**
  * Creates a delete query for the given class.

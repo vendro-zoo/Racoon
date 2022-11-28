@@ -3,10 +3,7 @@ package habitat.racoons
 import habitat.RacoonManager
 import habitat.configuration.RacoonConfiguration
 import habitat.context.FromParameterCasterContext
-import habitat.definition.ColumnExtractionMethod
-import habitat.definition.ColumnName
-import habitat.definition.ExtractionMethod
-import habitat.definition.TableName
+import habitat.definition.*
 import internals.casting.castEquivalent
 import internals.extensions.asKClass
 import internals.extensions.isMarkedNullable
@@ -134,7 +131,9 @@ class QueryRacoon(
 
         // Get the primary constructor of the class and its parameters
         val constructor = tClass.primaryConstructor ?: throw ClassCastException("$clazzName has no primary constructor")
-        val parameters = constructor.parameters
+        val parameters = constructor.parameters.filter { mp ->
+            IgnoreColumn.shouldIgnore(mp, IgnoreTarget.SELECT)
+        }
 
         // The list to be returned
         val list = mutableListOf<T?>()
