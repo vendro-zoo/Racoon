@@ -132,7 +132,7 @@ class QueryRacoon(
         // Get the primary constructor of the class and its parameters
         val constructor = tClass.primaryConstructor ?: throw ClassCastException("$clazzName has no primary constructor")
         val parameters = constructor.parameters.filter { mp ->
-            IgnoreColumn.shouldIgnore(mp, IgnoreTarget.SELECT)
+            !IgnoreColumn.shouldIgnore(mp, IgnoreTarget.SELECT)
         }
 
         // The list to be returned

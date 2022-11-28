@@ -42,7 +42,7 @@ internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, _alias: String = ""
  */
 fun <T: Any> generateInsertQueryK(clazz: KClass<T>): String {
     val properties = clazz.memberProperties.filter { mp ->
-        IgnoreColumn.shouldIgnore(mp, IgnoreTarget.INSERT)
+        !IgnoreColumn.shouldIgnore(mp, IgnoreTarget.INSERT)
     }
 
     return "INSERT INTO `${TableName.getName(clazz)}` " +
@@ -61,7 +61,7 @@ fun <T: Any> generateInsertQueryK(clazz: KClass<T>): String {
  */
 fun <T: Any> generateUpdateQueryK(clazz: KClass<T>): String {
     val properties = clazz.memberProperties.filter { it.name != "id" }.filter { mp ->
-        IgnoreColumn.shouldIgnore(mp, IgnoreTarget.UPDATE)
+        !IgnoreColumn.shouldIgnore(mp, IgnoreTarget.UPDATE)
     }
 
     return "UPDATE `${TableName.getName(clazz)}` " +
@@ -87,7 +87,7 @@ inline fun <reified T: Any> generateSelectColumns(alias: String = "") = generate
 
 fun <T: Any> generateSelectColumnsK(clazz: KClass<T>, alias: String = "") =
     clazz.memberProperties.filter { mp ->
-        IgnoreColumn.shouldIgnore(mp, IgnoreTarget.SELECT)
+        !IgnoreColumn.shouldIgnore(mp, IgnoreTarget.SELECT)
     }.joinToString(separator = ",") { fromValueForQuery(it, alias) }
 
 /**
