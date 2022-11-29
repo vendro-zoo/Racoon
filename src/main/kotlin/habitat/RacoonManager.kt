@@ -10,6 +10,7 @@ import habitat.racoons.ExecuteRacoon
 import habitat.racoons.InsertRacoon
 import habitat.racoons.QueryRacoon
 import internals.configuration.ConnectionSettings
+import internals.exceptions.ConnectionUnavailable
 import internals.exceptions.connectionClosedException
 import internals.model.getValueK
 import internals.query.generateDeleteQueryK
@@ -53,7 +54,7 @@ class RacoonManager(
      * @throws SQLException if the connection is already closed.
      */
     internal fun close() {
-        if (closed) throw SQLException("Connection is already closed.")
+        if (closed || connection.isClosed) throw ConnectionUnavailable("The connection is already closed")
         connection.close()
         closed = true
     }
@@ -65,7 +66,7 @@ class RacoonManager(
      * @throws SQLException if the connection is closed.
      */
     fun commit() = apply {
-        if (closed) throw connectionClosedException()
+        if (closed || connection.isClosed) throw connectionClosedException()
         if (finalOpExecuted) throw IllegalStateException("Can't commit after final operation has been executed")
         finalOpExecuted = true
         connection.commit()
@@ -78,7 +79,7 @@ class RacoonManager(
      * @throws SQLException if the connection is closed.
      */
     fun rollback() = apply {
-        if (closed) throw connectionClosedException()
+        if (closed || connection.isClosed) throw connectionClosedException()
         if (finalOpExecuted) throw IllegalStateException("Can't rollback after final operation has been executed")
         finalOpExecuted = true
         connection.rollback()
@@ -100,7 +101,11 @@ class RacoonManager(
                 it
             },
             {
-                rollback()
+                try {
+                    rollback()
+                } catch (e: ConnectionUnavailable) {
+                    throw ConnectionUnavailable(it)
+                }
                 release()
                 throw it
             })
@@ -114,7 +119,7 @@ class RacoonManager(
      * @throws SQLException if the connection is closed.
      */
     fun release() {
-        if (closed) throw connectionClosedException()
+        if (closed || connection.isClosed) throw connectionClosedException()
         if (!finalOpExecuted) throw IllegalStateException("Can't release before final operation has been executed")
         this.closed = true
         this.cache.clean()
@@ -408,6 +413,7 @@ class RacoonManager(
      * @return An [InsertRacoon] capable of handling the query and its results.
      */
     fun importInsertRacoon(fileName: String): InsertRacoon = createInsertRacoon(readSQLResourceFile(fileName))
+
     /**
      * Creates an [ExecuteRacoon] with the given query.
      *

@@ -7,4 +7,4 @@ import java.sql.SQLException
  *
  * @return an [SQLException]
  */
-fun connectionClosedException() = SQLException("The connection is closed")
+fun connectionClosedException() = ConnectionUnavailable("The connection is closed")
