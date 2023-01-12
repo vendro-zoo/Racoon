@@ -1,8 +1,8 @@
-package it.zoo.vendro.racoon.habitat.racoons
+package it.zoo.vendro.racoon.habitat.statements
 
 import it.zoo.vendro.racoon.habitat.ConnectionManager
-import it.zoo.vendro.racoon.habitat.racoons.parameters.ParameterMapping
-import it.zoo.vendro.racoon.habitat.racoons.parameters.Parameters
+import it.zoo.vendro.racoon.habitat.statements.parameters.ParameterMapping
+import it.zoo.vendro.racoon.habitat.statements.parameters.Parameters
 import java.sql.PreparedStatement
 import java.sql.SQLException
 

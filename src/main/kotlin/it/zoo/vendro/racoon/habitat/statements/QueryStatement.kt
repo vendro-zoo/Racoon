@@ -1,4 +1,4 @@
-package it.zoo.vendro.racoon.habitat.racoons
+package it.zoo.vendro.racoon.habitat.statements
 
 import it.zoo.vendro.racoon.habitat.ConnectionManager
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration

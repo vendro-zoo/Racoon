@@ -6,9 +6,9 @@ import it.zoo.vendro.racoon.habitat.definition.ColumnName
 import it.zoo.vendro.racoon.habitat.definition.IgnoreColumn
 import it.zoo.vendro.racoon.habitat.definition.IgnoreTarget
 import it.zoo.vendro.racoon.habitat.definition.Table
-import it.zoo.vendro.racoon.habitat.racoons.ExecuteStatement
-import it.zoo.vendro.racoon.habitat.racoons.InsertStatement
-import it.zoo.vendro.racoon.habitat.racoons.QueryStatement
+import it.zoo.vendro.racoon.habitat.statements.ExecuteStatement
+import it.zoo.vendro.racoon.habitat.statements.InsertStatement
+import it.zoo.vendro.racoon.habitat.statements.QueryStatement
 import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.internals.exceptions.ConnectionUnavailable
 import it.zoo.vendro.racoon.internals.exceptions.connectionClosedException

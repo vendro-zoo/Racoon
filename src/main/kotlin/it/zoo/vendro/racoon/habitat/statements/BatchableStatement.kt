@@ -1,7 +1,7 @@
-package it.zoo.vendro.racoon.habitat.racoons
+package it.zoo.vendro.racoon.habitat.statements
 
 import it.zoo.vendro.racoon.habitat.ConnectionManager
-import it.zoo.vendro.racoon.habitat.racoons.parameters.Parameters
+import it.zoo.vendro.racoon.habitat.statements.parameters.Parameters
 
 
 abstract class BatchableStatement<R: BatchableStatement<R>>(

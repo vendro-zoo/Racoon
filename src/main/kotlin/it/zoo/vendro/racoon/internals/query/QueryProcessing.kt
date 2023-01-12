@@ -1,7 +1,7 @@
 package it.zoo.vendro.racoon.internals.query
 
-import it.zoo.vendro.racoon.habitat.racoons.parameters.ParameterMapping
-import it.zoo.vendro.racoon.habitat.racoons.parameters.Parameters
+import it.zoo.vendro.racoon.habitat.statements.parameters.ParameterMapping
+import it.zoo.vendro.racoon.habitat.statements.parameters.Parameters
 import it.zoo.vendro.racoon.internals.extensions.isInQuotes
 
 object QueryProcessing {
