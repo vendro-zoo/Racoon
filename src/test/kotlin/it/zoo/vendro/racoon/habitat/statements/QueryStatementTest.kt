@@ -1,4 +1,4 @@
-package it.zoo.vendro.habitat.racoons
+package it.zoo.vendro.racoon.habitat.statements
 
 import it.zoo.vendro.racoon.habitat.ConnectionManager
 import it.zoo.vendro.racoon.habitat.ConnectionPool
@@ -19,6 +19,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class QueryStatementTest {
+    val pool = ConnectionPool()
+    
     lateinit var connectionManager: ConnectionManager
 
     // Configuring the connection settings
@@ -43,7 +45,7 @@ internal class QueryStatementTest {
     // Creating a new racoon manager
     @BeforeEach
     internal fun setUp() {
-        connectionManager = ConnectionPool.getManager()
+        connectionManager = pool.getManager()
     }
 
     // Closing the racoon manager
@@ -196,7 +198,7 @@ internal class QueryStatementTest {
 
     @Test
     internal fun mapToCustom() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val pair = rm.createQuery("SELECT 5, 3")
                 .mapToCustom { it.getInt(1) to it.getInt(2) }.first()
 
@@ -221,7 +223,7 @@ internal class QueryStatementTest {
             var OWNERID: LazyId<Owner>? = null,
         ) : Table
 
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val cat = rm.createQuery("SELECT * FROM cat")
                 .mapToClass<CustomCat>().first()
 
@@ -231,7 +233,7 @@ internal class QueryStatementTest {
 
     @Test
     internal fun inQuery() {
-        val cats = ConnectionPool.getManager().use { rm ->
+        val cats = pool.getManager().use { rm ->
             rm.createQuery("SELECT * FROM cat WHERE name IN (:names)")
                 .setParam("names", listOf("Tom",
                         "Garfield",
@@ -250,7 +252,7 @@ internal class QueryStatementTest {
 
     @Test
     internal fun inQuery2() {
-        val cats = ConnectionPool.getManager().use { rm ->
+        val cats = pool.getManager().use { rm ->
             rm.createQuery("SELECT * FROM cat WHERE name IN (?)")
                 .setParam(1, listOf("Tom",
                     "Garfield",

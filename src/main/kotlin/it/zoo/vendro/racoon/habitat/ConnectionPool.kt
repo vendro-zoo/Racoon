@@ -7,7 +7,7 @@ import java.sql.Connection
 import java.sql.SQLException
 import java.util.concurrent.ConcurrentLinkedDeque
 
-object ConnectionPool {
+class ConnectionPool {
     private val availableConnections: ConcurrentLinkedDeque<Connection> = ConcurrentLinkedDeque()
     private val unavailableManagers: MutableSet<ConnectionManager> = mutableSetOf()
 
@@ -47,7 +47,7 @@ object ConnectionPool {
         do {
             // Get the first available manager
             val c = availableConnections.removeLastOrNull() ?: break
-            val manager = ConnectionManager(c)
+            val manager = ConnectionManager(c, this)
 
             // Check if the manager is still available, if not, check the next one
             if (!ping(manager)) continue
@@ -59,7 +59,7 @@ object ConnectionPool {
         } while (true)
 
         // Return a new manager
-        val manager = ConnectionManager.fromSettings(settings)
+        val manager = ConnectionManager.fromSettings(settings, this)
         unavailableManagers.add(manager)
         return manager
     }

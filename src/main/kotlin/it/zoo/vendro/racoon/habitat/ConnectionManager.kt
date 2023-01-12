@@ -28,6 +28,7 @@ import kotlin.reflect.full.memberProperties
 @Suppress("unused")
 class ConnectionManager(
     internal val connection: Connection,
+    internal val pool: ConnectionPool,
 ) {
     /**
      * A state indicating whether a final operation such as commit or rollback has been performed.
@@ -123,7 +124,7 @@ class ConnectionManager(
         if (!finalOpExecuted) throw IllegalStateException("Can't release before final operation has been executed")
         this.closed = true
         this.cache.clean()
-        ConnectionPool.releaseManager(this)
+        pool.releaseManager(this)
     }
 
     /**
@@ -438,8 +439,11 @@ class ConnectionManager(
          * @param connectionSettings The connection settings to use.
          * @return A [ConnectionManager] instance.
          */
-        internal fun fromSettings(connectionSettings: ConnectionSettings): ConnectionManager {
-            val rm = ConnectionManager(retryUntilNotNull { DriverManager.getConnection(connectionSettings.toString()) })
+        internal fun fromSettings(connectionSettings: ConnectionSettings, pool: ConnectionPool): ConnectionManager {
+            val rm = ConnectionManager(
+                retryUntilNotNull { DriverManager.getConnection(connectionSettings.toString()) },
+                pool
+            )
             val idleTimeout = RacoonConfiguration.Connection.connectionSettings.idleTimeout
 
             rm.connection.autoCommit = false

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
 internal class LazyIdTest {
+    val pool = ConnectionPool()
 
     companion object {
         @BeforeAll
@@ -33,7 +34,7 @@ internal class LazyIdTest {
 
     @Test
     fun insertLazy() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val cat = rm.insert(
                 Cat(
                     name = "Kitty",
@@ -49,7 +50,7 @@ internal class LazyIdTest {
 
     @Test
     fun insertDefined() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val owner = rm.find<Owner>(2)!!
             val cat = rm.insert(
                 Cat(
@@ -66,7 +67,7 @@ internal class LazyIdTest {
 
     @Test
     fun insertEmpty() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val cat = rm.insert(
                 Cat(
                     name = "Kitty",
@@ -81,7 +82,7 @@ internal class LazyIdTest {
 
     @Test
     fun evaluateLazy() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val cat = rm.find<Cat>(1)!!
 
             assertNotNull(cat.owner_id?.id)

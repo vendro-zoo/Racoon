@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 
 internal class ConnectionManagerTest {
     val verbose = false
+    val pool = ConnectionPool()
 
     @BeforeEach
     fun setUp() {
@@ -30,7 +31,7 @@ internal class ConnectionManagerTest {
     @Test
     fun useCommit() {
         var catId: Int? = null
-        ConnectionPool.getManager().use {
+        pool.getManager().use {
             val cat = Cat(
                 name = "test",
                 age = 10,
@@ -39,7 +40,7 @@ internal class ConnectionManagerTest {
             it.insert(cat)
             catId = cat.id
         }
-        ConnectionPool.getManager().use {
+        pool.getManager().use {
             assertNotNull(catId)
             assertNotNull(it.find<Cat>(catId!!))
         }
@@ -49,7 +50,7 @@ internal class ConnectionManagerTest {
     fun useRollback() {
         var catId: Int? = null
         runCatching {
-            ConnectionPool.getManager().use {
+            pool.getManager().use {
                 val cat = Cat(
                     name = "test",
                     age = 10,
@@ -70,7 +71,7 @@ internal class ConnectionManagerTest {
 
     @Test
     fun delete() {
-        ConnectionPool.getManager().use {
+        pool.getManager().use {
             val cat = Cat(
                 name = "test",
                 age = 10,
@@ -84,7 +85,7 @@ internal class ConnectionManagerTest {
 
     @Test
     fun update() {
-        ConnectionPool.getManager().use {
+        pool.getManager().use {
             val cat = Cat(
                 name = "test",
                 age = 10,
@@ -100,13 +101,13 @@ internal class ConnectionManagerTest {
     @Test
     fun timeout() {
         var hash: Int? = null
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             hash = rm.connection.hashCode()
             val cat = rm.find<Cat>(1)
             if(verbose) println(cat?.name)
         }
         Thread.sleep(4000)
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val cat = rm.find<Cat>(1)
             if(verbose) println(cat?.name)
             assertNotEquals(hash, rm.connection.hashCode())
@@ -115,7 +116,7 @@ internal class ConnectionManagerTest {
 
     @Test
     fun importSQLQuery() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val res = rm.importQuery("test1.sql")
                 .mapToString()
                 .first()

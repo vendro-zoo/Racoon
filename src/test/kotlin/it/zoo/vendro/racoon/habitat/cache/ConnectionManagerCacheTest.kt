@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class ConnectionManagerCacheTest {
+    val pool = ConnectionPool()
 
     @BeforeEach
     fun setUp() {
@@ -30,7 +31,7 @@ internal class ConnectionManagerCacheTest {
 
     @Test
     fun repeatedFind() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val cat = rm.createQuery("SELECT * FROM cat LIMIT 1")
                 .mapToClass<Cat>()
                 .first().id!!
@@ -46,7 +47,7 @@ internal class ConnectionManagerCacheTest {
 
     @Test
     fun replaceInCacheFind() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val cat1 = rm.createQuery("SELECT * FROM cat LIMIT 1")
                 .mapToClass<Cat>()
                 .first().id!!
@@ -70,7 +71,7 @@ internal class ConnectionManagerCacheTest {
 
     @Test
     fun insertCache() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val cat = Cat(name = "test", age = 10)
             rm.insert(cat)
 

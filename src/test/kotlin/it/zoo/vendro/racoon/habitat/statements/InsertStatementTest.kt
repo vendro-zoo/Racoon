@@ -1,4 +1,4 @@
-package it.zoo.vendro.habitat.racoons
+package it.zoo.vendro.racoon.habitat.statements
 
 import it.zoo.vendro.racoon.habitat.ConnectionPool
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class InsertStatementTest {
+    val pool = ConnectionPool()
 
     @BeforeEach
     fun setUp() {
@@ -27,7 +28,7 @@ internal class InsertStatementTest {
 
     @Test
     fun executeBatch() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val ir = rm.createInsert("INSERT INTO cat (name, age) VALUES (:name, :age)")
 
             ir.addBatch {

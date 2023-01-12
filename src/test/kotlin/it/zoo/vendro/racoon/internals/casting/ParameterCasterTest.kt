@@ -1,4 +1,4 @@
-package it.zoo.vendro.internals.casting
+package it.zoo.vendro.racoon.internals.casting
 
 import it.zoo.vendro.habitat.definition.*
 import it.zoo.vendro.racoon.habitat.ConnectionPool
@@ -6,7 +6,6 @@ import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.habitat.context.FromParameterCasterContext
 import it.zoo.vendro.racoon.habitat.context.ToParameterCasterContext
 import it.zoo.vendro.racoon.habitat.definition.*
-import it.zoo.vendro.racoon.internals.casting.ParameterCaster
 import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.models.Owner
 import org.junit.jupiter.api.BeforeAll
@@ -14,6 +13,8 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 internal class ParameterCasterTest {
+    val pool = ConnectionPool()
+
     data class Int2(val i: Int)
 
     class Int2Caster : ParameterCaster<Int2, Int> {
@@ -54,7 +55,7 @@ internal class ParameterCasterTest {
 
     @Test
     fun customParameterInsert() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val cat = Cat2(age = Int2(2), name = "cat")
             rm.insert(cat)
 

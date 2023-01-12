@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class EnumCasterTest {
+    val pool = ConnectionPool()
+
     @BeforeEach
     fun setUp() {
         RacoonConfiguration.Connection.connectionSettings =
@@ -28,7 +30,7 @@ internal class EnumCasterTest {
 
     @Test
     fun enumInsert() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             rm.insert(
                 Dog(
                     name = "Star",
@@ -40,7 +42,7 @@ internal class EnumCasterTest {
 
     @Test
     fun enumInsertWithColumnName() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             rm.insert(
                 Dog(
                     name = "Star",
@@ -53,7 +55,7 @@ internal class EnumCasterTest {
 
     @Test
     fun enumSelect() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val dog = rm.insert(
                 Dog(
                     name = "Star",
@@ -68,7 +70,7 @@ internal class EnumCasterTest {
 
     @Test
     fun enumSelectWithColumnName() {
-        ConnectionPool.getManager().use { rm ->
+        pool.getManager().use { rm ->
             val dog = rm.insert(
                 Dog(
                     name = "Star",
