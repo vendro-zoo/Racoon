@@ -1,7 +1,5 @@
-package it.zoo.vendro.internals.model
+package it.zoo.vendro.racoon.internals.model
 
-import it.zoo.vendro.racoon.internals.model.getValue
-import it.zoo.vendro.racoon.internals.model.getValueK
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

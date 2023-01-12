@@ -7,7 +7,7 @@ import kotlin.reflect.full.findAnnotation
 
 /**
  * An annotation that can be used on a primary constructor parameter or property to override
- * the default name of the column as returned by [habitat.configuration.RacoonConfiguration.Naming.columnNameMapper].
+ * the default name of the column as returned by [it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration.Naming.columnNameMapper].
  */
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.RUNTIME)

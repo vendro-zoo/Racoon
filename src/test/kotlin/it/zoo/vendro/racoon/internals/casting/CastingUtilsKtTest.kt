@@ -1,4 +1,4 @@
-package it.zoo.vendro.internals.casting
+package it.zoo.vendro.racoon.internals.casting
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -14,23 +14,23 @@ internal class CastingUtilsKtTest {
         val parameter = TestClass::class.primaryConstructor!!.parameters.first()
         val value = 1
 
-        runCatching { it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, "test") }
+        runCatching { castEquivalent(parameter, "test") }
             .fold(
                 onSuccess = { fail("Should fail") },
                 onFailure = { if (it.message != "Cannot cast test from String to Int") fail("Wrong error message") }
             )
 
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value)
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toLong())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toShort())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toByte())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toFloat())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toDouble())
+        castEquivalent(parameter, value)
+        castEquivalent(parameter, value.toLong())
+        castEquivalent(parameter, value.toShort())
+        castEquivalent(parameter, value.toByte())
+        castEquivalent(parameter, value.toFloat())
+        castEquivalent(parameter, value.toDouble())
 
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toUInt())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toULong())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toUShort())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toUByte())
+        castEquivalent(parameter, value.toUInt())
+        castEquivalent(parameter, value.toULong())
+        castEquivalent(parameter, value.toUShort())
+        castEquivalent(parameter, value.toUByte())
     }
 
     @Test
@@ -38,22 +38,22 @@ internal class CastingUtilsKtTest {
         val parameter = TestClass2::class.primaryConstructor!!.parameters.first()
         val value = 1
 
-        runCatching { it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, "test") }
+        runCatching { castEquivalent(parameter, "test") }
             .fold(
                 onSuccess = { fail("Should fail") },
                 onFailure = { if (it.message != "Cannot cast test from String to UInt") fail("Wrong error message") }
             )
 
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value)
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toLong())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toShort())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toByte())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toFloat())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toDouble())
+        castEquivalent(parameter, value)
+        castEquivalent(parameter, value.toLong())
+        castEquivalent(parameter, value.toShort())
+        castEquivalent(parameter, value.toByte())
+        castEquivalent(parameter, value.toFloat())
+        castEquivalent(parameter, value.toDouble())
 
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toUInt())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toULong())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toUShort())
-        it.zoo.vendro.racoon.internals.casting.castEquivalent(parameter, value.toUByte())
+        castEquivalent(parameter, value.toUInt())
+        castEquivalent(parameter, value.toULong())
+        castEquivalent(parameter, value.toUShort())
+        castEquivalent(parameter, value.toUByte())
     }
 }

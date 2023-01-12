@@ -6,8 +6,8 @@ import kotlin.reflect.full.findAnnotation
 
 /**
  * An annotation that can be used on a class implementing the [Table] interface to override
- * the default name of the table as returned by [habitat.configuration.RacoonConfiguration.Naming.tableNameMapper]
- * and [habitat.configuration.RacoonConfiguration.Naming.tableAliasMapper].
+ * the default name of the table as returned by [it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration.Naming.tableNameMapper]
+ * and [it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration.Naming.tableAliasMapper].
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)

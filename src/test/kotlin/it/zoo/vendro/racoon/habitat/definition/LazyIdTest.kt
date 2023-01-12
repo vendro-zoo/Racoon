@@ -1,8 +1,7 @@
-package it.zoo.vendro.habitat.definition
+package it.zoo.vendro.racoon.habitat.definition
 
 import it.zoo.vendro.racoon.habitat.ConnectionPool
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
-import it.zoo.vendro.racoon.habitat.definition.LazyId
 import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.internals.mappers.NameMapper
 import it.zoo.vendro.racoon.models.Cat

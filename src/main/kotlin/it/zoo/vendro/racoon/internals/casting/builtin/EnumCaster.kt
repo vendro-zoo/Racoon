@@ -27,7 +27,7 @@ class EnumCaster : ParameterCaster<Enum<*>, String> {
                 }!!
 
         fun getEnumFromName(name: String, kClass: KClass<*>) =
-            @Suppress("UPPER_BOUND_VIOLATED", "UNCHECKED_CAST")
+            @Suppress("UPPER_BOUND_VIOLATED", "UNCHECKED_CAST", "RemoveExplicitTypeArguments")
             java.lang.Enum.valueOf<Any>(kClass.java as Class<Any>, getEnumNameFromName(name, kClass)) as Enum<*>
 
         fun getEnumNameFromName(name: String, kClass: KClass<*>) =

@@ -1,6 +1,5 @@
-package it.zoo.vendro.internals.mappers
+package it.zoo.vendro.racoon.internals.mappers
 
-import it.zoo.vendro.racoon.internals.mappers.TableAliasMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

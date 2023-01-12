@@ -1,4 +1,4 @@
-package it.zoo.vendro.internals.casting.builtin
+package it.zoo.vendro.racoon.internals.casting.builtin
 
 import it.zoo.vendro.racoon.habitat.ConnectionPool
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration

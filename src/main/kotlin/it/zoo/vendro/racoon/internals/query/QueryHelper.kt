@@ -22,17 +22,17 @@ internal fun toValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfigu
     else ":${ColumnName.getName(kProperty1, config)}"
 }
 
-internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfiguration, _alias: String = ""): String {
+internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfiguration, alias: String = ""): String {
     val kClass = kProperty1.returnType.classifier as KClass<*>
     val caster = config.casting.getFirstCaster(kClass)
 
-    val alias = if (_alias.isEmpty()) "" else "`$_alias`."
-    val asAlias = if (_alias.isEmpty()) "" else "${_alias}_"
+    val alias1 = if (alias.isEmpty()) "" else "`$alias`."
+    val asAlias = if (alias.isEmpty()) "" else "${alias}_"
 
     return if (caster != null && (caster.fromQueryPostfix.isNotBlank() || caster.fromQueryPrefix.isNotBlank()))
-        "${caster.fromQueryPrefix}$alias`${ColumnName.getName(kProperty1, config)}`${caster.fromQueryPostfix} " +
+        "${caster.fromQueryPrefix}$alias1`${ColumnName.getName(kProperty1, config)}`${caster.fromQueryPostfix} " +
                 "as `$asAlias${ColumnName.getName(kProperty1, config)}`"
-    else "$alias`${ColumnName.getName(kProperty1, config)}`"
+    else "$alias1`${ColumnName.getName(kProperty1, config)}`"
 }
 
 /**

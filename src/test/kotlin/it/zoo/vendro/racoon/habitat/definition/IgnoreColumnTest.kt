@@ -1,8 +1,6 @@
-package it.zoo.vendro.habitat.definition
+package it.zoo.vendro.racoon.habitat.definition
 
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
-import it.zoo.vendro.racoon.habitat.definition.Table
-import it.zoo.vendro.racoon.habitat.definition.TableName
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

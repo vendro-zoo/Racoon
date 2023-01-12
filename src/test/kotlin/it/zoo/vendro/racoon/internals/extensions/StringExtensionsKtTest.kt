@@ -1,6 +1,5 @@
-package it.zoo.vendro.internals.extensions
+package it.zoo.vendro.racoon.internals.extensions
 
-import it.zoo.vendro.racoon.internals.extensions.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

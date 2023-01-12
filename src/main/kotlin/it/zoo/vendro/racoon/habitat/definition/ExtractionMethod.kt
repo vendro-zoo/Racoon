@@ -98,25 +98,25 @@ sealed class ExtractionMethod<T> {
     }
 
     object AsciiStream : ExtractionMethod<InputStream>() {
-        override fun extract(rs: ResultSet, columnName: kotlin.String): java.io.InputStream {
+        override fun extract(rs: ResultSet, columnName: kotlin.String): InputStream {
             return rs.getAsciiStream(columnName)
         }
     }
 
     object BinaryStream : ExtractionMethod<InputStream>() {
-        override fun extract(rs: ResultSet, columnName: kotlin.String): java.io.InputStream {
+        override fun extract(rs: ResultSet, columnName: kotlin.String): InputStream {
             return rs.getBinaryStream(columnName)
         }
     }
 
     object CharacterStream : ExtractionMethod<Reader>() {
-        override fun extract(rs: ResultSet, columnName: kotlin.String): java.io.Reader {
+        override fun extract(rs: ResultSet, columnName: kotlin.String): Reader {
             return rs.getCharacterStream(columnName)
         }
     }
 
     object Object : ExtractionMethod<Any?>() {
-        override fun extract(rs: ResultSet, columnName: kotlin.String): kotlin.Any? {
+        override fun extract(rs: ResultSet, columnName: kotlin.String): Any? {
             return rs.getObject(columnName)
         }
     }

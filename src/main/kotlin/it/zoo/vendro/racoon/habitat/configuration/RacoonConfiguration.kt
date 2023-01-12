@@ -63,7 +63,7 @@ class RacoonConfiguration(
          *
          * The default lambda is a function that returns the name of the class as-is.
          *
-         * @see [internals.mappers.TableAliasMapper] for a list of built-in mappers.
+         * @see [it.zoo.vendro.racoon.internals.mappers.TableAliasMapper] for a list of built-in mappers.
          */
         val tableAliasMapper: (String) -> String = { it },
 
@@ -72,7 +72,7 @@ class RacoonConfiguration(
          *
          * The default lambda is a function that returns the name of the class as-is.
          *
-         * @see [internals.mappers.NameMapper] for a list of built-in mappers.
+         * @see [it.zoo.vendro.racoon.internals.mappers.NameMapper] for a list of built-in mappers.
          */
         val tableNameMapper: (String) -> String = { it },
 
@@ -81,7 +81,7 @@ class RacoonConfiguration(
          *
          * The default lambda is a function that returns the name of the property as-is.
          *
-         * @see [internals.mappers.NameMapper] for a list of built-in mappers.
+         * @see [it.zoo.vendro.racoon.internals.mappers.NameMapper] for a list of built-in mappers.
          */
         val columnNameMapper: (String) -> String = { it }
     )
@@ -132,7 +132,7 @@ class RacoonConfiguration(
          * @param jClass The class of the parameter to cast (Java type).
          * @param sClass The class of the parameter to cast to (SQL type).
          * @param caster The caster to use to cast the parameter.
-         * @see [internals.casting.ParameterCaster]
+         * @see [it.zoo.vendro.racoon.internals.casting.ParameterCaster]
          */
         fun <J : Any, S : Any> setCaster(jClass: KClass<J>, sClass: KClass<S>, caster: ParameterCaster<J, S>) = apply {
             val wJClass = WKClass(jClass)
@@ -155,7 +155,7 @@ class RacoonConfiguration(
          * @param jClass The class of the parameter to cast (Java type).
          * @param sClass The class of the parameter to cast to (SQL type).
          * @return The [ParameterCaster] for the given [KClass] or `null` if no caster is found.
-         * @see [internals.casting.ParameterCaster]
+         * @see [it.zoo.vendro.racoon.internals.casting.ParameterCaster]
          */
         fun getCaster(jClass: KClass<*>, sClass: KClass<*>): ParameterCaster<Any, Any>? {
             val wJClass = WKClass(jClass)

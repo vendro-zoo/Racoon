@@ -7,19 +7,19 @@ import it.zoo.vendro.racoon.internals.extensions.isInQuotes
 object QueryProcessing {
     /**
      * Converts a query with mixed named and indexed parameters to an indexed one only.
-     * @param _query the query to be converted.
+     * @param query the query to be converted.
      * @return the converted query, the indexed parameter mappings and the named parameter mappings.
      */
-    fun reconstructQuery(_query: String, parameters: Parameters): Pair<String, ParameterMapping> {
-        var query = _query
+    fun reconstructQuery(query: String, parameters: Parameters): Pair<String, ParameterMapping> {
+        var query1 = query
 
-        query = replaceLists(query, parameters)
+        query1 = replaceLists(query1, parameters)
 
         // Generating the mapping for the parameters
-        val mapping = generateParametersMapping(query)
+        val mapping = generateParametersMapping(query1)
 
         // Generating the query without the parameters
-        val processedQuery = removeNamedParameters(query)
+        val processedQuery = removeNamedParameters(query1)
 
         return Pair(processedQuery, mapping)
     }
