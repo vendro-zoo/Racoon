@@ -31,7 +31,7 @@ internal class ConnectionManagerCacheTest {
     @Test
     fun repeatedFind() {
         ConnectionPool.getManager().use { rm ->
-            val cat = rm.createQueryRacoon("SELECT * FROM cat LIMIT 1")
+            val cat = rm.createQuery("SELECT * FROM cat LIMIT 1")
                 .mapToClass<Cat>()
                 .first().id!!
 
@@ -47,10 +47,10 @@ internal class ConnectionManagerCacheTest {
     @Test
     fun replaceInCacheFind() {
         ConnectionPool.getManager().use { rm ->
-            val cat1 = rm.createQueryRacoon("SELECT * FROM cat LIMIT 1")
+            val cat1 = rm.createQuery("SELECT * FROM cat LIMIT 1")
                 .mapToClass<Cat>()
                 .first().id!!
-            val cat2 = rm.createQueryRacoon("SELECT * FROM cat LIMIT 1 OFFSET 1")
+            val cat2 = rm.createQuery("SELECT * FROM cat LIMIT 1 OFFSET 1")
                 .mapToClass<Cat>()
                 .first().id!!
 

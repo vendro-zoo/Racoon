@@ -174,7 +174,7 @@ class ConnectionManager(
      * @return The record mapped to the type [T].
      */
     fun <T : Table> findUncachedK(id: Int, kClass: KClass<T>): T? {
-        createQueryRacoon(generateSelectQueryK(kClass)).use { queryRacoon ->
+        createQuery(generateSelectQueryK(kClass)).use { queryRacoon ->
             queryRacoon.setParam("id", id)
             return queryRacoon.mapToClassK(kClass).firstOrNull()
         }
@@ -228,7 +228,7 @@ class ConnectionManager(
     fun <T : Table> insertUncachedK(obj: T, kClass: KClass<T>) = obj.apply {
         val parameters = kClass.memberProperties
 
-        createInsertRacoon(generateInsertQueryK(kClass)).use { insertRacoon ->
+        createInsert(generateInsertQueryK(kClass)).use { insertRacoon ->
             for (field in parameters) {
                 if (IgnoreColumn.shouldIgnore(field, IgnoreTarget.INSERT)) continue
                 insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
@@ -281,7 +281,7 @@ class ConnectionManager(
     fun <T : Table> updateUncachedK(obj: T, kClass: KClass<T>) = obj.apply {
         val parameters = kClass.memberProperties
 
-        createExecuteRacoon(generateUpdateQueryK(kClass)).use { executeRacoon ->
+        createExecute(generateUpdateQueryK(kClass)).use { executeRacoon ->
             for (field in parameters) {
                 if (IgnoreColumn.shouldIgnore(field, IgnoreTarget.UPDATE)) continue
                 executeRacoon.setParam(ColumnName.getName(field), field.get(obj))
@@ -341,7 +341,7 @@ class ConnectionManager(
     fun <T : Table> deleteUncachedK(obj: T, kClass: KClass<T>) = apply {
         val id = obj.id ?: throw IllegalArgumentException("Can't delete object without id")
 
-        createExecuteRacoon(generateDeleteQueryK(kClass)).use { executeRacoon ->
+        createExecute(generateDeleteQueryK(kClass)).use { executeRacoon ->
             executeRacoon.setParam("id", id).execute()
         }
     }
@@ -388,7 +388,7 @@ class ConnectionManager(
      * @param query The query to execute.
      * @return A [QueryStatement] capable of handling the query and its results.
      */
-    fun createQueryRacoon(@Language("mysql") query: String): QueryStatement = QueryStatement(this, query)
+    fun createQuery(@Language("mysql") query: String): QueryStatement = QueryStatement(this, query)
 
     /**
      * Creates a [QueryStatement] with the given sql file.
@@ -396,7 +396,7 @@ class ConnectionManager(
      * @param fileName The name of the file to execute.
      * @return A [QueryStatement] capable of handling the query and its results.
      */
-    fun importQueryRacoon(fileName: String): QueryStatement = createQueryRacoon(readSQLResourceFile(fileName))
+    fun importQuery(fileName: String): QueryStatement = createQuery(readSQLResourceFile(fileName))
 
     /**
      * Creates an [InsertStatement] with the given query.
@@ -404,7 +404,7 @@ class ConnectionManager(
      * @param query The query to execute.
      * @return An [InsertStatement] capable of handling the query and its results.
      */
-    fun createInsertRacoon(@Language("mysql") query: String): InsertStatement = InsertStatement(this, query)
+    fun createInsert(@Language("mysql") query: String): InsertStatement = InsertStatement(this, query)
 
     /**
      * Creates an [InsertStatement] with the given sql file.
@@ -412,7 +412,7 @@ class ConnectionManager(
      * @param fileName The name of the file to execute.
      * @return An [InsertStatement] capable of handling the query and its results.
      */
-    fun importInsertRacoon(fileName: String): InsertStatement = createInsertRacoon(readSQLResourceFile(fileName))
+    fun importInsert(fileName: String): InsertStatement = createInsert(readSQLResourceFile(fileName))
 
     /**
      * Creates an [ExecuteStatement] with the given query.
@@ -421,7 +421,7 @@ class ConnectionManager(
      * @return An [ExecuteStatement] capable of handling the query.
      */
 
-    fun createExecuteRacoon(@Language("mysql") query: String): ExecuteStatement = ExecuteStatement(this, query)
+    fun createExecute(@Language("mysql") query: String): ExecuteStatement = ExecuteStatement(this, query)
 
     /**
      * Creates an [ExecuteStatement] with the given sql file.
@@ -429,7 +429,7 @@ class ConnectionManager(
      * @param fileName The name of the file to execute.
      * @return An [ExecuteStatement] capable of handling the query.
      */
-    fun importExecuteRacoon(fileName: String): ExecuteStatement = createExecuteRacoon(readSQLResourceFile(fileName))
+    fun importExecute(fileName: String): ExecuteStatement = createExecute(readSQLResourceFile(fileName))
 
     internal companion object {
         /**
@@ -445,7 +445,7 @@ class ConnectionManager(
             rm.connection.autoCommit = false
 
             if (idleTimeout > 0) {
-                rm.createExecuteRacoon("SET wait_timeout = $idleTimeout, interactive_timeout = $idleTimeout")
+                rm.createExecute("SET wait_timeout = $idleTimeout, interactive_timeout = $idleTimeout")
                     .execute()
             }
 

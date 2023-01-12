@@ -61,7 +61,7 @@ internal class QueryStatementTest {
      */
     @Test
     internal fun singleQueryMapping() {
-        val cats = connectionManager.createQueryRacoon("SELECT * FROM cat")
+        val cats = connectionManager.createQuery("SELECT * FROM cat")
             .use { it.mapToClass<Cat>() }
 
         cats.forEach {
@@ -75,7 +75,7 @@ internal class QueryStatementTest {
      */
     @Test
     internal fun singleQueryDefaultAlias() {
-        val cats = connectionManager.createQueryRacoon("SELECT c.* FROM cat c")
+        val cats = connectionManager.createQuery("SELECT c.* FROM cat c")
             .use { it.mapToClass<Cat>() }
 
         cats.forEach {
@@ -89,7 +89,7 @@ internal class QueryStatementTest {
      */
     @Test
     internal fun singleQueryCustomAlias() {
-        val cats = connectionManager.createQueryRacoon("SELECT alias.* FROM cat alias")
+        val cats = connectionManager.createQuery("SELECT alias.* FROM cat alias")
             .use {
                 it.setAlias(Cat::class, "alias")
                     .mapToClass<Cat>()
@@ -109,7 +109,7 @@ internal class QueryStatementTest {
         data class CatAndOwner(val cat: Cat, val owner: Owner?)
 
         val catAndOwners =
-            connectionManager.createQueryRacoon("SELECT c.*, o.* FROM cat c LEFT JOIN owner o ON c.owner_id = o.id")
+            connectionManager.createQuery("SELECT c.*, o.* FROM cat c LEFT JOIN owner o ON c.owner_id = o.id")
                 .use {
                     it.multiMapToClass<CatAndOwner>()
                 }
@@ -122,7 +122,7 @@ internal class QueryStatementTest {
 
     @Test
     internal fun lazyIdTest() {
-        val cats = connectionManager.createQueryRacoon("SELECT alias.* FROM cat alias")
+        val cats = connectionManager.createQuery("SELECT alias.* FROM cat alias")
             .use {
                 it.setAlias(Cat::class, "alias")
                     .mapToClass<Cat>()
@@ -136,7 +136,7 @@ internal class QueryStatementTest {
 
     @Test
     internal fun namedParameter() {
-        val cats = connectionManager.createQueryRacoon("SELECT * FROM cat WHERE name = :name")
+        val cats = connectionManager.createQuery("SELECT * FROM cat WHERE name = :name")
             .use {
                 it.setParam("name", "Garfield")
                     .mapToClass<Cat>()
@@ -148,7 +148,7 @@ internal class QueryStatementTest {
 
     @Test
     internal fun indexedParameter() {
-        val cats = connectionManager.createQueryRacoon("SELECT * FROM cat WHERE name = ?")
+        val cats = connectionManager.createQuery("SELECT * FROM cat WHERE name = ?")
             .use {
                 it.setParam(1, "Garfield")
                     .mapToClass<Cat>()
@@ -160,7 +160,7 @@ internal class QueryStatementTest {
 
     @Test
     internal fun countRows() {
-        val count = connectionManager.createQueryRacoon("SELECT * FROM cat")
+        val count = connectionManager.createQuery("SELECT * FROM cat")
             .use {
                 it.execute().countRows()
             }
@@ -169,7 +169,7 @@ internal class QueryStatementTest {
 
     @Test
     internal fun mapToNumber() {
-        val count: List<Int?> = connectionManager.createQueryRacoon("SELECT COUNT(*) FROM cat")
+        val count: List<Int?> = connectionManager.createQuery("SELECT COUNT(*) FROM cat")
             .use {
                 it.execute().mapToNumber()
             }
@@ -178,7 +178,7 @@ internal class QueryStatementTest {
 
     @Test
     internal fun mapToNullNumber() {
-        val count: List<Int?> = connectionManager.createQueryRacoon("SELECT null")
+        val count: List<Int?> = connectionManager.createQuery("SELECT null")
             .use {
                 it.execute().mapToNumber()
             }
@@ -187,7 +187,7 @@ internal class QueryStatementTest {
 
     @Test
     internal fun mapToString() {
-        val name = connectionManager.createQueryRacoon("SELECT name FROM cat")
+        val name = connectionManager.createQuery("SELECT name FROM cat")
             .use {
                 it.execute().mapToString()
             }
@@ -197,7 +197,7 @@ internal class QueryStatementTest {
     @Test
     internal fun mapToCustom() {
         ConnectionPool.getManager().use { rm ->
-            val pair = rm.createQueryRacoon("SELECT 5, 3")
+            val pair = rm.createQuery("SELECT 5, 3")
                 .mapToCustom { it.getInt(1) to it.getInt(2) }.first()
 
             assertEquals(5, pair.first)
@@ -222,7 +222,7 @@ internal class QueryStatementTest {
         ) : Table
 
         ConnectionPool.getManager().use { rm ->
-            val cat = rm.createQueryRacoon("SELECT * FROM cat")
+            val cat = rm.createQuery("SELECT * FROM cat")
                 .mapToClass<CustomCat>().first()
 
             assertNotNull(cat.id)
@@ -232,7 +232,7 @@ internal class QueryStatementTest {
     @Test
     internal fun inQuery() {
         val cats = ConnectionPool.getManager().use { rm ->
-            rm.createQueryRacoon("SELECT * FROM cat WHERE name IN (:names)")
+            rm.createQuery("SELECT * FROM cat WHERE name IN (:names)")
                 .setParam("names", listOf("Tom",
                         "Garfield",
                         "Jim"
@@ -251,7 +251,7 @@ internal class QueryStatementTest {
     @Test
     internal fun inQuery2() {
         val cats = ConnectionPool.getManager().use { rm ->
-            rm.createQueryRacoon("SELECT * FROM cat WHERE name IN (?)")
+            rm.createQuery("SELECT * FROM cat WHERE name IN (?)")
                 .setParam(1, listOf("Tom",
                     "Garfield",
                     "Jim"

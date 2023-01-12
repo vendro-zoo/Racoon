@@ -90,7 +90,7 @@ object ConnectionPool {
     private fun ping(manager: ConnectionManager): Boolean {
         try {
             // Executing a ping query to the database to check if the connection is still alive
-            val ping = manager.createQueryRacoon("SELECT 1 ping").mapToClass<Ping>()
+            val ping = manager.createQuery("SELECT 1 ping").mapToClass<Ping>()
 
             // If the result is not 1, the connection is not alive
             if (ping.isEmpty() || ping[0].ping != 1.toByte()) return false

@@ -116,7 +116,7 @@ internal class ConnectionManagerTest {
     @Test
     fun importSQLQuery() {
         ConnectionPool.getManager().use { rm ->
-            val res = rm.importQueryRacoon("test1.sql")
+            val res = rm.importQuery("test1.sql")
                 .mapToString()
                 .first()
 

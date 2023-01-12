@@ -28,7 +28,7 @@ internal class InsertStatementTest {
     @Test
     fun executeBatch() {
         ConnectionPool.getManager().use { rm ->
-            val ir = rm.createInsertRacoon("INSERT INTO cat (name, age) VALUES (:name, :age)")
+            val ir = rm.createInsert("INSERT INTO cat (name, age) VALUES (:name, :age)")
 
             ir.addBatch {
                 it.setParam("name", "Bobby")
