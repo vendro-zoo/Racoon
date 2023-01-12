@@ -5,7 +5,7 @@ import it.zoo.vendro.racoon.habitat.definition.Table
 import kotlin.math.min
 import kotlin.reflect.KClass
 
-class RacoonCache {
+class ConnectionManagerCache {
     internal var cacheSize: Int = 0
     internal val cache: MutableMap<KClass<out Table>, MutableMap<Int, Pair<Table?, Long>>> = mutableMapOf()
 

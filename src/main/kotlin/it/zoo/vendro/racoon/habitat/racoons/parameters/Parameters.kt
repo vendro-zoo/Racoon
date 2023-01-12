@@ -1,11 +1,11 @@
 package it.zoo.vendro.racoon.habitat.racoons.parameters
 
-import it.zoo.vendro.racoon.habitat.RacoonManager
+import it.zoo.vendro.racoon.habitat.ConnectionManager
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.habitat.context.ToParameterCasterContext
 import java.sql.PreparedStatement
 
-class Parameters(val manager: RacoonManager) {
+class Parameters(val manager: ConnectionManager) {
     // Query parameters
     val indexedParameters: MutableMap<Int, Any?> = mutableMapOf()
     val namedParameters: MutableMap<String, Any?> = mutableMapOf()

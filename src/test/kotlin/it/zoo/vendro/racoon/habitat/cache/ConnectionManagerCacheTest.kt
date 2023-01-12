@@ -1,6 +1,6 @@
-package it.zoo.vendro.habitat.cache
+package it.zoo.vendro.racoon.habitat.cache
 
-import it.zoo.vendro.racoon.habitat.RacoonDen
+import it.zoo.vendro.racoon.habitat.ConnectionPool
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.internals.mappers.NameMapper
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class RacoonCacheTest {
+internal class ConnectionManagerCacheTest {
 
     @BeforeEach
     fun setUp() {
@@ -30,7 +30,7 @@ internal class RacoonCacheTest {
 
     @Test
     fun repeatedFind() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val cat = rm.createQueryRacoon("SELECT * FROM cat LIMIT 1")
                 .mapToClass<Cat>()
                 .first().id!!
@@ -46,7 +46,7 @@ internal class RacoonCacheTest {
 
     @Test
     fun replaceInCacheFind() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val cat1 = rm.createQueryRacoon("SELECT * FROM cat LIMIT 1")
                 .mapToClass<Cat>()
                 .first().id!!
@@ -70,7 +70,7 @@ internal class RacoonCacheTest {
 
     @Test
     fun insertCache() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val cat = Cat(name = "test", age = 10)
             rm.insert(cat)
 

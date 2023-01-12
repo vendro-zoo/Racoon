@@ -1,14 +1,14 @@
 package it.zoo.vendro.racoon.habitat
 
-import it.zoo.vendro.racoon.habitat.cache.RacoonCache
+import it.zoo.vendro.racoon.habitat.cache.ConnectionManagerCache
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.habitat.definition.ColumnName
 import it.zoo.vendro.racoon.habitat.definition.IgnoreColumn
 import it.zoo.vendro.racoon.habitat.definition.IgnoreTarget
 import it.zoo.vendro.racoon.habitat.definition.Table
-import it.zoo.vendro.racoon.habitat.racoons.ExecuteRacoon
-import it.zoo.vendro.racoon.habitat.racoons.InsertRacoon
-import it.zoo.vendro.racoon.habitat.racoons.QueryRacoon
+import it.zoo.vendro.racoon.habitat.racoons.ExecuteStatement
+import it.zoo.vendro.racoon.habitat.racoons.InsertStatement
+import it.zoo.vendro.racoon.habitat.racoons.QueryStatement
 import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.internals.exceptions.ConnectionUnavailable
 import it.zoo.vendro.racoon.internals.exceptions.connectionClosedException
@@ -26,7 +26,7 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.memberProperties
 
 @Suppress("unused")
-class RacoonManager(
+class ConnectionManager(
     internal val connection: Connection,
 ) {
     /**
@@ -45,11 +45,11 @@ class RacoonManager(
     var closed = false
         internal set
 
-    internal val cache = RacoonCache()
+    internal val cache = ConnectionManagerCache()
 
     /**
      * Closes the connection to the database.
-     * This method should be called when the [RacoonManager] is no longer needed.
+     * This method should be called when the [ConnectionManager] is no longer needed.
      *
      * @throws SQLException if the connection is already closed.
      */
@@ -60,9 +60,9 @@ class RacoonManager(
     }
 
     /**
-     * Commits the operations performed by the [RacoonManager] to the database.
+     * Commits the operations performed by the [ConnectionManager] to the database.
      *
-     * @throws IllegalStateException if the [RacoonManager] has already been committed or rolled back.
+     * @throws IllegalStateException if the [ConnectionManager] has already been committed or rolled back.
      * @throws SQLException if the connection is closed.
      */
     fun commit() = apply {
@@ -73,9 +73,9 @@ class RacoonManager(
     }
 
     /**
-     * Rolls back the operations performed by the [RacoonManager] to the database.
+     * Rolls back the operations performed by the [ConnectionManager] to the database.
      *
-     * @throws IllegalStateException if the [RacoonManager] has already been committed or rolled back.
+     * @throws IllegalStateException if the [ConnectionManager] has already been committed or rolled back.
      * @throws SQLException if the connection is closed.
      */
     fun rollback() = apply {
@@ -91,7 +91,7 @@ class RacoonManager(
      * @param block The block to execute.
      * @return The result of the block.
      */
-    inline fun <T> use(block: (RacoonManager) -> T): T {
+    inline fun <T> use(block: (ConnectionManager) -> T): T {
         if (closed) throw connectionClosedException()
         if (finalOpExecuted) throw IllegalStateException("Can't use after final operation has been executed")
         val blockResult = runCatching { block(this) }.fold(
@@ -115,7 +115,7 @@ class RacoonManager(
     /**
      * Releases the manager to the pool.
      *
-     * @throws IllegalStateException if the [RacoonManager] has already been committed or rolled back.
+     * @throws IllegalStateException if the [ConnectionManager] has already been committed or rolled back.
      * @throws SQLException if the connection is closed.
      */
     fun release() {
@@ -123,7 +123,7 @@ class RacoonManager(
         if (!finalOpExecuted) throw IllegalStateException("Can't release before final operation has been executed")
         this.closed = true
         this.cache.clean()
-        RacoonDen.releaseManager(this)
+        ConnectionPool.releaseManager(this)
     }
 
     /**
@@ -214,7 +214,7 @@ class RacoonManager(
      *
      * @param T The type that is being inserted.
      * @param obj The object to insert.
-     * @return The [RacoonManager] instance.
+     * @return The [ConnectionManager] instance.
      */
     inline fun <reified T : Table> insertUncached(obj: T) = insertUncachedK(obj, T::class)
 
@@ -264,7 +264,7 @@ class RacoonManager(
      *
      * @param T The type that is being updated.
      * @param obj The object to update.
-     * @return The [RacoonManager] instance.
+     * @return The [ConnectionManager] instance.
      */
     inline fun <reified T : Table> updateUncached(obj: T) = updateUncachedK(obj, T::class)
 
@@ -276,7 +276,7 @@ class RacoonManager(
      *
      * @param obj The object to update.
      * @param kClass The class of the object to update.
-     * @return The [RacoonManager] instance.
+     * @return The [ConnectionManager] instance.
      */
     fun <T : Table> updateUncachedK(obj: T, kClass: KClass<T>) = obj.apply {
         val parameters = kClass.memberProperties
@@ -321,7 +321,7 @@ class RacoonManager(
      *
      * @param T The type that is being deleted.
      * @param obj The object to delete.
-     * @return The [RacoonManager] instance.
+     * @return The [ConnectionManager] instance.
      */
     inline fun <reified T : Table> deleteUncached(obj: T) = deleteUncachedK(obj, T::class)
 
@@ -335,7 +335,7 @@ class RacoonManager(
      *
      * @param obj The object to delete.
      * @param kClass The class of the object to delete.
-     * @return The [RacoonManager] instance.
+     * @return The [ConnectionManager] instance.
      * @throws IllegalArgumentException if the object has no property with the name 'id'.
      */
     fun <T : Table> deleteUncachedK(obj: T, kClass: KClass<T>) = apply {
@@ -383,63 +383,63 @@ class RacoonManager(
     }
 
     /**
-     * Creates a [QueryRacoon] with the given query.
+     * Creates a [QueryStatement] with the given query.
      *
      * @param query The query to execute.
-     * @return A [QueryRacoon] capable of handling the query and its results.
+     * @return A [QueryStatement] capable of handling the query and its results.
      */
-    fun createQueryRacoon(@Language("mysql") query: String): QueryRacoon = QueryRacoon(this, query)
+    fun createQueryRacoon(@Language("mysql") query: String): QueryStatement = QueryStatement(this, query)
 
     /**
-     * Creates a [QueryRacoon] with the given sql file.
+     * Creates a [QueryStatement] with the given sql file.
      *
      * @param fileName The name of the file to execute.
-     * @return A [QueryRacoon] capable of handling the query and its results.
+     * @return A [QueryStatement] capable of handling the query and its results.
      */
-    fun importQueryRacoon(fileName: String): QueryRacoon = createQueryRacoon(readSQLResourceFile(fileName))
+    fun importQueryRacoon(fileName: String): QueryStatement = createQueryRacoon(readSQLResourceFile(fileName))
 
     /**
-     * Creates an [InsertRacoon] with the given query.
+     * Creates an [InsertStatement] with the given query.
      *
      * @param query The query to execute.
-     * @return An [InsertRacoon] capable of handling the query and its results.
+     * @return An [InsertStatement] capable of handling the query and its results.
      */
-    fun createInsertRacoon(@Language("mysql") query: String): InsertRacoon = InsertRacoon(this, query)
+    fun createInsertRacoon(@Language("mysql") query: String): InsertStatement = InsertStatement(this, query)
 
     /**
-     * Creates an [InsertRacoon] with the given sql file.
+     * Creates an [InsertStatement] with the given sql file.
      *
      * @param fileName The name of the file to execute.
-     * @return An [InsertRacoon] capable of handling the query and its results.
+     * @return An [InsertStatement] capable of handling the query and its results.
      */
-    fun importInsertRacoon(fileName: String): InsertRacoon = createInsertRacoon(readSQLResourceFile(fileName))
+    fun importInsertRacoon(fileName: String): InsertStatement = createInsertRacoon(readSQLResourceFile(fileName))
 
     /**
-     * Creates an [ExecuteRacoon] with the given query.
+     * Creates an [ExecuteStatement] with the given query.
      *
      * @param query The query to execute.
-     * @return An [ExecuteRacoon] capable of handling the query.
+     * @return An [ExecuteStatement] capable of handling the query.
      */
 
-    fun createExecuteRacoon(@Language("mysql") query: String): ExecuteRacoon = ExecuteRacoon(this, query)
+    fun createExecuteRacoon(@Language("mysql") query: String): ExecuteStatement = ExecuteStatement(this, query)
 
     /**
-     * Creates an [ExecuteRacoon] with the given sql file.
+     * Creates an [ExecuteStatement] with the given sql file.
      *
      * @param fileName The name of the file to execute.
-     * @return An [ExecuteRacoon] capable of handling the query.
+     * @return An [ExecuteStatement] capable of handling the query.
      */
-    fun importExecuteRacoon(fileName: String): ExecuteRacoon = createExecuteRacoon(readSQLResourceFile(fileName))
+    fun importExecuteRacoon(fileName: String): ExecuteStatement = createExecuteRacoon(readSQLResourceFile(fileName))
 
     internal companion object {
         /**
-         * Creates a [RacoonManager] instance with the given [ConnectionSettings].
+         * Creates a [ConnectionManager] instance with the given [ConnectionSettings].
          *
          * @param connectionSettings The connection settings to use.
-         * @return A [RacoonManager] instance.
+         * @return A [ConnectionManager] instance.
          */
-        internal fun fromSettings(connectionSettings: ConnectionSettings): RacoonManager {
-            val rm = RacoonManager(retryUntilNotNull { DriverManager.getConnection(connectionSettings.toString()) })
+        internal fun fromSettings(connectionSettings: ConnectionSettings): ConnectionManager {
+            val rm = ConnectionManager(retryUntilNotNull { DriverManager.getConnection(connectionSettings.toString()) })
             val idleTimeout = RacoonConfiguration.Connection.connectionSettings.idleTimeout
 
             rm.connection.autoCommit = false
@@ -454,7 +454,7 @@ class RacoonManager(
 
         fun readSQLResourceFile(fileName: String): String {
             val filePath = "/${RacoonConfiguration.Resourcing.baseSQLPath}/${fileName}"
-            return RacoonManager::class.java.getResource(filePath)?.readText()
+            return ConnectionManager::class.java.getResource(filePath)?.readText()
                 ?: throw FileNotFoundException(filePath)
         }
     }

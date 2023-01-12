@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.habitat.racoons
 
-import it.zoo.vendro.racoon.habitat.RacoonManager
+import it.zoo.vendro.racoon.habitat.ConnectionManager
 import it.zoo.vendro.racoon.habitat.racoons.parameters.ParameterMapping
 import it.zoo.vendro.racoon.habitat.racoons.parameters.Parameters
 import java.sql.PreparedStatement
@@ -10,11 +10,11 @@ import java.sql.SQLException
  * An abstract class that represents a racoon.
  *
  * Handles the basic functionality of all racoons such as parameter handling.
- * @param R The subclass of [Racoon].
- * @param manager The [RacoonManager] that manages this racoon.
+ * @param R The subclass of [Statement].
+ * @param manager The [ConnectionManager] that manages this racoon.
  * @param originalQuery The original query that was used to create this racoon.
  */
-abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuery: String) : AutoCloseable {
+abstract class Statement<R: Statement<R>>(val manager: ConnectionManager, val originalQuery: String) : AutoCloseable {
     // Prepared statement
     var preparedStatement: PreparedStatement? = null
     var processedQuery: String? = null
@@ -55,7 +55,7 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
      * @param index The index of the parameter.
      * @param value The value of the parameter.
      *
-     * @return The [QueryRacoon] instance.
+     * @return The [QueryStatement] instance.
      */
     fun <T : Any> setParam(index: Int, value: T?): R {
         parameters.setParam(index, value)
@@ -68,7 +68,7 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
      * @param name The name of the parameter.
      * @param value The value of the parameter.
      *
-     * @return The [QueryRacoon] instance.
+     * @return The [QueryStatement] instance.
      */
     fun <T : Any> setParam(name: String, value: T?): R {
         parameters.setParam(name, value)
@@ -77,8 +77,8 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
 
 
     /**
-     * Closes the [Racoon] instance.
-     * This method should be called when the [Racoon] instance is no longer needed.
+     * Closes the [Statement] instance.
+     * This method should be called when the [Statement] instance is no longer needed.
      */
     override fun close() {
         preparedStatement?.close()
@@ -86,8 +86,8 @@ abstract class Racoon<R: Racoon<R>>(val manager: RacoonManager, val originalQuer
 
 
     /**
-     * A reference to the subclassed [Racoon] instance.
-     * @return The [Racoon] instance cast to the type of the subclass.
+     * A reference to the subclassed [Statement] instance.
+     * @return The [Statement] instance cast to the type of the subclass.
      */
     @Suppress("UNCHECKED_CAST")
     fun self(): R = this as R

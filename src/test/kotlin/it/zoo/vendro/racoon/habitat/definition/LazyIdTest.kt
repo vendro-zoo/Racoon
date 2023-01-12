@@ -1,6 +1,6 @@
 package it.zoo.vendro.habitat.definition
 
-import it.zoo.vendro.racoon.habitat.RacoonDen
+import it.zoo.vendro.racoon.habitat.ConnectionPool
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.habitat.definition.LazyId
 import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
@@ -33,7 +33,7 @@ internal class LazyIdTest {
 
     @Test
     fun insertLazy() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val cat = rm.insert(
                 Cat(
                     name = "Kitty",
@@ -49,7 +49,7 @@ internal class LazyIdTest {
 
     @Test
     fun insertDefined() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val owner = rm.find<Owner>(2)!!
             val cat = rm.insert(
                 Cat(
@@ -66,7 +66,7 @@ internal class LazyIdTest {
 
     @Test
     fun insertEmpty() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val cat = rm.insert(
                 Cat(
                     name = "Kitty",
@@ -81,7 +81,7 @@ internal class LazyIdTest {
 
     @Test
     fun evaluateLazy() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val cat = rm.find<Cat>(1)!!
 
             assertNotNull(cat.owner_id?.id)

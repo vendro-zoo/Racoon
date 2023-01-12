@@ -1,6 +1,6 @@
 package it.zoo.vendro.habitat.racoons
 
-import it.zoo.vendro.racoon.habitat.RacoonDen
+import it.zoo.vendro.racoon.habitat.ConnectionPool
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.internals.mappers.NameMapper
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class InsertRacoonTest {
+internal class InsertStatementTest {
 
     @BeforeEach
     fun setUp() {
@@ -27,7 +27,7 @@ internal class InsertRacoonTest {
 
     @Test
     fun executeBatch() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val ir = rm.createInsertRacoon("INSERT INTO cat (name, age) VALUES (:name, :age)")
 
             ir.addBatch {

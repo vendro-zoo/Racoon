@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class RacoonManagerTest {
+internal class ConnectionManagerTest {
     val verbose = false
 
     @BeforeEach
@@ -30,7 +30,7 @@ internal class RacoonManagerTest {
     @Test
     fun useCommit() {
         var catId: Int? = null
-        RacoonDen.getManager().use {
+        ConnectionPool.getManager().use {
             val cat = Cat(
                 name = "test",
                 age = 10,
@@ -39,7 +39,7 @@ internal class RacoonManagerTest {
             it.insert(cat)
             catId = cat.id
         }
-        RacoonDen.getManager().use {
+        ConnectionPool.getManager().use {
             assertNotNull(catId)
             assertNotNull(it.find<Cat>(catId!!))
         }
@@ -49,7 +49,7 @@ internal class RacoonManagerTest {
     fun useRollback() {
         var catId: Int? = null
         runCatching {
-            RacoonDen.getManager().use {
+            ConnectionPool.getManager().use {
                 val cat = Cat(
                     name = "test",
                     age = 10,
@@ -70,7 +70,7 @@ internal class RacoonManagerTest {
 
     @Test
     fun delete() {
-        RacoonDen.getManager().use {
+        ConnectionPool.getManager().use {
             val cat = Cat(
                 name = "test",
                 age = 10,
@@ -84,7 +84,7 @@ internal class RacoonManagerTest {
 
     @Test
     fun update() {
-        RacoonDen.getManager().use {
+        ConnectionPool.getManager().use {
             val cat = Cat(
                 name = "test",
                 age = 10,
@@ -100,13 +100,13 @@ internal class RacoonManagerTest {
     @Test
     fun timeout() {
         var hash: Int? = null
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             hash = rm.connection.hashCode()
             val cat = rm.find<Cat>(1)
             if(verbose) println(cat?.name)
         }
         Thread.sleep(4000)
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val cat = rm.find<Cat>(1)
             if(verbose) println(cat?.name)
             assertNotEquals(hash, rm.connection.hashCode())
@@ -115,7 +115,7 @@ internal class RacoonManagerTest {
 
     @Test
     fun importSQLQuery() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val res = rm.importQueryRacoon("test1.sql")
                 .mapToString()
                 .first()

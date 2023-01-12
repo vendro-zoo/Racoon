@@ -7,14 +7,14 @@ import java.sql.Connection
 import java.sql.SQLException
 import java.util.concurrent.ConcurrentLinkedDeque
 
-object RacoonDen {
+object ConnectionPool {
     private val availableConnections: ConcurrentLinkedDeque<Connection> = ConcurrentLinkedDeque()
-    private val unavailableManagers: MutableSet<RacoonManager> = mutableSetOf()
+    private val unavailableManagers: MutableSet<ConnectionManager> = mutableSetOf()
 
     /**
-     * Returns the number of in-use [RacoonManager]s.
+     * Returns the number of in-use [ConnectionManager]s.
      *
-     * @return the number of in-use [RacoonManager]s
+     * @return the number of in-use [ConnectionManager]s
      */
     fun inUseManagers(): Int = unavailableManagers.size
 
@@ -34,7 +34,7 @@ object RacoonDen {
      * @return A manager that is available for use.
      * @throws SQLException If the number of available managers exceeds the maximum number of managers.
      */
-    fun getManager(): RacoonManager {
+    fun getManager(): ConnectionManager {
         val settings = RacoonConfiguration.Connection.connectionSettings
 
         if (settings.maxManagers != 0 &&
@@ -47,7 +47,7 @@ object RacoonDen {
         do {
             // Get the first available manager
             val c = availableConnections.removeLastOrNull() ?: break
-            val manager = RacoonManager(c)
+            val manager = ConnectionManager(c)
 
             // Check if the manager is still available, if not, check the next one
             if (!ping(manager)) continue
@@ -59,7 +59,7 @@ object RacoonDen {
         } while (true)
 
         // Return a new manager
-        val manager = RacoonManager.fromSettings(settings)
+        val manager = ConnectionManager.fromSettings(settings)
         unavailableManagers.add(manager)
         return manager
     }
@@ -70,7 +70,7 @@ object RacoonDen {
      * @param manager The manager to re-insert.
      * @return True if the manager was re-inserted, false otherwise.
      */
-    fun releaseManager(manager: RacoonManager): Boolean {
+    fun releaseManager(manager: ConnectionManager): Boolean {
         // Moves the manager to the available list
         if (availableConnections.size >= RacoonConfiguration.Connection.connectionSettings.maxPoolSize) {
             manager.connection.close()
@@ -87,7 +87,7 @@ object RacoonDen {
      * @param manager The manager to check
      * @return True if the manager is available, false otherwise
      */
-    private fun ping(manager: RacoonManager): Boolean {
+    private fun ping(manager: ConnectionManager): Boolean {
         try {
             // Executing a ping query to the database to check if the connection is still alive
             val ping = manager.createQueryRacoon("SELECT 1 ping").mapToClass<Ping>()

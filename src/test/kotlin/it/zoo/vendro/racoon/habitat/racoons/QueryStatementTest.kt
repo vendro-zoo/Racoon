@@ -1,7 +1,7 @@
 package it.zoo.vendro.habitat.racoons
 
-import it.zoo.vendro.racoon.habitat.RacoonDen
-import it.zoo.vendro.racoon.habitat.RacoonManager
+import it.zoo.vendro.racoon.habitat.ConnectionManager
+import it.zoo.vendro.racoon.habitat.ConnectionPool
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.habitat.definition.ColumnName
 import it.zoo.vendro.racoon.habitat.definition.LazyId
@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-internal class QueryRacoonTest {
-    lateinit var racoonManager: RacoonManager
+internal class QueryStatementTest {
+    lateinit var connectionManager: ConnectionManager
 
     // Configuring the connection settings
     companion object {
@@ -43,14 +43,14 @@ internal class QueryRacoonTest {
     // Creating a new racoon manager
     @BeforeEach
     internal fun setUp() {
-        racoonManager = RacoonDen.getManager()
+        connectionManager = ConnectionPool.getManager()
     }
 
     // Closing the racoon manager
     @AfterEach
     internal fun tearDown() {
         try {
-            racoonManager.release()
+            connectionManager.release()
         } catch (_: Exception) {
             // Connection has already been released
         }
@@ -61,7 +61,7 @@ internal class QueryRacoonTest {
      */
     @Test
     internal fun singleQueryMapping() {
-        val cats = racoonManager.createQueryRacoon("SELECT * FROM cat")
+        val cats = connectionManager.createQueryRacoon("SELECT * FROM cat")
             .use { it.mapToClass<Cat>() }
 
         cats.forEach {
@@ -75,7 +75,7 @@ internal class QueryRacoonTest {
      */
     @Test
     internal fun singleQueryDefaultAlias() {
-        val cats = racoonManager.createQueryRacoon("SELECT c.* FROM cat c")
+        val cats = connectionManager.createQueryRacoon("SELECT c.* FROM cat c")
             .use { it.mapToClass<Cat>() }
 
         cats.forEach {
@@ -89,7 +89,7 @@ internal class QueryRacoonTest {
      */
     @Test
     internal fun singleQueryCustomAlias() {
-        val cats = racoonManager.createQueryRacoon("SELECT alias.* FROM cat alias")
+        val cats = connectionManager.createQueryRacoon("SELECT alias.* FROM cat alias")
             .use {
                 it.setAlias(Cat::class, "alias")
                     .mapToClass<Cat>()
@@ -109,7 +109,7 @@ internal class QueryRacoonTest {
         data class CatAndOwner(val cat: Cat, val owner: Owner?)
 
         val catAndOwners =
-            racoonManager.createQueryRacoon("SELECT c.*, o.* FROM cat c LEFT JOIN owner o ON c.owner_id = o.id")
+            connectionManager.createQueryRacoon("SELECT c.*, o.* FROM cat c LEFT JOIN owner o ON c.owner_id = o.id")
                 .use {
                     it.multiMapToClass<CatAndOwner>()
                 }
@@ -122,7 +122,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun lazyIdTest() {
-        val cats = racoonManager.createQueryRacoon("SELECT alias.* FROM cat alias")
+        val cats = connectionManager.createQueryRacoon("SELECT alias.* FROM cat alias")
             .use {
                 it.setAlias(Cat::class, "alias")
                     .mapToClass<Cat>()
@@ -136,7 +136,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun namedParameter() {
-        val cats = racoonManager.createQueryRacoon("SELECT * FROM cat WHERE name = :name")
+        val cats = connectionManager.createQueryRacoon("SELECT * FROM cat WHERE name = :name")
             .use {
                 it.setParam("name", "Garfield")
                     .mapToClass<Cat>()
@@ -148,7 +148,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun indexedParameter() {
-        val cats = racoonManager.createQueryRacoon("SELECT * FROM cat WHERE name = ?")
+        val cats = connectionManager.createQueryRacoon("SELECT * FROM cat WHERE name = ?")
             .use {
                 it.setParam(1, "Garfield")
                     .mapToClass<Cat>()
@@ -160,7 +160,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun countRows() {
-        val count = racoonManager.createQueryRacoon("SELECT * FROM cat")
+        val count = connectionManager.createQueryRacoon("SELECT * FROM cat")
             .use {
                 it.execute().countRows()
             }
@@ -169,7 +169,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun mapToNumber() {
-        val count: List<Int?> = racoonManager.createQueryRacoon("SELECT COUNT(*) FROM cat")
+        val count: List<Int?> = connectionManager.createQueryRacoon("SELECT COUNT(*) FROM cat")
             .use {
                 it.execute().mapToNumber()
             }
@@ -178,7 +178,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun mapToNullNumber() {
-        val count: List<Int?> = racoonManager.createQueryRacoon("SELECT null")
+        val count: List<Int?> = connectionManager.createQueryRacoon("SELECT null")
             .use {
                 it.execute().mapToNumber()
             }
@@ -187,7 +187,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun mapToString() {
-        val name = racoonManager.createQueryRacoon("SELECT name FROM cat")
+        val name = connectionManager.createQueryRacoon("SELECT name FROM cat")
             .use {
                 it.execute().mapToString()
             }
@@ -196,7 +196,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun mapToCustom() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val pair = rm.createQueryRacoon("SELECT 5, 3")
                 .mapToCustom { it.getInt(1) to it.getInt(2) }.first()
 
@@ -221,7 +221,7 @@ internal class QueryRacoonTest {
             var OWNERID: LazyId<Owner>? = null,
         ) : Table
 
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val cat = rm.createQueryRacoon("SELECT * FROM cat")
                 .mapToClass<CustomCat>().first()
 
@@ -231,7 +231,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun inQuery() {
-        val cats = RacoonDen.getManager().use { rm ->
+        val cats = ConnectionPool.getManager().use { rm ->
             rm.createQueryRacoon("SELECT * FROM cat WHERE name IN (:names)")
                 .setParam("names", listOf("Tom",
                         "Garfield",
@@ -250,7 +250,7 @@ internal class QueryRacoonTest {
 
     @Test
     internal fun inQuery2() {
-        val cats = RacoonDen.getManager().use { rm ->
+        val cats = ConnectionPool.getManager().use { rm ->
             rm.createQueryRacoon("SELECT * FROM cat WHERE name IN (?)")
                 .setParam(1, listOf("Tom",
                     "Garfield",

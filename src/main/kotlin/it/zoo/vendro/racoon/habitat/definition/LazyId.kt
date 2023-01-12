@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.habitat.definition
 
-import it.zoo.vendro.racoon.habitat.RacoonManager
+import it.zoo.vendro.racoon.habitat.ConnectionManager
 import kotlin.reflect.KClass
 
 @Suppress("unused")
@@ -23,9 +23,9 @@ class LazyId<T: Table> private constructor(
     val id: Int?,
 
     /**
-     * The [RacoonManager] instance used to access the database.
+     * The [ConnectionManager] instance used to access the database.
      */
-    val manager: RacoonManager? = null,
+    val manager: ConnectionManager? = null,
 
     /**
      * The value of the linked table.
@@ -64,17 +64,17 @@ class LazyId<T: Table> private constructor(
          *
          * @see [lazyK]
          */
-        inline fun <reified T : Table> lazy(id: Int, manager: RacoonManager) = lazyK(id, manager, T::class)
+        inline fun <reified T : Table> lazy(id: Int, manager: ConnectionManager) = lazyK(id, manager, T::class)
 
         /**
          * Creates a [LazyId] instance that still needs to be evaluated.
          *
          * @param id the id of the record in the linked table
-         * @param manager the [RacoonManager] instance used to access the database
+         * @param manager the [ConnectionManager] instance used to access the database
          * @param type the [KClass] of the linked table
          * @return a [LazyId] instance that still needs to be evaluated
          */
-        fun <T : Table> lazyK(id: Int, manager: RacoonManager, type: KClass<T>) =
+        fun <T : Table> lazyK(id: Int, manager: ConnectionManager, type: KClass<T>) =
             LazyId(type, id, manager, null, false)
 
         /**

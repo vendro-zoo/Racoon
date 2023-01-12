@@ -1,13 +1,13 @@
 package it.zoo.vendro.racoon.habitat.racoons
 
-import it.zoo.vendro.racoon.habitat.RacoonManager
+import it.zoo.vendro.racoon.habitat.ConnectionManager
 import it.zoo.vendro.racoon.habitat.racoons.parameters.Parameters
 
 
-abstract class BatchableRacoon<R: BatchableRacoon<R>>(
-    manager: RacoonManager,
+abstract class BatchableStatement<R: BatchableStatement<R>>(
+    manager: ConnectionManager,
     originalQuery: String
-) : Racoon<R>(manager, originalQuery) {
+) : Statement<R>(manager, originalQuery) {
     private val batchParameters: MutableList<Parameters> = mutableListOf()
 
     abstract fun executeBatch(): R

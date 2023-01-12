@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.habitat.context
 
-import it.zoo.vendro.racoon.habitat.RacoonManager
+import it.zoo.vendro.racoon.habitat.ConnectionManager
 import kotlin.reflect.KClass
 
 
@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
  * @see RacoonContext
  */
 class ToParameterCasterContext (
-    manager: RacoonManager,
+    manager: ConnectionManager,
     /**
      * The actual class to cast to.
      */

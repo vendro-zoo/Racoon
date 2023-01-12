@@ -1,12 +1,12 @@
 package it.zoo.vendro.racoon.habitat.racoons
 
-import it.zoo.vendro.racoon.habitat.RacoonManager
+import it.zoo.vendro.racoon.habitat.ConnectionManager
 import it.zoo.vendro.racoon.internals.query.QueryProcessing
 
 /**
- * Behaves like an [ExecuteRacoon], but also stores the last inserted id.
+ * Behaves like an [ExecuteStatement], but also stores the last inserted id.
  */
-class InsertRacoon(manager: RacoonManager, query: String) : BatchableRacoon<InsertRacoon>(manager, query) {
+class InsertStatement(manager: ConnectionManager, query: String) : BatchableStatement<InsertStatement>(manager, query) {
     /**
      * The id of the inserted rows.
      *

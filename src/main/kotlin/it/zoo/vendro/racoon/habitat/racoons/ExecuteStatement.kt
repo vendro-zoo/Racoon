@@ -1,12 +1,12 @@
 package it.zoo.vendro.racoon.habitat.racoons
 
-import it.zoo.vendro.racoon.habitat.RacoonManager
+import it.zoo.vendro.racoon.habitat.ConnectionManager
 import it.zoo.vendro.racoon.internals.query.QueryProcessing
 
 /**
- * A [Racoon] capable of handling DML queries. No result is returned.
+ * A [Statement] capable of handling DML queries. No result is returned.
  */
-open class ExecuteRacoon(manager: RacoonManager, query: String) : Racoon<ExecuteRacoon>(manager, query) {
+open class ExecuteStatement(manager: ConnectionManager, query: String) : Statement<ExecuteStatement>(manager, query) {
     override fun execute() = apply {
         val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters)
 

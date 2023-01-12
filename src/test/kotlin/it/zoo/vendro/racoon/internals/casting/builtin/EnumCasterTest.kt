@@ -1,6 +1,6 @@
 package it.zoo.vendro.internals.casting.builtin
 
-import it.zoo.vendro.racoon.habitat.RacoonDen
+import it.zoo.vendro.racoon.habitat.ConnectionPool
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.internals.mappers.NameMapper
@@ -28,7 +28,7 @@ internal class EnumCasterTest {
 
     @Test
     fun enumInsert() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             rm.insert(
                 Dog(
                     name = "Star",
@@ -40,7 +40,7 @@ internal class EnumCasterTest {
 
     @Test
     fun enumInsertWithColumnName() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             rm.insert(
                 Dog(
                     name = "Star",
@@ -53,7 +53,7 @@ internal class EnumCasterTest {
 
     @Test
     fun enumSelect() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val dog = rm.insert(
                 Dog(
                     name = "Star",
@@ -68,7 +68,7 @@ internal class EnumCasterTest {
 
     @Test
     fun enumSelectWithColumnName() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val dog = rm.insert(
                 Dog(
                     name = "Star",

@@ -1,7 +1,7 @@
 package it.zoo.vendro.internals.casting
 
 import it.zoo.vendro.habitat.definition.*
-import it.zoo.vendro.racoon.habitat.RacoonDen
+import it.zoo.vendro.racoon.habitat.ConnectionPool
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.habitat.context.FromParameterCasterContext
 import it.zoo.vendro.racoon.habitat.context.ToParameterCasterContext
@@ -54,7 +54,7 @@ internal class ParameterCasterTest {
 
     @Test
     fun customParameterInsert() {
-        RacoonDen.getManager().use { rm ->
+        ConnectionPool.getManager().use { rm ->
             val cat = Cat2(age = Int2(2), name = "cat")
             rm.insert(cat)
 

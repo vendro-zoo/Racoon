@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.habitat.racoons
 
-import it.zoo.vendro.racoon.habitat.RacoonManager
+import it.zoo.vendro.racoon.habitat.ConnectionManager
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.habitat.context.FromParameterCasterContext
 import it.zoo.vendro.racoon.habitat.definition.*
@@ -17,10 +17,10 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
 
 @Suppress("unused")
-class QueryRacoon(
-    manager: RacoonManager,
+class QueryStatement(
+    manager: ConnectionManager,
     originalQuery: String,
-) : Racoon<QueryRacoon>(manager, originalQuery) {
+) : Statement<QueryStatement>(manager, originalQuery) {
     private var resultSet: ResultSet? = null
     private val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf()
 
@@ -38,11 +38,11 @@ class QueryRacoon(
     fun setAlias(clazz: KClass<*>, alias: String) = apply { tableAliases[clazz] = alias }
 
     /**
-     * Processes the query and saves the result in the [QueryRacoon].
+     * Processes the query and saves the result in the [QueryStatement].
      *
      * In more details, the query is first processed by binding the parameters, and then the query is executed.
      *
-     * @return the [QueryRacoon] itself
+     * @return the [QueryStatement] itself
      */
     override fun execute() = apply {
         val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters)

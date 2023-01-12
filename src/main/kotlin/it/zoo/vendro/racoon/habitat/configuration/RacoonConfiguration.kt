@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.habitat.configuration
 
-import it.zoo.vendro.racoon.habitat.RacoonManager
+import it.zoo.vendro.racoon.habitat.ConnectionManager
 import it.zoo.vendro.racoon.habitat.definition.LazyId
 import it.zoo.vendro.racoon.internals.casting.ParameterCaster
 import it.zoo.vendro.racoon.internals.casting.builtin.*
@@ -33,7 +33,7 @@ object RacoonConfiguration {
 
     object Caching {
         /**
-         * The maximum number of entries in the cache of each [RacoonManager].
+         * The maximum number of entries in the cache of each [ConnectionManager].
          *
          * The default value is 100.
          */
