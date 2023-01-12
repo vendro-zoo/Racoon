@@ -1,11 +1,16 @@
 package it.zoo.vendro.racoon.habitat.cache
 
+import it.zoo.vendro.racoon.habitat.ConnectionManager
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.habitat.definition.Table
 import kotlin.math.min
 import kotlin.reflect.KClass
 
-class ConnectionManagerCache {
+class ConnectionManagerCache(
+    val connectionManager: ConnectionManager
+) {
+    private val config: RacoonConfiguration
+        get() = connectionManager.pool.configuration
     internal var cacheSize: Int = 0
     internal val cache: MutableMap<KClass<out Table>, MutableMap<Int, Pair<Table?, Long>>> = mutableMapOf()
 
@@ -33,11 +38,11 @@ class ConnectionManagerCache {
         // Cleaning the cache if it's too big
         if (
             (tableCache == null || !tableCache.containsKey(id)) &&
-            cacheSize >= RacoonConfiguration.Caching.maxEntries
+            cacheSize >= config.caching.maxEntries
         ) forceCleanStale()
 
         // Checking if the cache is still too big
-        if (cacheSize < RacoonConfiguration.Caching.maxEntries) {
+        if (cacheSize < config.caching.maxEntries) {
             // Creating the secondary map if it doesn't exist
             tableCache = tableCache ?: mutableMapOf<Int, Pair<Table?, Long>>().apply { cache[kClass] = this }
             // Incrementing the cache size
@@ -72,7 +77,7 @@ class ConnectionManagerCache {
             // Sort the entries by timestamp
             .sortedBy { it.third }
             // Get the first N entries (the oldest ones)
-            .subList(0, min(RacoonConfiguration.Caching.maxEntries, cacheSize))
+            .subList(0, min(config.caching.maxEntries, cacheSize))
             // Remove the entries from the cache
             .forEach {
                 removeK(it.second, it.first)

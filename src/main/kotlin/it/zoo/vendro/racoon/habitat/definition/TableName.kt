@@ -21,10 +21,10 @@ annotation class TableName(val name: String, val alias: String = "") {
          * @param kClass the class to get the table name for
          * @return the table name for the given class
          */
-        fun getName(kClass: KClass<*>): String =
-            kClass.findAnnotation<TableName>()?.name ?:
-            RacoonConfiguration.Naming.tableNameMapper(kClass.simpleName ?:
-            throw IllegalArgumentException("The class does not have a name"))
+        fun getName(kClass: KClass<*>, config: RacoonConfiguration): String =
+            kClass.findAnnotation<TableName>()?.name ?: config.naming.tableNameMapper(
+                kClass.simpleName ?: throw IllegalArgumentException("The class does not have a name")
+            )
 
         /**
          * Returns the table alias for the given [KClass], first checking for an annotation,
@@ -33,11 +33,12 @@ annotation class TableName(val name: String, val alias: String = "") {
          * @param kClass the class to get the table alias for
          * @return the table alias for the given class
          */
-        fun getAlias(kClass: KClass<*>): String {
+        fun getAlias(kClass: KClass<*>, config: RacoonConfiguration): String {
             val alias = kClass.findAnnotation<TableName>()?.alias
             return if (alias.isNullOrEmpty())
-                RacoonConfiguration.Naming.tableAliasMapper(kClass.simpleName ?:
-                throw IllegalArgumentException("The class does not have a name"))
+                config.naming.tableAliasMapper(
+                    kClass.simpleName ?: throw IllegalArgumentException("The class does not have a name")
+                )
             else
                 alias
         }

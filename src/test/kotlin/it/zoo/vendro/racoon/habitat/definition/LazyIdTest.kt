@@ -9,17 +9,12 @@ import it.zoo.vendro.racoon.models.Cat
 import it.zoo.vendro.racoon.models.Owner
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
 internal class LazyIdTest {
-    val pool = ConnectionPool()
-
-    companion object {
-        @BeforeAll
-        @JvmStatic
-        fun setUp() {
-            RacoonConfiguration.Connection.connectionSettings =
+    val pool = ConnectionPool(
+        RacoonConfiguration(
+            connection = RacoonConfiguration.Connection(
                 ConnectionSettings(
                     host = "localhost",
                     port = 3306,
@@ -28,9 +23,13 @@ internal class LazyIdTest {
                     password = "admin",
                     idleTimeout = 3
                 )
-            RacoonConfiguration.Naming.tableNameMapper = NameMapper.lowerSnakeCase
-        }
-    }
+            ),
+            naming = RacoonConfiguration.Naming(
+                tableNameMapper = NameMapper.lowerSnakeCase,
+                tableAliasMapper = NameMapper.lowerSnakeCase
+            )
+        )
+    )
 
     @Test
     fun insertLazy() {

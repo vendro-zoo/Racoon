@@ -7,13 +7,32 @@ import it.zoo.vendro.racoon.habitat.context.FromParameterCasterContext
 import it.zoo.vendro.racoon.habitat.context.ToParameterCasterContext
 import it.zoo.vendro.racoon.habitat.definition.*
 import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
+import it.zoo.vendro.racoon.internals.mappers.NameMapper
 import it.zoo.vendro.racoon.models.Owner
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 internal class ParameterCasterTest {
-    val pool = ConnectionPool()
+    val pool = ConnectionPool(
+        RacoonConfiguration(
+            connection = RacoonConfiguration.Connection(
+                ConnectionSettings(
+                    host = "localhost",
+                    port = 3306,
+                    database = "racoon-ktor-sample",
+                    username = "admin",
+                    password = "admin",
+                    idleTimeout = 3
+                )
+            ),
+            naming = RacoonConfiguration.Naming(
+                tableNameMapper = NameMapper.lowerSnakeCase,
+                tableAliasMapper = NameMapper.lowerSnakeCase
+            )
+        )
+    ).apply {
+        this.configuration.casting.setCaster(Int2::class, Int::class, Int2Caster())
+    }
 
     data class Int2(val i: Int)
 
@@ -35,23 +54,6 @@ internal class ParameterCasterTest {
         var name: String?,
         var owner_id: LazyId<Owner>? = null,
     ) : Table
-
-    companion object {
-        @BeforeAll
-        @JvmStatic
-        fun setUp() {
-            RacoonConfiguration.Connection.connectionSettings =
-                ConnectionSettings(
-                    host = "localhost",
-                    port = 3306,
-                    database = "racoon-ktor-sample",
-                    username = "admin",
-                    password = "admin",
-                    idleTimeout = 300
-                )
-            RacoonConfiguration.Casting.setCaster(Int2::class, Int::class, Int2Caster())
-        }
-    }
 
     @Test
     fun customParameterInsert() {

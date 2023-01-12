@@ -30,6 +30,9 @@ class ConnectionManager(
     internal val connection: Connection,
     internal val pool: ConnectionPool,
 ) {
+    private val config: RacoonConfiguration
+        get() = pool.configuration
+
     /**
      * A state indicating whether a final operation such as commit or rollback has been performed.
      *
@@ -46,7 +49,7 @@ class ConnectionManager(
     var closed = false
         internal set
 
-    internal val cache = ConnectionManagerCache()
+    internal val cache = ConnectionManagerCache(this)
 
     /**
      * Closes the connection to the database.
@@ -175,7 +178,7 @@ class ConnectionManager(
      * @return The record mapped to the type [T].
      */
     fun <T : Table> findUncachedK(id: Int, kClass: KClass<T>): T? {
-        createQuery(generateSelectQueryK(kClass)).use { queryRacoon ->
+        createQuery(generateSelectQueryK(kClass, config)).use { queryRacoon ->
             queryRacoon.setParam("id", id)
             return queryRacoon.mapToClassK(kClass).firstOrNull()
         }
@@ -229,10 +232,10 @@ class ConnectionManager(
     fun <T : Table> insertUncachedK(obj: T, kClass: KClass<T>) = obj.apply {
         val parameters = kClass.memberProperties
 
-        createInsert(generateInsertQueryK(kClass)).use { insertRacoon ->
+        createInsert(generateInsertQueryK(kClass, config)).use { insertRacoon ->
             for (field in parameters) {
                 if (IgnoreColumn.shouldIgnore(field, IgnoreTarget.INSERT)) continue
-                insertRacoon.setParam(ColumnName.getName(field), field.get(obj))
+                insertRacoon.setParam(ColumnName.getName(field, config), field.get(obj))
             }
             insertRacoon.execute()
             obj.id = insertRacoon.generatedKeys[0]
@@ -282,10 +285,10 @@ class ConnectionManager(
     fun <T : Table> updateUncachedK(obj: T, kClass: KClass<T>) = obj.apply {
         val parameters = kClass.memberProperties
 
-        createExecute(generateUpdateQueryK(kClass)).use { executeRacoon ->
+        createExecute(generateUpdateQueryK(kClass, config)).use { executeRacoon ->
             for (field in parameters) {
                 if (IgnoreColumn.shouldIgnore(field, IgnoreTarget.UPDATE)) continue
-                executeRacoon.setParam(ColumnName.getName(field), field.get(obj))
+                executeRacoon.setParam(ColumnName.getName(field, config), field.get(obj))
             }
             executeRacoon.execute()
 
@@ -342,7 +345,7 @@ class ConnectionManager(
     fun <T : Table> deleteUncachedK(obj: T, kClass: KClass<T>) = apply {
         val id = obj.id ?: throw IllegalArgumentException("Can't delete object without id")
 
-        createExecute(generateDeleteQueryK(kClass)).use { executeRacoon ->
+        createExecute(generateDeleteQueryK(kClass, config)).use { executeRacoon ->
             executeRacoon.setParam("id", id).execute()
         }
     }
@@ -432,6 +435,12 @@ class ConnectionManager(
      */
     fun importExecute(fileName: String): ExecuteStatement = createExecute(readSQLResourceFile(fileName))
 
+    private fun readSQLResourceFile(fileName: String): String {
+        val filePath = "/${config.resourcing.baseSQLPath}/${fileName}"
+        return ConnectionManager::class.java.getResource(filePath)?.readText()
+            ?: throw FileNotFoundException(filePath)
+    }
+
     internal companion object {
         /**
          * Creates a [ConnectionManager] instance with the given [ConnectionSettings].
@@ -444,7 +453,7 @@ class ConnectionManager(
                 retryUntilNotNull { DriverManager.getConnection(connectionSettings.toString()) },
                 pool
             )
-            val idleTimeout = RacoonConfiguration.Connection.connectionSettings.idleTimeout
+            val idleTimeout = pool.configuration.connection.connectionSettings.idleTimeout
 
             rm.connection.autoCommit = false
 
@@ -454,12 +463,6 @@ class ConnectionManager(
             }
 
             return rm
-        }
-
-        fun readSQLResourceFile(fileName: String): String {
-            val filePath = "/${RacoonConfiguration.Resourcing.baseSQLPath}/${fileName}"
-            return ConnectionManager::class.java.getResource(filePath)?.readText()
-                ?: throw FileNotFoundException(filePath)
         }
     }
 }

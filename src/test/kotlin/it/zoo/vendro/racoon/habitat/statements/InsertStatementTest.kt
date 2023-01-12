@@ -5,26 +5,27 @@ import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.internals.mappers.NameMapper
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class InsertStatementTest {
-    val pool = ConnectionPool()
-
-    @BeforeEach
-    fun setUp() {
-        RacoonConfiguration.Connection.connectionSettings =
-            ConnectionSettings(
-                host = "localhost",
-                port = 3306,
-                database = "racoon-ktor-sample",
-                username = "admin",
-                password = "admin",
-                idleTimeout = 3
+    val pool = ConnectionPool(
+        RacoonConfiguration(
+            connection = RacoonConfiguration.Connection(
+                ConnectionSettings(
+                    host = "localhost",
+                    port = 3306,
+                    database = "racoon-ktor-sample",
+                    username = "admin",
+                    password = "admin",
+                    idleTimeout = 3
+                )
+            ),
+            naming = RacoonConfiguration.Naming(
+                tableNameMapper = NameMapper.lowerSnakeCase,
+                tableAliasMapper = NameMapper.lowerSnakeCase
             )
-        RacoonConfiguration.Naming.tableNameMapper = NameMapper.lowerSnakeCase
-        RacoonConfiguration.Naming.tableAliasMapper = NameMapper.lowerSnakeCase
-    }
+        )
+    )
 
     @Test
     fun executeBatch() {

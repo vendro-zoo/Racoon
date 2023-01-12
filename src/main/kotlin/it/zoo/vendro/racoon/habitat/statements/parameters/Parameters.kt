@@ -6,6 +6,8 @@ import it.zoo.vendro.racoon.habitat.context.ToParameterCasterContext
 import java.sql.PreparedStatement
 
 class Parameters(val manager: ConnectionManager) {
+    private val config: RacoonConfiguration
+        get() = manager.pool.configuration
     // Query parameters
     val indexedParameters: MutableMap<Int, Any?> = mutableMapOf()
     val namedParameters: MutableMap<String, Any?> = mutableMapOf()
@@ -33,7 +35,7 @@ class Parameters(val manager: ConnectionManager) {
             return
         }
 
-        val caster = RacoonConfiguration.Casting.getFirstCaster(value::class)
+        val caster = config.casting.getFirstCaster(value::class)
 
         map[index] = if (caster == null) value else caster.toQuery(value, ToParameterCasterContext(manager, value::class))
     }

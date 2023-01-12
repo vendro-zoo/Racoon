@@ -6,27 +6,28 @@ import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.internals.mappers.NameMapper
 import it.zoo.vendro.racoon.models.Cat
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class ConnectionManagerTest {
     val verbose = false
-    val pool = ConnectionPool()
-
-    @BeforeEach
-    fun setUp() {
-        RacoonConfiguration.Connection.connectionSettings =
-            ConnectionSettings(
-                host = "localhost",
-                port = 3306,
-                database = "racoon-ktor-sample",
-                username = "admin",
-                password = "admin",
-                idleTimeout = 3
+    val pool = ConnectionPool(
+        RacoonConfiguration(
+            connection = RacoonConfiguration.Connection(
+                ConnectionSettings(
+                    host = "localhost",
+                    port = 3306,
+                    database = "racoon-ktor-sample",
+                    username = "admin",
+                    password = "admin",
+                    idleTimeout = 3
+                )
+            ),
+            naming = RacoonConfiguration.Naming(
+                tableNameMapper = NameMapper.lowerSnakeCase,
+                tableAliasMapper = NameMapper.lowerSnakeCase
             )
-        RacoonConfiguration.Naming.tableNameMapper = NameMapper.lowerSnakeCase
-        RacoonConfiguration.Naming.tableAliasMapper = NameMapper.lowerSnakeCase
-    }
+        )
+    )
 
     @Test
     fun useCommit() {

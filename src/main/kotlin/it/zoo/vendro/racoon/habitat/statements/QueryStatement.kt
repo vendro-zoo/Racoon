@@ -21,6 +21,8 @@ class QueryStatement(
     manager: ConnectionManager,
     originalQuery: String,
 ) : Statement<QueryStatement>(manager, originalQuery) {
+    private val config: RacoonConfiguration
+        get() = manager.pool.configuration
     private var resultSet: ResultSet? = null
     private val tableAliases: MutableMap<KClass<*>, String> = mutableMapOf()
 
@@ -127,7 +129,7 @@ class QueryStatement(
 
         // Get the table alias for the class specified in either the racoon or the class
         // If not specified, generate an alias
-        val sqlAlias = tableAliases[tClass] ?: TableName.getAlias(tClass)
+        val sqlAlias = tableAliases[tClass] ?: TableName.getAlias(tClass, manager.pool.configuration)
 
         // Get the primary constructor of the class and its parameters
         val constructor = tClass.primaryConstructor ?: throw ClassCastException("$clazzName has no primary constructor")
@@ -149,7 +151,7 @@ class QueryStatement(
             // For each parameter of the constructor
             rsFor@ for (parameter in parameters) {
                 // Get the column name
-                val name = ColumnName.getName(parameter)
+                val name = ColumnName.getName(parameter, config)
 
                 // Get the column type
                 val kClass = parameter.asKClass()
@@ -178,7 +180,7 @@ class QueryStatement(
                     } else continue@rsFor
 
                 // Getting the user defined type caster, if it exists
-                val caster = RacoonConfiguration.Casting.getCaster(kClass, value::class)
+                val caster = config.casting.getCaster(kClass, value::class)
 
                 // Casting with the user defined type caster, otherwise casting with the internal caster
                 value = caster?.fromQuery(value, FromParameterCasterContext(manager, kType))

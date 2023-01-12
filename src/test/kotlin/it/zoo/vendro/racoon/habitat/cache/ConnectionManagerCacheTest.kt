@@ -7,27 +7,30 @@ import it.zoo.vendro.racoon.internals.mappers.NameMapper
 import it.zoo.vendro.racoon.models.Cat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class ConnectionManagerCacheTest {
-    val pool = ConnectionPool()
-
-    @BeforeEach
-    fun setUp() {
-        RacoonConfiguration.Connection.connectionSettings =
-            ConnectionSettings(
-                host = "localhost",
-                port = 3306,
-                database = "racoon-ktor-sample",
-                username = "admin",
-                password = "admin",
-                idleTimeout = 300
+    val pool = ConnectionPool(
+        RacoonConfiguration(
+            connection = RacoonConfiguration.Connection(
+                ConnectionSettings(
+                    host = "localhost",
+                    port = 3306,
+                    database = "racoon-ktor-sample",
+                    username = "admin",
+                    password = "admin",
+                    idleTimeout = 300
+                )
+            ),
+            naming = RacoonConfiguration.Naming(
+                tableNameMapper = NameMapper.lowerSnakeCase,
+                tableAliasMapper = NameMapper.lowerSnakeCase
+            ),
+            caching = RacoonConfiguration.Caching(
+                maxEntries = 1
             )
-        RacoonConfiguration.Naming.tableNameMapper = NameMapper.lowerSnakeCase
-        RacoonConfiguration.Naming.tableAliasMapper = NameMapper.lowerSnakeCase
-        RacoonConfiguration.Caching.maxEntries = 1
-    }
+        )
+    )
 
     @Test
     fun repeatedFind() {

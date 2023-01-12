@@ -21,8 +21,8 @@ annotation class ColumnName(val name: String) {
          * @param field the property to get the column name for
          * @return the column name for the given property
          */
-        fun getName(field: KProperty1<*, *>) =
-            field.findAnnotation<ColumnName>()?.name ?: RacoonConfiguration.Naming.columnNameMapper(field.name)
+        fun getName(field: KProperty1<*, *>, config: RacoonConfiguration) =
+            field.findAnnotation<ColumnName>()?.name ?: config.naming.columnNameMapper(field.name)
 
         /**
          * Returns the column name for the given [KParameter], first checking for an annotation,
@@ -31,7 +31,7 @@ annotation class ColumnName(val name: String) {
          * @param field the property to get the column name for
          * @return the column name for the given property
          */
-        fun getName(field: KParameter) =
-            field.findAnnotation<ColumnName>()?.name ?: RacoonConfiguration.Naming.columnNameMapper(field.name!!)
+        fun getName(field: KParameter, config: RacoonConfiguration) =
+            field.findAnnotation<ColumnName>()?.name ?: config.naming.columnNameMapper(field.name!!)
     }
 }

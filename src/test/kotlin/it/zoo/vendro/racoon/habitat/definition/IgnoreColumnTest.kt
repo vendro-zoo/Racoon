@@ -3,18 +3,15 @@ package it.zoo.vendro.habitat.definition
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.habitat.definition.Table
 import it.zoo.vendro.racoon.habitat.definition.TableName
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class IgnoreColumnTest {
-    companion object {
-        @BeforeAll
-        @JvmStatic
-        fun setup() {
-            RacoonConfiguration.Naming.tableAliasMapper = { it }
-        }
-    }
+    val config = RacoonConfiguration(
+        naming = RacoonConfiguration.Naming(
+            tableAliasMapper = { it },
+        )
+    )
 
     @TableName("testClass")
     class TestClass(override var id: Int? = null) : Table
@@ -25,11 +22,11 @@ class IgnoreColumnTest {
 
     @Test
     fun getAliasTest() {
-        assertEquals("TestClass", TableName.getAlias(TestClass::class))
+        assertEquals("TestClass", TableName.getAlias(TestClass::class, config))
     }
 
     @Test
     fun getAliasTest2() {
-        assertEquals("tc", TableName.getAlias(TestClass2::class))
+        assertEquals("tc", TableName.getAlias(TestClass2::class, config))
     }
 }

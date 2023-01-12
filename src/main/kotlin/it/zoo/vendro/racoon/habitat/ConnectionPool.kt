@@ -7,7 +7,7 @@ import java.sql.Connection
 import java.sql.SQLException
 import java.util.concurrent.ConcurrentLinkedDeque
 
-class ConnectionPool {
+class ConnectionPool(val configuration: RacoonConfiguration) {
     private val availableConnections: ConcurrentLinkedDeque<Connection> = ConcurrentLinkedDeque()
     private val unavailableManagers: MutableSet<ConnectionManager> = mutableSetOf()
 
@@ -35,7 +35,7 @@ class ConnectionPool {
      * @throws SQLException If the number of available managers exceeds the maximum number of managers.
      */
     fun getManager(): ConnectionManager {
-        val settings = RacoonConfiguration.Connection.connectionSettings
+        val settings = configuration.connection.connectionSettings
 
         if (settings.maxManagers != 0 &&
             availableConnections.isEmpty() &&
@@ -72,7 +72,7 @@ class ConnectionPool {
      */
     fun releaseManager(manager: ConnectionManager): Boolean {
         // Moves the manager to the available list
-        if (availableConnections.size >= RacoonConfiguration.Connection.connectionSettings.maxPoolSize) {
+        if (availableConnections.size >= configuration.connection.connectionSettings.maxPoolSize) {
             manager.connection.close()
             return false
         }

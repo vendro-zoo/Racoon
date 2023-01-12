@@ -15,30 +15,35 @@ import kotlin.reflect.full.superclasses
  * An object containing the configuration for Racoon.
  */
 @Suppress("unused")
-object RacoonConfiguration {
+class RacoonConfiguration(
+    val connection: Connection = Connection(),
+    val caching: Caching = Caching(),
+    val naming: Naming = Naming(),
+    val casting: Casting = Casting(),
+    val resourcing: Resourcing = Resourcing()
+) {
     /**
      * All the configuration relative to the connection to the database.
      */
-    object Connection {
+    class Connection(
         /**
          * The settings for the connection to the database.
          *
          * The default value is a [ConnectionSettings] with host "localhost" and database "test".
          */
-        var connectionSettings: ConnectionSettings = ConnectionSettings(
+        val connectionSettings: ConnectionSettings = ConnectionSettings(
             host = "localhost",
             database = "test"
         )
-    }
+    )
 
-    object Caching {
+    class Caching(
         /**
          * The maximum number of entries in the cache of each [ConnectionManager].
          *
          * The default value is 100.
          */
-        var maxEntries: Int = 100
-
+        val maxEntries: Int = 100,
         /**
          * The number of entries to remove from the cache when it is full.
          *
@@ -46,13 +51,13 @@ object RacoonConfiguration {
          *
          * The default value is 20.
          */
-        var cleaningBatchSize: Int = 20
-    }
+        val cleaningBatchSize: Int = 20
+    )
 
     /**
      * All the configuration for the default mapping of tables and columns names.
      */
-    object Naming {
+    class Naming(
         /**
          * A lambda that will be used to map the alias of the table from the name of a given class.
          *
@@ -60,7 +65,7 @@ object RacoonConfiguration {
          *
          * @see [internals.mappers.TableAliasMapper] for a list of built-in mappers.
          */
-        var tableAliasMapper: (String) -> String = { it }
+        val tableAliasMapper: (String) -> String = { it },
 
         /**
          * A lambda that will be used to map the name of the table from the name of a given class.
@@ -69,7 +74,7 @@ object RacoonConfiguration {
          *
          * @see [internals.mappers.NameMapper] for a list of built-in mappers.
          */
-        var tableNameMapper: (String) -> String = { it }
+        val tableNameMapper: (String) -> String = { it },
 
         /**
          * A lambda that will be used to map the name of the column from the name of a given property.
@@ -78,10 +83,24 @@ object RacoonConfiguration {
          *
          * @see [internals.mappers.NameMapper] for a list of built-in mappers.
          */
-        var columnNameMapper: (String) -> String = { it }
-    }
+        val columnNameMapper: (String) -> String = { it }
+    )
 
-    object Casting {
+    class Casting(
+        val parameterCasters: MutableMap<WKClass<out Any>, MutableMap<WKClass<out Any>, ParameterCaster<out Any, out Any>>> =
+            mutableMapOf(
+                WKClass(LazyId::class) to mutableMapOf(
+                    WKClass(Int::class) to LazyCaster(),
+                    WKClass(Long::class) to LazyLongCaster(),
+                    WKClass(BigInteger::class) to LazyBigIntegerCaster()
+                ),
+                WKClass(Enum::class) to mutableMapOf(WKClass(String::class) to EnumCaster()),
+                WKClass(Date::class) to mutableMapOf(
+                    WKClass(java.sql.Date::class) to DateCaster(),
+                    WKClass(Timestamp::class) to DateTimestampCaster()
+                )
+            )
+    ) {
         data class WKClass<T : Any>(val klass: KClass<T>) {
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -98,20 +117,6 @@ object RacoonConfiguration {
                 return klass.qualifiedName?.hashCode() ?: 0
             }
         }
-
-        val parameterCasters: MutableMap<WKClass<out Any>, MutableMap<WKClass<out Any>, ParameterCaster<out Any, out Any>>> =
-            mutableMapOf(
-                WKClass(LazyId::class) to mutableMapOf(
-                    WKClass(Int::class) to LazyCaster(),
-                    WKClass(Long::class) to LazyLongCaster(),
-                    WKClass(BigInteger::class) to LazyBigIntegerCaster()
-                ),
-                WKClass(Enum::class) to mutableMapOf(WKClass(String::class) to EnumCaster()),
-                WKClass(Date::class) to mutableMapOf(
-                    WKClass(java.sql.Date::class) to DateCaster(),
-                    WKClass(Timestamp::class) to DateTimestampCaster()
-                )
-            )
 
         /**
          * Adds the given [ParameterCaster] to the list of registered list of [ParameterCaster]s.
@@ -183,10 +188,10 @@ object RacoonConfiguration {
     /**
      * All the configuration for resource handling.
      */
-    object Resourcing {
+    class Resourcing(
         /**
          * The base path for sql files.
          */
-        var baseSQLPath: String = "sql"
-    }
+        val baseSQLPath: String = "sql"
+    )
 }

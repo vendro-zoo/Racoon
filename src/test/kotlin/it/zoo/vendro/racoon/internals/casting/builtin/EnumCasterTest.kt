@@ -8,25 +8,26 @@ import it.zoo.vendro.racoon.models.Dog
 import it.zoo.vendro.racoon.models.DogColor
 import it.zoo.vendro.racoon.models.DogSize
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class EnumCasterTest {
-    val pool = ConnectionPool()
-
-    @BeforeEach
-    fun setUp() {
-        RacoonConfiguration.Connection.connectionSettings =
-            ConnectionSettings(
-                host = "localhost",
-                port = 3306,
-                database = "racoon-ktor-sample",
-                username = "admin",
-                password = "admin",
-                idleTimeout = 3
+    val pool = ConnectionPool(
+        RacoonConfiguration(
+            connection = RacoonConfiguration.Connection(
+                ConnectionSettings(
+                    host = "localhost",
+                    port = 3306,
+                    database = "racoon-ktor-sample",
+                    username = "admin",
+                    password = "admin",
+                    idleTimeout = 3
+                )
+            ),
+            naming = RacoonConfiguration.Naming(
+                tableNameMapper = NameMapper.lowerSnakeCase,
             )
-        RacoonConfiguration.Naming.tableNameMapper = NameMapper.lowerSnakeCase
-    }
+        )
+    )
 
     @Test
     fun enumInsert() {

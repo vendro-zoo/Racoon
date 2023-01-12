@@ -12,33 +12,35 @@ import it.zoo.vendro.racoon.internals.mappers.NameMapper
 import it.zoo.vendro.racoon.models.Cat
 import it.zoo.vendro.racoon.models.Owner
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class QueryStatementTest {
-    val pool = ConnectionPool()
-    
-    lateinit var connectionManager: ConnectionManager
-
-    // Configuring the connection settings
-    companion object {
-        @BeforeAll
-        @JvmStatic
-        internal fun setUpClass() {
-            RacoonConfiguration.Connection.connectionSettings =
+    val pool = ConnectionPool(
+        RacoonConfiguration(
+            connection = RacoonConfiguration.Connection(
                 ConnectionSettings(
                     host = "localhost",
                     port = 3306,
                     database = "racoon-ktor-sample",
                     username = "admin",
-                    password = "admin"
+                    password = "admin",
+                    idleTimeout = 3
                 )
-            RacoonConfiguration.Naming.tableNameMapper = NameMapper.lowerSnakeCase
-        }
+            ),
+            naming = RacoonConfiguration.Naming(
+                tableNameMapper = NameMapper.lowerSnakeCase,
+                tableAliasMapper = NameMapper.lowerSnakeCase
+            )
+        )
+    )
 
+    lateinit var connectionManager: ConnectionManager
+
+    // Configuring the connection settings
+    companion object {
         const val verbose = true
     }
 
