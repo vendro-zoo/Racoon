@@ -4,6 +4,16 @@ package habitat.definition
 
 import java.sql.ResultSet
 
+/**
+ * A sealed class used to extract a value from a [ResultSet] based on the column name.
+ *
+ * Use the annotation [ColumnExtractionMethod] with a [ExtractionMethodType] to define
+ * how a value should be extracted from a [ResultSet].
+ *
+ * This class is used internally to make the annotation work.
+ *
+ * @param T The type of the value to extract.
+ */
 sealed class ExtractionMethod<T> {
     abstract fun extract(rs: ResultSet, columnName: kotlin.String): T
 
