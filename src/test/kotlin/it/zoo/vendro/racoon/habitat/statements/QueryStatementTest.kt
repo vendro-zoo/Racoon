@@ -163,28 +163,19 @@ internal class QueryStatementTest {
     }
 
     @Test
-    internal fun countRows() {
-        val count = connectionManager.createQuery("SELECT * FROM cat")
-            .use {
-                it.execute().countRows()
-            }
-        if (verbose) println(count)
-    }
-
-    @Test
     internal fun mapToNumber() {
-        val count: List<Int?> = connectionManager.createQuery("SELECT COUNT(*) FROM cat")
+        val count: List<Int> = connectionManager.createQuery("SELECT COUNT(*) FROM cat")
             .use {
-                it.execute().mapToNumber()
+                it.execute().mapToInt()
             }
         if (verbose) println(count)
     }
 
     @Test
     internal fun mapToNullNumber() {
-        val count: List<Int?> = connectionManager.createQuery("SELECT null")
+        val count: List<Int?> = connectionManager.createQuery("SELECT NULL")
             .use {
-                it.execute().mapToNumber()
+                it.execute().mapToNullableInt()
             }
         if (verbose) println(count)
     }
@@ -202,7 +193,7 @@ internal class QueryStatementTest {
     internal fun mapToCustom() {
         pool.getManager().use { rm ->
             val pair = rm.createQuery("SELECT 5, 3")
-                .mapToCustom { it.getInt(1) to it.getInt(2) }.first()
+                .consumeRows { it.resultSet.getInt(1) to it.resultSet.getInt(2) }.first()
 
             assertEquals(5, pair.first)
             assertEquals(3, pair.second)
@@ -237,18 +228,24 @@ internal class QueryStatementTest {
     internal fun inQuery() {
         val cats = pool.getManager().use { rm ->
             rm.createQuery("SELECT * FROM cat WHERE name IN (:names)")
-                .setParam("names", listOf("Tom",
+                .setParam(
+                    "names", listOf(
+                        "Tom",
                         "Garfield",
                         "Jim"
-                ))
+                    )
+                )
                 .mapToClass<Cat>()
         }
 
         cats.forEach {
-            assert(listOf("Tom",
-                "Garfield",
-                "Jim"
-            ).contains(it.name))
+            assert(
+                listOf(
+                    "Tom",
+                    "Garfield",
+                    "Jim"
+                ).contains(it.name)
+            )
         }
     }
 
@@ -256,18 +253,24 @@ internal class QueryStatementTest {
     internal fun inQuery2() {
         val cats = pool.getManager().use { rm ->
             rm.createQuery("SELECT * FROM cat WHERE name IN (?)")
-                .setParam(1, listOf("Tom",
-                    "Garfield",
-                    "Jim"
-                ))
+                .setParam(
+                    1, listOf(
+                        "Tom",
+                        "Garfield",
+                        "Jim"
+                    )
+                )
                 .mapToClass<Cat>()
         }
 
         cats.forEach {
-            assert(listOf("Tom",
-                "Garfield",
-                "Jim"
-            ).contains(it.name))
+            assert(
+                listOf(
+                    "Tom",
+                    "Garfield",
+                    "Jim"
+                ).contains(it.name)
+            )
         }
     }
 }

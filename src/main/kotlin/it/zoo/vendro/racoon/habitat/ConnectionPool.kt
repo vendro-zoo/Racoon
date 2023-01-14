@@ -2,7 +2,6 @@ package it.zoo.vendro.racoon.habitat
 
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.internals.extensions.removeLastOrNull
-import it.zoo.vendro.racoon.internals.query.Ping
 import java.sql.Connection
 import java.sql.SQLException
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -90,10 +89,12 @@ class ConnectionPool(val configuration: RacoonConfiguration) {
     private fun ping(manager: ConnectionManager): Boolean {
         try {
             // Executing a ping query to the database to check if the connection is still alive
-            val ping = manager.createQuery("SELECT 1 ping").mapToClass<Ping>()
+            val ping = manager.createQuery("SELECT 1 ping").uncheckedConsumeRows {
+                it.mapToInt()
+            }!!.firstOrNull()
 
             // If the result is not 1, the connection is not alive
-            if (ping.isEmpty() || ping[0].ping != 1.toByte()) return false
+            if (ping == null || ping != 1) return false
         } catch (e: SQLException) {
             // If an exception is thrown, the connection is not alive
             return false

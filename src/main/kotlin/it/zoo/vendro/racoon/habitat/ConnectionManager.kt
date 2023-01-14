@@ -30,7 +30,7 @@ class ConnectionManager(
     internal val connection: Connection,
     internal val pool: ConnectionPool,
 ) {
-    private val config: RacoonConfiguration
+    val config: RacoonConfiguration
         get() = pool.configuration
 
     /**
@@ -179,8 +179,10 @@ class ConnectionManager(
      */
     fun <T : Table> findUncachedK(id: Int, kClass: KClass<T>): T? {
         createQuery(generateSelectQueryK(kClass, config)).use { queryRacoon ->
-            queryRacoon.setParam("id", id)
-            return queryRacoon.mapToClassK(kClass).firstOrNull()
+            return queryRacoon.setParam("id", id)
+                .uncheckedConsumeRows { row ->
+                    row.mapToClassK(kClass)
+                }!!.firstOrNull()
         }
     }
 
