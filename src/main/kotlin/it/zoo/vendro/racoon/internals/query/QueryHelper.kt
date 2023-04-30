@@ -56,7 +56,7 @@ fun <T : Any> generateInsertQueryK(clazz: KClass<T>, config: RacoonConfiguration
 
     return "INSERT INTO $q${TableName.getName(clazz, config)}$q " +
             "(${properties.joinToString(separator = ",") { "$q${ColumnName.getName(it, config)}$q" }}) " +
-            "VALUE (${properties.joinToString(separator = ",") { toValueForQuery(it, config) }})"
+            "VALUES (${properties.joinToString(separator = ",") { toValueForQuery(it, config) }})"
 }
 
 /**
