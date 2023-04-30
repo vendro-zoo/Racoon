@@ -236,6 +236,7 @@ class ConnectionManager(
 
         createInsert(generateInsertQueryK(kClass, config)).use { insertRacoon ->
             for (field in parameters) {
+                if (field.name == "id") continue
                 if (IgnoreColumn.shouldIgnore(field, IgnoreTarget.INSERT)) continue
                 insertRacoon.setParam(ColumnName.getName(field, config), field.get(obj))
             }

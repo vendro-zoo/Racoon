@@ -48,7 +48,7 @@ internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfi
  * @throws IllegalArgumentException If the class name is null.
  */
 fun <T : Any> generateInsertQueryK(clazz: KClass<T>, config: RacoonConfiguration): String {
-    val properties = clazz.memberProperties.filter { mp ->
+    val properties = clazz.memberProperties.filter { it.name != "id" }.filter { mp ->
         !IgnoreColumn.shouldIgnore(mp, IgnoreTarget.INSERT)
     }
 
