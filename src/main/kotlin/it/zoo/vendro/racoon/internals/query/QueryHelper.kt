@@ -26,13 +26,15 @@ internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfi
     val kClass = kProperty1.returnType.classifier as KClass<*>
     val caster = config.casting.getFirstCaster(kClass)
 
-    val alias1 = if (alias.isEmpty()) "" else "`$alias`."
+    val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
+
+    val alias1 = if (alias.isEmpty()) "" else "$q$alias$q."
     val asAlias = if (alias.isEmpty()) "" else "${alias}_"
 
     return if (caster != null && (caster.fromQueryPostfix.isNotBlank() || caster.fromQueryPrefix.isNotBlank()))
-        "${caster.fromQueryPrefix}$alias1`${ColumnName.getName(kProperty1, config)}`${caster.fromQueryPostfix} " +
-                "as `$asAlias${ColumnName.getName(kProperty1, config)}`"
-    else "$alias1`${ColumnName.getName(kProperty1, config)}`"
+        "${caster.fromQueryPrefix}$alias1$q${ColumnName.getName(kProperty1, config)}$q${caster.fromQueryPostfix} " +
+                "as $q$asAlias${ColumnName.getName(kProperty1, config)}$q"
+    else "$alias1$q${ColumnName.getName(kProperty1, config)}$q"
 }
 
 /**
@@ -50,8 +52,10 @@ fun <T : Any> generateInsertQueryK(clazz: KClass<T>, config: RacoonConfiguration
         !IgnoreColumn.shouldIgnore(mp, IgnoreTarget.INSERT)
     }
 
-    return "INSERT INTO `${TableName.getName(clazz, config)}` " +
-            "(${properties.joinToString(separator = ",") { "`${ColumnName.getName(it, config)}`" }}) " +
+    val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
+
+    return "INSERT INTO $q${TableName.getName(clazz, config)}$q " +
+            "(${properties.joinToString(separator = ",") { "$q${ColumnName.getName(it, config)}$q" }}) " +
             "VALUE (${properties.joinToString(separator = ",") { toValueForQuery(it, config) }})"
 }
 
@@ -69,12 +73,14 @@ fun <T : Any> generateUpdateQueryK(clazz: KClass<T>, config: RacoonConfiguration
         !IgnoreColumn.shouldIgnore(mp, IgnoreTarget.UPDATE)
     }
 
-    return "UPDATE `${TableName.getName(clazz, config)}` " +
+    val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
+
+    return "UPDATE $q${TableName.getName(clazz, config)}$q " +
             "SET ${
                 properties.joinToString(separator = ",") {
-                    "`${ColumnName.getName(it, config)}`=${toValueForQuery(it, config)}"
+                    "$q${ColumnName.getName(it, config)}$q=${toValueForQuery(it, config)}"
                 }
-            } WHERE `id`=:id"
+            } WHERE ${q}id$q=:id"
 }
 
 /**
@@ -87,8 +93,10 @@ fun <T : Any> generateUpdateQueryK(clazz: KClass<T>, config: RacoonConfiguration
  * @return A string containing the select query for the given class.
  */
 fun <T : Any> generateSelectQueryK(clazz: KClass<T>, config: RacoonConfiguration): String {
+    val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
+
     return "SELECT ${generateSelectColumnsK(clazz, config)} " +
-            "FROM `${TableName.getName(clazz, config)}` WHERE `id`=:id"
+            "FROM $q${TableName.getName(clazz, config)}$q WHERE ${q}id$q=:id"
 }
 
 inline fun <reified T : Any> generateSelectColumns(config: RacoonConfiguration, alias: String = "") =
@@ -106,5 +114,8 @@ fun <T : Any> generateSelectColumnsK(clazz: KClass<T>, config: RacoonConfigurati
  * @param clazz The class to create the delete query for.
  * @return A string containing the delete query for the given class.
  */
-fun <T : Any> generateDeleteQueryK(clazz: KClass<T>, config: RacoonConfiguration): String =
-    "DELETE FROM `${TableName.getName(clazz, config)}` WHERE `id`=:id"
+fun <T : Any> generateDeleteQueryK(clazz: KClass<T>, config: RacoonConfiguration): String {
+    val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
+
+    return "DELETE FROM $q${TableName.getName(clazz, config)}$q WHERE ${q}id$q=:id"
+}

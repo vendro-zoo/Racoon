@@ -1,5 +1,8 @@
 package it.zoo.vendro.racoon.internals.configuration
 
+import it.zoo.vendro.racoon.internals.protocols.MySQLProtocol
+import it.zoo.vendro.racoon.internals.protocols.SQLProtocol
+
 /**
  * The settings used to configure the connection to the database.
  */
@@ -67,7 +70,7 @@ data class ConnectionSettings(
      *
      * NOTE: Values other than "mysql" are not supported, and so may not work.
      */
-    val protocol: String = "mysql",
+    val protocol: SQLProtocol = MySQLProtocol()
 ) {
     /**
      * Creates a connection string for the database.
@@ -75,7 +78,7 @@ data class ConnectionSettings(
      * @return The connection string.
      */
     override fun toString(): String {
-        val stringBuilder = StringBuilder("jdbc:${protocol}://")
+        val stringBuilder = StringBuilder("jdbc:${protocol.name}://")
             .append("$host:$port/$database")
             .append("?characterEncoding=UTF-8&")
             .append("connectionTimeout=$connectionTimeout&")
