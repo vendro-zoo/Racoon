@@ -4,6 +4,7 @@ import it.zoo.vendro.racoon.habitat.ConnectionPool
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.internals.mappers.NameMapper
+import it.zoo.vendro.racoon.internals.protocols.PostgresSQLProtocol
 import it.zoo.vendro.racoon.models.Cat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -15,11 +16,12 @@ internal class ConnectionManagerCacheTest {
             connection = RacoonConfiguration.Connection(
                 ConnectionSettings(
                     host = "localhost",
-                    port = 3306,
-                    database = "racoon-ktor-sample",
+                    port = 5432,
+                    database = "racoon",
                     username = "admin",
                     password = "admin",
-                    idleTimeout = 300
+                    protocol = PostgresSQLProtocol(),
+                    idleTimeout = 0
                 )
             ),
             naming = RacoonConfiguration.Naming(
@@ -27,7 +29,7 @@ internal class ConnectionManagerCacheTest {
                 tableAliasMapper = NameMapper.lowerSnakeCase
             ),
             caching = RacoonConfiguration.Caching(
-                maxEntries = 1
+                maxEntries = 1,
             )
         )
     )

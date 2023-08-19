@@ -1,14 +1,11 @@
 package it.zoo.vendro.racoon.habitat.statements
 
+import it.zoo.vendro.racoon.TestConfiguration
 import it.zoo.vendro.racoon.habitat.ConnectionManager
-import it.zoo.vendro.racoon.habitat.ConnectionPool
-import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.habitat.definition.ColumnName
 import it.zoo.vendro.racoon.habitat.definition.LazyId
 import it.zoo.vendro.racoon.habitat.definition.Table
 import it.zoo.vendro.racoon.habitat.definition.TableName
-import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
-import it.zoo.vendro.racoon.internals.mappers.NameMapper
 import it.zoo.vendro.racoon.models.Cat
 import it.zoo.vendro.racoon.models.Owner
 import org.junit.jupiter.api.AfterEach
@@ -18,24 +15,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class QueryStatementTest {
-    val pool = ConnectionPool(
-        RacoonConfiguration(
-            connection = RacoonConfiguration.Connection(
-                ConnectionSettings(
-                    host = "localhost",
-                    port = 3306,
-                    database = "racoon-ktor-sample",
-                    username = "admin",
-                    password = "admin",
-                    idleTimeout = 3
-                )
-            ),
-            naming = RacoonConfiguration.Naming(
-                tableNameMapper = NameMapper.lowerSnakeCase,
-                tableAliasMapper = NameMapper.lowerSnakeCase
-            )
-        )
-    )
+    val pool = TestConfiguration.POOL
 
     lateinit var connectionManager: ConnectionManager
 

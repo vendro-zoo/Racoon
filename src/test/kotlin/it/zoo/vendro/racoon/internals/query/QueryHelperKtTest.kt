@@ -16,7 +16,7 @@ internal class QueryHelperKtTest {
     @Test
     fun generateInsertQueryK1() {
         val query = generateInsertQueryK(TestClass::class, config)
-        assertEquals("INSERT INTO `TestClass` (`a`,`b`) VALUE (:a,:b)", query)
+        assertEquals("INSERT INTO `TestClass` (`a`,`b`) VALUES (:a,:b)", query)
     }
 
     @Test

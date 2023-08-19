@@ -11,7 +11,7 @@ class PostgresSQLProtocol : SQLProtocol {
     override val parameter: Parameter = Parameter(
         indexString = "?",
         namedString = ":",
-        indexRegex = Regex("\\?[0-9]+"),
+        indexRegex = Regex("\\?[0-9]*"),
         namedRegex = Regex(":[\\w\\u0080-\\u00FF]+"),
     )
 }

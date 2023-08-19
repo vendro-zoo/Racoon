@@ -18,6 +18,7 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
     testImplementation("mysql:mysql-connector-java:8.0.29")
+    testImplementation("org.postgresql:postgresql:42.6.0")
 
     dokkaJavadocPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.6.21")  // Used to generate the API documentation as javadoc
 
