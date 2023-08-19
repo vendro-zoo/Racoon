@@ -4,7 +4,7 @@ import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class IgnoreColumnTest {
+class ColumnIgnoreTest {
     val config = RacoonConfiguration(
         naming = RacoonConfiguration.Naming(
             tableAliasMapper = { it },

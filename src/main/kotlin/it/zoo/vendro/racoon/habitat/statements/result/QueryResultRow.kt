@@ -38,7 +38,7 @@ class QueryResultRow(val queryResult: QueryResult) {
         val sqlAlias = statement.tableAliases[tClass] ?: TableName.getAlias(tClass, manager.pool.configuration)
 
         val constructor = tClass.primaryConstructor ?: throw ClassCastException("$clazzName has no primary constructor")
-        val parameters = constructor.parameters.filter { mp -> !IgnoreColumn.shouldIgnore(mp, IgnoreTarget.SELECT) }
+        val parameters = constructor.parameters.filter { mp -> !ColumnIgnore.shouldIgnore(mp, IgnoreTarget.SELECT) }
 
         val retrievedParameterMap: MutableMap<KParameter, Any?> = mutableMapOf()
 

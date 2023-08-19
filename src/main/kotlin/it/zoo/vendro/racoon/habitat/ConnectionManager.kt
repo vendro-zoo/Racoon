@@ -2,10 +2,7 @@ package it.zoo.vendro.racoon.habitat
 
 import it.zoo.vendro.racoon.habitat.cache.ConnectionManagerCache
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
-import it.zoo.vendro.racoon.habitat.definition.ColumnName
-import it.zoo.vendro.racoon.habitat.definition.IgnoreColumn
-import it.zoo.vendro.racoon.habitat.definition.IgnoreTarget
-import it.zoo.vendro.racoon.habitat.definition.Table
+import it.zoo.vendro.racoon.habitat.definition.*
 import it.zoo.vendro.racoon.habitat.statements.ExecuteStatement
 import it.zoo.vendro.racoon.habitat.statements.InsertStatement
 import it.zoo.vendro.racoon.habitat.statements.QueryStatement
@@ -237,8 +234,8 @@ class ConnectionManager(
         createInsert(generateInsertQueryK(kClass, config)).use { insertRacoon ->
             for (field in parameters) {
                 if (field.name == "id") continue
-                if (IgnoreColumn.shouldIgnore(field, IgnoreTarget.INSERT)) continue
-                insertRacoon.setParam(ColumnName.getName(field, config), field.get(obj))
+                if (ColumnIgnore.shouldIgnore(field, IgnoreTarget.INSERT)) continue
+                insertRacoon.setParam(ColumnName.getName(field, config), field.get(obj), ColumnSetType.getInsertionMethod(field))
             }
             insertRacoon.execute()
             obj.id = insertRacoon.generatedKeys[0]
@@ -290,7 +287,7 @@ class ConnectionManager(
 
         createExecute(generateUpdateQueryK(kClass, config)).use { executeRacoon ->
             for (field in parameters) {
-                if (IgnoreColumn.shouldIgnore(field, IgnoreTarget.UPDATE)) continue
+                if (ColumnIgnore.shouldIgnore(field, IgnoreTarget.UPDATE)) continue
                 executeRacoon.setParam(ColumnName.getName(field, config), field.get(obj))
             }
             executeRacoon.execute()

@@ -1,6 +1,7 @@
 package it.zoo.vendro.racoon.habitat.statements
 
 import it.zoo.vendro.racoon.habitat.ConnectionManager
+import it.zoo.vendro.racoon.habitat.definition.ColumnInsertion
 import it.zoo.vendro.racoon.habitat.statements.parameters.ParameterMapping
 import it.zoo.vendro.racoon.habitat.statements.parameters.Parameters
 import java.sql.PreparedStatement
@@ -57,8 +58,8 @@ abstract class Statement<R: Statement<R>>(val manager: ConnectionManager, val or
      *
      * @return The [QueryStatement] instance.
      */
-    fun <T : Any> setParam(index: Int, value: T?): R {
-        parameters.setParam(index, value)
+    fun <T : Any> setParam(index: Int, value: T?, columnInsertion: ColumnInsertion? = null): R {
+        parameters.setParam(index, value, columnInsertion ?: ColumnInsertion.Object)
         return self()
     }
 
@@ -70,8 +71,8 @@ abstract class Statement<R: Statement<R>>(val manager: ConnectionManager, val or
      *
      * @return The [QueryStatement] instance.
      */
-    fun <T : Any> setParam(name: String, value: T?): R {
-        parameters.setParam(name, value)
+    fun <T : Any> setParam(name: String, value: T?, columnInsertion: ColumnInsertion? = null): R {
+        parameters.setParam(name, value, columnInsertion ?: ColumnInsertion.Object)
         return self()
     }
 

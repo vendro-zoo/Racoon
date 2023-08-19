@@ -1,8 +1,8 @@
 package it.zoo.vendro.racoon.internals.query
 
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
+import it.zoo.vendro.racoon.habitat.definition.ColumnIgnore
 import it.zoo.vendro.racoon.habitat.definition.ColumnName
-import it.zoo.vendro.racoon.habitat.definition.IgnoreColumn
 import it.zoo.vendro.racoon.habitat.definition.IgnoreTarget
 import it.zoo.vendro.racoon.habitat.definition.TableName
 import kotlin.reflect.KClass
@@ -50,7 +50,7 @@ internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfi
  */
 fun <T : Any> generateInsertQueryK(clazz: KClass<T>, config: RacoonConfiguration): String {
     val properties = clazz.memberProperties.filter { it.name != "id" }.filter { mp ->
-        !IgnoreColumn.shouldIgnore(mp, IgnoreTarget.INSERT)
+        !ColumnIgnore.shouldIgnore(mp, IgnoreTarget.INSERT)
     }
 
     val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
@@ -71,7 +71,7 @@ fun <T : Any> generateInsertQueryK(clazz: KClass<T>, config: RacoonConfiguration
  */
 fun <T : Any> generateUpdateQueryK(clazz: KClass<T>, config: RacoonConfiguration): String {
     val properties = clazz.memberProperties.filter { it.name != "id" }.filter { mp ->
-        !IgnoreColumn.shouldIgnore(mp, IgnoreTarget.UPDATE)
+        !ColumnIgnore.shouldIgnore(mp, IgnoreTarget.UPDATE)
     }
 
     val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
@@ -107,7 +107,7 @@ inline fun <reified T : Any> generateSelectColumns(config: RacoonConfiguration, 
 
 fun <T : Any> generateSelectColumnsK(clazz: KClass<T>, config: RacoonConfiguration, alias: String = "") =
     clazz.memberProperties.filter { mp ->
-        !IgnoreColumn.shouldIgnore(mp, IgnoreTarget.SELECT)
+        !ColumnIgnore.shouldIgnore(mp, IgnoreTarget.SELECT)
     }.joinToString(separator = ",") { fromValueForQuery(it, config, alias) }
 
 /**
