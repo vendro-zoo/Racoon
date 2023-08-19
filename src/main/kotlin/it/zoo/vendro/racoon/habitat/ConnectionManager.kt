@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.habitat
 
-import it.zoo.vendro.racoon.habitat.cache.ConnectionManagerCache
+import it.zoo.vendro.racoon.habitat.cache.TableCache
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.habitat.definition.*
 import it.zoo.vendro.racoon.habitat.statements.ExecuteStatement
@@ -46,7 +46,7 @@ class ConnectionManager(
     var closed = false
         internal set
 
-    internal val cache = ConnectionManagerCache(this)
+    internal val cache = TableCache(this)
 
     /**
      * Closes the connection to the database.

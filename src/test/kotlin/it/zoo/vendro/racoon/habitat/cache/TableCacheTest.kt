@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-internal class ConnectionManagerCacheTest {
+internal class TableCacheTest {
     val pool = ConnectionPool(
         RacoonConfiguration(
             connection = RacoonConfiguration.Connection(

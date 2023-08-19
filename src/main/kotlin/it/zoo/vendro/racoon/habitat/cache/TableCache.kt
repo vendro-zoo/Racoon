@@ -6,7 +6,7 @@ import it.zoo.vendro.racoon.habitat.definition.Table
 import kotlin.math.min
 import kotlin.reflect.KClass
 
-class ConnectionManagerCache(
+class TableCache(
     val connectionManager: ConnectionManager
 ) {
     private val config: RacoonConfiguration
