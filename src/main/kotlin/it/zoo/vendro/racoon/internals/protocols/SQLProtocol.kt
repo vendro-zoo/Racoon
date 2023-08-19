@@ -3,6 +3,7 @@ package it.zoo.vendro.racoon.internals.protocols
 interface SQLProtocol {
     val name: String
     val quotation: Quotation
+    val parameter: Parameter
 }
 
 data class Quotation(
@@ -12,3 +13,10 @@ data class Quotation(
     fun quoteIdentifier(identifier: String): String = "$identifierQuote$identifier$identifierQuote"
     fun quoteString(string: String): String = "$stringQuote$string$stringQuote"
 }
+
+data class Parameter(
+    val indexString: String,
+    val namedString: String,
+    val indexRegex: Regex,
+    val namedRegex: Regex,
+)

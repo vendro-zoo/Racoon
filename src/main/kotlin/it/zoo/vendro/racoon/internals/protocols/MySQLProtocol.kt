@@ -7,4 +7,11 @@ class MySQLProtocol : SQLProtocol {
         identifierQuote = "`",
         stringQuote = "'"
     )
+
+    override val parameter: Parameter = Parameter(
+        indexString = "?",
+        namedString = ":",
+        indexRegex = Regex("\\?"),
+        namedRegex = Regex(":[\\w\\u0080-\\u00FF]+"),
+    )
 }

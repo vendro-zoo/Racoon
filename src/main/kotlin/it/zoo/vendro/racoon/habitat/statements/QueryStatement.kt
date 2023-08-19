@@ -2,7 +2,6 @@ package it.zoo.vendro.racoon.habitat.statements
 
 import it.zoo.vendro.racoon.habitat.ConnectionManager
 import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
-import it.zoo.vendro.racoon.habitat.definition.*
 import it.zoo.vendro.racoon.habitat.statements.result.QueryResult
 import it.zoo.vendro.racoon.habitat.statements.result.QueryResultRow
 import it.zoo.vendro.racoon.internals.query.QueryProcessing
@@ -46,7 +45,7 @@ class QueryStatement(
      * @return the [QueryStatement] itself
      */
     override fun execute() = apply {
-        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters)
+        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters, manager.config)
 
         val processedQuery = queryProcessingResult.first
         parameterMapping = queryProcessingResult.second

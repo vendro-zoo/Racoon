@@ -15,7 +15,7 @@ class InsertStatement(manager: ConnectionManager, query: String) : BatchableStat
     val generatedKeys: MutableList<Int> = mutableListOf()
 
     override fun executeBatch() = apply {
-        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters)
+        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters, manager.config)
 
         val processedQuery = queryProcessingResult.first
         parameterMapping = queryProcessingResult.second
@@ -33,7 +33,7 @@ class InsertStatement(manager: ConnectionManager, query: String) : BatchableStat
      * Executes the query to the database and saves the last inserted id.
      */
     override fun execute() = apply {
-        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters)
+        val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters, manager.config)
 
         val processedQuery = queryProcessingResult.first
         parameterMapping = queryProcessingResult.second
