@@ -12,7 +12,7 @@ import kotlin.reflect.full.memberProperties
 internal fun toValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfiguration): String {
     val kClass = kProperty1.returnType.classifier as KClass<*>
     val caster = config.casting.getFirstCaster(kClass)
-    val n = config.connection.connectionSettings.protocol.parameter.namedString
+    val n = config.connection.protocol.parameter.namedString
 
     return if (caster != null) "${caster.toQueryPrefix}$n${
         ColumnName.getName(
@@ -27,7 +27,7 @@ internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfi
     val kClass = kProperty1.returnType.classifier as KClass<*>
     val caster = config.casting.getFirstCaster(kClass)
 
-    val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
+    val q = config.connection.protocol.quotation.identifierQuote
 
     val alias1 = if (alias.isEmpty()) "" else "$q$alias$q."
     val asAlias = if (alias.isEmpty()) "" else "${alias}_"
@@ -53,7 +53,7 @@ fun <T : Any> generateInsertQueryK(clazz: KClass<T>, config: RacoonConfiguration
         !ColumnIgnore.shouldIgnore(mp, IgnoreTarget.INSERT)
     }
 
-    val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
+    val q = config.connection.protocol.quotation.identifierQuote
 
     return "INSERT INTO $q${TableName.getName(clazz, config)}$q " +
             "(${properties.joinToString(separator = ",") { "$q${ColumnName.getName(it, config)}$q" }}) " +
@@ -74,8 +74,8 @@ fun <T : Any> generateUpdateQueryK(clazz: KClass<T>, config: RacoonConfiguration
         !ColumnIgnore.shouldIgnore(mp, IgnoreTarget.UPDATE)
     }
 
-    val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
-    val n = config.connection.connectionSettings.protocol.parameter.namedString
+    val q = config.connection.protocol.quotation.identifierQuote
+    val n = config.connection.protocol.parameter.namedString
 
     return "UPDATE $q${TableName.getName(clazz, config)}$q " +
             "SET ${
@@ -95,8 +95,8 @@ fun <T : Any> generateUpdateQueryK(clazz: KClass<T>, config: RacoonConfiguration
  * @return A string containing the select query for the given class.
  */
 fun <T : Any> generateSelectQueryK(clazz: KClass<T>, config: RacoonConfiguration): String {
-    val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
-    val n = config.connection.connectionSettings.protocol.parameter.namedString
+    val q = config.connection.protocol.quotation.identifierQuote
+    val n = config.connection.protocol.parameter.namedString
 
     return "SELECT ${generateSelectColumnsK(clazz, config)} " +
             "FROM $q${TableName.getName(clazz, config)}$q WHERE ${q}id$q=${n}id"
@@ -118,8 +118,8 @@ fun <T : Any> generateSelectColumnsK(clazz: KClass<T>, config: RacoonConfigurati
  * @return A string containing the delete query for the given class.
  */
 fun <T : Any> generateDeleteQueryK(clazz: KClass<T>, config: RacoonConfiguration): String {
-    val q = config.connection.connectionSettings.protocol.quotation.identifierQuote
-    val n = config.connection.connectionSettings.protocol.parameter.namedString
+    val q = config.connection.protocol.quotation.identifierQuote
+    val n = config.connection.protocol.parameter.namedString
 
     return "DELETE FROM $q${TableName.getName(clazz, config)}$q WHERE ${q}id$q=${n}id"
 }

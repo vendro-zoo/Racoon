@@ -453,7 +453,7 @@ class ConnectionManager(
                 retryUntilNotNull { DriverManager.getConnection(connectionSettings.toString()) },
                 pool
             )
-            val idleTimeout = pool.configuration.connection.connectionSettings.idleTimeout
+            val idleTimeout = pool.configuration.connection.idleTimeout
 
             rm.connection.autoCommit = false
 

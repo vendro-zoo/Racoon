@@ -27,8 +27,8 @@ object QueryProcessing {
 
     fun calculateMatches(query: String, config: RacoonConfiguration): Pair<List<MatchResult>, List<MatchResult>> {
         // Regex to find the parameters in the query
-        val indexRegex = config.connection.connectionSettings.protocol.parameter.indexRegex
-        val namedRegex = config.connection.connectionSettings.protocol.parameter.namedRegex
+        val indexRegex = config.connection.protocol.parameter.indexRegex
+        val namedRegex = config.connection.protocol.parameter.namedRegex
 
         // Finding only the parameters that are not quoted
         val indexMatches = indexRegex.findAll(query).toList().filter { !query.isInQuotes(it.range.first) }
@@ -125,7 +125,7 @@ object QueryProcessing {
         var counter = 1  // Counter of the indexed parameters encountered so far (starting from 1)
         for (m in matches) {
             // Checks if is an indexed parameter
-            if (m.value.startsWith(config.connection.connectionSettings.protocol.parameter.indexString)) {
+            if (m.value.startsWith(config.connection.protocol.parameter.indexString)) {
                 parameterMapping.addIndexed(counter, counter + offset)
                 counter++
             } else {
@@ -143,7 +143,7 @@ object QueryProcessing {
      * @return The query where the named parameters have been replaced with a question mark
      */
     private fun removeCustomParameters(query: String, config: RacoonConfiguration): String {
-        val iStr = config.connection.connectionSettings.protocol.parameter.indexString
+        val iStr = config.connection.protocol.parameter.indexString
         val (indexMatches, namedMatches) = calculateMatches(query, config)
 
         // The offset of the namedMatches. This needs to be tracked because the string is modified in the loop.

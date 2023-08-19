@@ -8,8 +8,7 @@ import it.zoo.vendro.racoon.internals.protocols.PostgresSQLProtocol
 
 object TestConfiguration {
     val CONFIGURATION = RacoonConfiguration(
-        connection = RacoonConfiguration.Connection(
-            ConnectionSettings(
+        connection = ConnectionSettings(
                 host = "localhost",
                 port = 5432,
                 database = "racoon",
@@ -17,7 +16,6 @@ object TestConfiguration {
                 password = "admin",
                 protocol = PostgresSQLProtocol(),
                 idleTimeout = 0
-            )
         ),
         naming = RacoonConfiguration.Naming(
             tableNameMapper = NameMapper.lowerSnakeCase,

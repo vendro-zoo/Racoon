@@ -16,27 +16,15 @@ import kotlin.reflect.full.superclasses
  */
 @Suppress("unused")
 class RacoonConfiguration(
-    val connection: Connection = Connection(),
+    val connection: ConnectionSettings = ConnectionSettings(
+        host = "localhost",
+        database = "test"
+    ),
     val caching: Caching = Caching(),
     val naming: Naming = Naming(),
     val casting: Casting = Casting(),
     val resourcing: Resourcing = Resourcing()
 ) {
-    /**
-     * All the configuration relative to the connection to the database.
-     */
-    class Connection(
-        /**
-         * The settings for the connection to the database.
-         *
-         * The default value is a [ConnectionSettings] with host "localhost" and database "test".
-         */
-        val connectionSettings: ConnectionSettings = ConnectionSettings(
-            host = "localhost",
-            database = "test"
-        )
-    )
-
     class Caching(
         /**
          * The maximum number of entries in the cache of each [ConnectionManager].

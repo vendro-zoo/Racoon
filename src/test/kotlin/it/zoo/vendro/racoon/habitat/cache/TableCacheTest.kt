@@ -13,16 +13,14 @@ import org.junit.jupiter.api.Test
 internal class TableCacheTest {
     val pool = ConnectionPool(
         RacoonConfiguration(
-            connection = RacoonConfiguration.Connection(
-                ConnectionSettings(
-                    host = "localhost",
-                    port = 5432,
-                    database = "racoon",
-                    username = "admin",
-                    password = "admin",
-                    protocol = PostgresSQLProtocol(),
-                    idleTimeout = 0
-                )
+            connection = ConnectionSettings(
+                host = "localhost",
+                port = 5432,
+                database = "racoon",
+                username = "admin",
+                password = "admin",
+                protocol = PostgresSQLProtocol(),
+                idleTimeout = 0
             ),
             naming = RacoonConfiguration.Naming(
                 tableNameMapper = NameMapper.lowerSnakeCase,

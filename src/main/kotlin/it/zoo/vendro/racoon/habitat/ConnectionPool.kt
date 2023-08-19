@@ -34,7 +34,7 @@ class ConnectionPool(val configuration: RacoonConfiguration) {
      * @throws SQLException If the number of available managers exceeds the maximum number of managers.
      */
     fun getManager(): ConnectionManager {
-        val settings = configuration.connection.connectionSettings
+        val settings = configuration.connection
 
         if (settings.maxManagers != 0 &&
             availableConnections.isEmpty() &&
@@ -71,7 +71,7 @@ class ConnectionPool(val configuration: RacoonConfiguration) {
      */
     fun releaseManager(manager: ConnectionManager): Boolean {
         // Moves the manager to the available list
-        if (availableConnections.size >= configuration.connection.connectionSettings.maxPoolSize) {
+        if (availableConnections.size >= configuration.connection.maxPoolSize) {
             manager.connection.close()
             return false
         }
