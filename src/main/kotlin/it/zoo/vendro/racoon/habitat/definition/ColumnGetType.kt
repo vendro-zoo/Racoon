@@ -9,12 +9,12 @@ import kotlin.reflect.full.findAnnotation
 @MustBeDocumented
 /**
  * Annotation used to specify how to get the value of a column from a [ResultSet].
- * By default, the value of the column is retrieved using [ExtractionMethodType.Object].
+ * By default, the value of the column is retrieved using [ColumnGetTypes.Object].
  */
-annotation class ColumnExtractionMethod(val method: ExtractionMethodType) {
+annotation class ColumnGetType(val method: ColumnGetTypes) {
     companion object {
         fun getExtractionMethod(parameter: KParameter) =
-            parameter.findAnnotation<ColumnExtractionMethod>()?.method?.extractor
-                ?: ExtractionMethod.Object
+            parameter.findAnnotation<ColumnGetType>()?.method?.extractor
+                ?: ColumnExtraction.Object
     }
 }

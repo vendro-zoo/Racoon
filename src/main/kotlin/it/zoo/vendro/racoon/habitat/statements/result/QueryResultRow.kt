@@ -9,8 +9,10 @@ import it.zoo.vendro.racoon.internals.extensions.isNullOrOptional
 import java.math.BigDecimal
 import java.sql.ResultSet
 import java.sql.SQLException
-import kotlin.reflect.*
+import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.typeOf
 
 class QueryResultRow(val queryResult: QueryResult) {
     internal val statement get() = queryResult.statement
@@ -46,7 +48,7 @@ class QueryResultRow(val queryResult: QueryResult) {
             val parameterClass = parameter.asKClass()
             val parameterType = parameter.type
 
-            val extractionMethod = ColumnExtractionMethod.getExtractionMethod(parameter)
+            val extractionMethod = ColumnGetType.getExtractionMethod(parameter)
 
             val foundValue = findValue(extractionMethod, sqlAlias, name)
                 ?: if (parameter.isMarkedNullable()) {
@@ -153,12 +155,12 @@ class QueryResultRow(val queryResult: QueryResult) {
         else throw ClassCastException("Cant find column ${it.name} in the result set")
 
     private fun findValue(
-        extractionMethod: ExtractionMethod<out Any?>,
+        columnExtraction: ColumnExtraction<out Any?>,
         sqlAlias: String,
         name: String
-    ) = (getResultSetValue(extractionMethod, resultSet, "$sqlAlias.$name")
-        ?: getResultSetValue(extractionMethod, resultSet, "${sqlAlias}_$name"))
-        ?: getResultSetValue(extractionMethod, resultSet, name)
+    ) = (getResultSetValue(columnExtraction, resultSet, "$sqlAlias.$name")
+        ?: getResultSetValue(columnExtraction, resultSet, "${sqlAlias}_$name"))
+        ?: getResultSetValue(columnExtraction, resultSet, name)
 
     fun mapToNullableInt(index: Int = 1) = resultSet.getInt(index).takeIf { !resultSet.wasNull() }
     fun mapToInt(index: Int = 1) = mapToNullableInt(index) ?: throwBecauseNull()
@@ -185,12 +187,12 @@ class QueryResultRow(val queryResult: QueryResult) {
 
     companion object {
         private fun getResultSetValue(
-            extractionMethod: ExtractionMethod<*>,
+            columnExtraction: ColumnExtraction<*>,
             resultSet: ResultSet,
             columnName: String
         ): Any? {
             return try {
-                extractionMethod.extract(resultSet, columnName)
+                columnExtraction.extract(resultSet, columnName)
             } catch (_: SQLException) {
                 null
             }
