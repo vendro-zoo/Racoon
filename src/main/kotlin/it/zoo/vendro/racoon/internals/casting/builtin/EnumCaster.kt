@@ -19,7 +19,7 @@ class EnumCaster : ParameterCaster<Enum<*>, String> {
             find { it is T }?.let { it as T }
 
         fun getNameFromEnum(enum: Enum<*>): String =
-            enum.declaringClass.fields
+            enum.declaringJavaClass.fields
                 // Find the field with the same name as the enum value
                 .find { it.name == enum.name }?.let {
                     // Find the ColumnName annotation on the field or return the field name
