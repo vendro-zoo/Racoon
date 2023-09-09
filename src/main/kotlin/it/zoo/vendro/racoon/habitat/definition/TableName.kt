@@ -35,12 +35,9 @@ annotation class TableName(val name: String, val alias: String = "") {
          */
         fun getAlias(kClass: KClass<*>, config: RacoonConfiguration): String {
             val alias = kClass.findAnnotation<TableName>()?.alias
-            return if (alias.isNullOrEmpty())
-                config.naming.tableAliasMapper(
-                    kClass.simpleName ?: throw IllegalArgumentException("The class does not have a name")
-                )
-            else
-                alias
+            return if (alias.isNullOrEmpty()) config.naming.tableAliasMapper(
+                kClass.simpleName ?: throw IllegalArgumentException("The class does not have a name")
+            ) else alias
         }
     }
 }
