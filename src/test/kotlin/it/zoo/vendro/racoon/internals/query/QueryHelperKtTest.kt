@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.internals.query
 
-import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
+import it.zoo.vendro.racoon.configuration.RacoonConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

@@ -19,7 +19,9 @@ dependencies {
     implementation("com.mysql:mysql-connector-j:8.1.0")
 
     testImplementation("org.postgresql:postgresql:42.6.0")
-    testImplementation("org.testcontainers:testcontainers:1.18.3")
+    testImplementation("org.testcontainers:testcontainers:1.19.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.0")
+    testImplementation("org.testcontainers:postgresql:1.19.0")
     testImplementation(kotlin("test"))
 }
 

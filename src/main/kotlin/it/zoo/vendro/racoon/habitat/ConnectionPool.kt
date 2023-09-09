@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.habitat
 
-import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
+import it.zoo.vendro.racoon.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.internals.extensions.removeLastOrNull
 import java.sql.Connection
 import java.sql.SQLException

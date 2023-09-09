@@ -1,6 +1,7 @@
 package it.zoo.vendro.racoon.habitat.definition
 
 import it.zoo.vendro.racoon.TestConfiguration
+import it.zoo.vendro.racoon.definition.LazyId
 import it.zoo.vendro.racoon.models.Cat
 import it.zoo.vendro.racoon.models.Owner
 import org.junit.jupiter.api.Assertions.assertNotNull

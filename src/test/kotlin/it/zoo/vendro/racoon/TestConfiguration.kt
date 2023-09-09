@@ -1,25 +1,27 @@
 package it.zoo.vendro.racoon
 
+import it.zoo.vendro.racoon.configuration.ConnectionSettings
+import it.zoo.vendro.racoon.configuration.RacoonConfiguration
+import it.zoo.vendro.racoon.configuration.RacoonConfiguration.Naming.Companion.lowerSnakeCase
 import it.zoo.vendro.racoon.habitat.ConnectionPool
-import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
-import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
-import it.zoo.vendro.racoon.internals.mappers.NameMapper
-import it.zoo.vendro.racoon.internals.protocols.PostgresSQLProtocol
+import it.zoo.vendro.racoon.protocols.PostgresSQLProtocol
+import it.zoo.vendro.racoon.test.PostgreContainer
 
 object TestConfiguration {
+    val CONNECTION = ConnectionSettings(
+        host = PostgreContainer.POSTGRE.host,
+        port = PostgreContainer.POSTGRE.getMappedPort(5432),
+        database = "testdb",
+        username = "testuser",
+        password = "testpassword",
+        protocol = PostgresSQLProtocol(),
+        idleTimeout = 2
+    )
     val CONFIGURATION = RacoonConfiguration(
-        connection = ConnectionSettings(
-                host = "localhost",
-                port = 5432,
-                database = "racoon",
-                username = "admin",
-                password = "admin",
-                protocol = PostgresSQLProtocol(),
-                idleTimeout = 0
-        ),
+        connection = CONNECTION,
         naming = RacoonConfiguration.Naming(
-            tableNameMapper = NameMapper.lowerSnakeCase,
-            tableAliasMapper = NameMapper.lowerSnakeCase
+            tableNameMapper = lowerSnakeCase,
+            tableAliasMapper = lowerSnakeCase
         ),
     )
     val POOL = ConnectionPool(

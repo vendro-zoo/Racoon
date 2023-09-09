@@ -1,7 +1,7 @@
 package it.zoo.vendro.racoon.models
 
-import it.zoo.vendro.racoon.habitat.definition.LazyId
-import it.zoo.vendro.racoon.habitat.definition.Table
+import it.zoo.vendro.racoon.definition.LazyId
+import it.zoo.vendro.racoon.definition.Table
 
 class Cat(
     override var id: Int? = null,

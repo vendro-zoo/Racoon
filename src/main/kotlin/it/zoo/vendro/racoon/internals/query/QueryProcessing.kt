@@ -1,9 +1,9 @@
 package it.zoo.vendro.racoon.internals.query
 
-import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
-import it.zoo.vendro.racoon.habitat.statements.parameters.ParameterMapping
-import it.zoo.vendro.racoon.habitat.statements.parameters.Parameters
+import it.zoo.vendro.racoon.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.internals.extensions.isInQuotes
+import it.zoo.vendro.racoon.statements.parameters.ParameterMapping
+import it.zoo.vendro.racoon.statements.parameters.Parameters
 
 object QueryProcessing {
     /**
@@ -50,12 +50,12 @@ object QueryProcessing {
             val m = matches.first[i - offset]
 
             // Get the value of the parameter
-            val v = parameters.indexedParameters[i + 1]
+            val v = parameters.indexedParameters[i + 1] ?: throw IllegalStateException("Indexed parameter ${i + 1} not found")
 
             // Check if the value is a list
-            if (v is List<*>) {
+            if (v.value is List<*>) {
                 // Create the replacement string
-                val s = v.withIndex().joinToString(",") { ":racoon_internal_ip_${i + 1}_${it.index}" }
+                val s = v.value.withIndex().joinToString(",") { ":racoon_internal_ip_${i + 1}_${it.index}" }
                 // Replace in the query
                 query = query.replaceRange(m.range, s)
 
@@ -87,9 +87,9 @@ object QueryProcessing {
             val v = parameters.namedParameters[sub]
 
             // Check if the value is a list
-            if (v is List<*>) {
+            if (v?.value is List<*>) {
                 // Create the replacement string
-                val s = v.withIndex().joinToString(",") { ":racoon_internal_ni_${sub}_${it.index}" }
+                val s = v.value.withIndex().joinToString(",") { ":racoon_internal_ni_${sub}_${it.index}" }
                 // Replace in the query
                 query = query.replaceRange(m.range, s)
 
@@ -98,7 +98,7 @@ object QueryProcessing {
 
                 // Update the counters
                 i--
-                offset += v.size
+                offset += v.value.size
             }
             // Increase the iteration counter
             i++

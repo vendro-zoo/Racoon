@@ -2,10 +2,10 @@ package it.zoo.vendro.racoon.habitat.statements
 
 import it.zoo.vendro.racoon.TestConfiguration
 import it.zoo.vendro.racoon.habitat.ConnectionManager
-import it.zoo.vendro.racoon.habitat.definition.ColumnName
-import it.zoo.vendro.racoon.habitat.definition.LazyId
-import it.zoo.vendro.racoon.habitat.definition.Table
-import it.zoo.vendro.racoon.habitat.definition.TableName
+import it.zoo.vendro.racoon.definition.ColumnName
+import it.zoo.vendro.racoon.definition.LazyId
+import it.zoo.vendro.racoon.definition.Table
+import it.zoo.vendro.racoon.definition.TableName
 import it.zoo.vendro.racoon.models.Cat
 import it.zoo.vendro.racoon.models.Owner
 import org.junit.jupiter.api.AfterEach

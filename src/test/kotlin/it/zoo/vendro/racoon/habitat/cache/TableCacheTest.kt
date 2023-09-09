@@ -1,10 +1,11 @@
 package it.zoo.vendro.racoon.habitat.cache
 
+import it.zoo.vendro.racoon.TestConfiguration
 import it.zoo.vendro.racoon.habitat.ConnectionPool
-import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
-import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
-import it.zoo.vendro.racoon.internals.mappers.NameMapper
-import it.zoo.vendro.racoon.internals.protocols.PostgresSQLProtocol
+import it.zoo.vendro.racoon.configuration.RacoonConfiguration
+import it.zoo.vendro.racoon.configuration.ConnectionSettings
+import it.zoo.vendro.racoon.configuration.RacoonConfiguration.Naming.Companion.lowerSnakeCase
+import it.zoo.vendro.racoon.protocols.PostgresSQLProtocol
 import it.zoo.vendro.racoon.models.Cat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -13,18 +14,10 @@ import org.junit.jupiter.api.Test
 internal class TableCacheTest {
     val pool = ConnectionPool(
         RacoonConfiguration(
-            connection = ConnectionSettings(
-                host = "localhost",
-                port = 5432,
-                database = "racoon",
-                username = "admin",
-                password = "admin",
-                protocol = PostgresSQLProtocol(),
-                idleTimeout = 0
-            ),
+            connection = TestConfiguration.CONNECTION,
             naming = RacoonConfiguration.Naming(
-                tableNameMapper = NameMapper.lowerSnakeCase,
-                tableAliasMapper = NameMapper.lowerSnakeCase
+                tableNameMapper = lowerSnakeCase,
+                tableAliasMapper = lowerSnakeCase
             ),
             caching = RacoonConfiguration.Caching(
                 maxEntries = 1,

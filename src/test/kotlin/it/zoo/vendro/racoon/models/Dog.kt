@@ -1,9 +1,9 @@
 package it.zoo.vendro.racoon.models
 
-import it.zoo.vendro.racoon.habitat.definition.ColumnName
-import it.zoo.vendro.racoon.habitat.definition.ColumnSetType
-import it.zoo.vendro.racoon.habitat.definition.ColumnSetTypes
-import it.zoo.vendro.racoon.habitat.definition.Table
+import it.zoo.vendro.racoon.definition.ColumnName
+import it.zoo.vendro.racoon.definition.ColumnSetType
+import it.zoo.vendro.racoon.definition.ColumnSetTypes
+import it.zoo.vendro.racoon.definition.Table
 
 enum class DogSize {
     SMALL,

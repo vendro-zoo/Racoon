@@ -1,17 +1,17 @@
 package it.zoo.vendro.racoon.internals.query
 
-import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
-import it.zoo.vendro.racoon.habitat.definition.ColumnIgnore
-import it.zoo.vendro.racoon.habitat.definition.ColumnName
-import it.zoo.vendro.racoon.habitat.definition.IgnoreTarget
-import it.zoo.vendro.racoon.habitat.definition.TableName
+import it.zoo.vendro.racoon.configuration.RacoonConfiguration
+import it.zoo.vendro.racoon.definition.ColumnIgnore
+import it.zoo.vendro.racoon.definition.ColumnName
+import it.zoo.vendro.racoon.definition.IgnoreTarget
+import it.zoo.vendro.racoon.definition.TableName
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
 internal fun toValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfiguration): String {
-    val kClass = kProperty1.returnType.classifier as KClass<*>
-    val caster = config.casting.getFirstCaster(kClass)
+    val kType = kProperty1.returnType
+    val caster = config.casting.getFirstCasterK(kType)
     val n = config.connection.protocol.parameter.namedString
 
     return if (caster != null) "${caster.toQueryPrefix}$n${
@@ -24,8 +24,8 @@ internal fun toValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfigu
 }
 
 internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfiguration, alias: String = ""): String {
-    val kClass = kProperty1.returnType.classifier as KClass<*>
-    val caster = config.casting.getFirstCaster(kClass)
+    val kType = kProperty1.returnType
+    val caster = config.casting.getFirstCasterK(kType)
 
     val q = config.connection.protocol.quotation.identifierQuote
 

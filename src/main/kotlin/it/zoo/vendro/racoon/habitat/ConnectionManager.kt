@@ -1,15 +1,14 @@
 package it.zoo.vendro.racoon.habitat
 
-import it.zoo.vendro.racoon.habitat.cache.TableCache
-import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
-import it.zoo.vendro.racoon.habitat.definition.*
-import it.zoo.vendro.racoon.habitat.statements.ExecuteStatement
-import it.zoo.vendro.racoon.habitat.statements.InsertStatement
-import it.zoo.vendro.racoon.habitat.statements.QueryStatement
-import it.zoo.vendro.racoon.internals.configuration.ConnectionSettings
-import it.zoo.vendro.racoon.internals.exceptions.ConnectionUnavailable
-import it.zoo.vendro.racoon.internals.exceptions.connectionClosedException
-import it.zoo.vendro.racoon.internals.model.getValueK
+import it.zoo.vendro.racoon.cache.TableCache
+import it.zoo.vendro.racoon.configuration.RacoonConfiguration
+import it.zoo.vendro.racoon.definition.*
+import it.zoo.vendro.racoon.statements.ExecuteStatement
+import it.zoo.vendro.racoon.statements.InsertStatement
+import it.zoo.vendro.racoon.statements.QueryStatement
+import it.zoo.vendro.racoon.configuration.ConnectionSettings
+import it.zoo.vendro.racoon.exceptions.ConnectionUnavailable
+import it.zoo.vendro.racoon.internals.utils.getValueK
 import it.zoo.vendro.racoon.internals.query.generateDeleteQueryK
 import it.zoo.vendro.racoon.internals.query.generateInsertQueryK
 import it.zoo.vendro.racoon.internals.query.generateSelectQueryK
@@ -67,7 +66,7 @@ class ConnectionManager(
      * @throws SQLException if the connection is closed.
      */
     fun commit() = apply {
-        if (closed || connection.isClosed) throw connectionClosedException()
+        if (closed || connection.isClosed) throw ConnectionUnavailable()
         if (finalOpExecuted) throw IllegalStateException("Can't commit after final operation has been executed")
         finalOpExecuted = true
         connection.commit()
@@ -80,7 +79,7 @@ class ConnectionManager(
      * @throws SQLException if the connection is closed.
      */
     fun rollback() = apply {
-        if (closed || connection.isClosed) throw connectionClosedException()
+        if (closed || connection.isClosed) throw ConnectionUnavailable()
         if (finalOpExecuted) throw IllegalStateException("Can't rollback after final operation has been executed")
         finalOpExecuted = true
         connection.rollback()
@@ -93,7 +92,7 @@ class ConnectionManager(
      * @return The result of the block.
      */
     inline fun <T> use(block: (ConnectionManager) -> T): T {
-        if (closed) throw connectionClosedException()
+        if (closed) throw ConnectionUnavailable()
         if (finalOpExecuted) throw IllegalStateException("Can't use after final operation has been executed")
         val blockResult = runCatching { block(this) }.fold(
             {
@@ -120,7 +119,7 @@ class ConnectionManager(
      * @throws SQLException if the connection is closed.
      */
     fun release() {
-        if (closed || connection.isClosed) throw connectionClosedException()
+        if (closed || connection.isClosed) throw ConnectionUnavailable()
         if (!finalOpExecuted) throw IllegalStateException("Can't release before final operation has been executed")
         this.closed = true
         this.cache.clean()
@@ -235,7 +234,7 @@ class ConnectionManager(
             for (field in parameters) {
                 if (field.name == "id") continue
                 if (ColumnIgnore.shouldIgnore(field, IgnoreTarget.INSERT)) continue
-                insertRacoon.setParam(ColumnName.getName(field, config), field.get(obj), ColumnSetType.getInsertionMethod(field))
+                insertRacoon.setParamK(ColumnName.getName(field, config), field.get(obj), field.returnType, ColumnSetType.getInsertionMethod(field))
             }
             insertRacoon.execute()
             obj.id = insertRacoon.generatedKeys[0]
@@ -288,7 +287,7 @@ class ConnectionManager(
         createExecute(generateUpdateQueryK(kClass, config)).use { executeRacoon ->
             for (field in parameters) {
                 if (ColumnIgnore.shouldIgnore(field, IgnoreTarget.UPDATE)) continue
-                executeRacoon.setParam(ColumnName.getName(field, config), field.get(obj))
+                executeRacoon.setParamK(ColumnName.getName(field, config), field.get(obj), field.returnType, ColumnSetType.getInsertionMethod(field))
             }
             executeRacoon.execute()
 
