@@ -12,7 +12,7 @@ class InsertStatement(manager: ConnectionManager, query: String) : BatchableStat
      *
      * If the query has not been executed yet, this will be empty.
      */
-    val generatedKeys: MutableList<Int> = mutableListOf()
+    val generatedKeys: MutableList<Any> = mutableListOf()
 
     override fun executeBatch() = apply {
         val queryProcessingResult = QueryProcessing.reconstructQuery(originalQuery, parameters, manager.config)

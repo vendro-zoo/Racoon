@@ -1,8 +1,9 @@
 package it.zoo.vendro.racoon.connection
 
 import it.zoo.vendro.racoon.TestConfiguration
-import it.zoo.vendro.racoon.definition.LazyId
 import models.Cat
+import models.Cats
+import models.Owners
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -24,7 +25,7 @@ internal class ConnectionManagerTest {
         }
         pool.getManager().use {
             assertNotNull(catId)
-            assertNotNull(it.find<Cat>(catId!!))
+            assertNotNull(Cats.find(it, catId!!))
         }
     }
 
@@ -36,7 +37,7 @@ internal class ConnectionManagerTest {
                 val cat = Cat(
                     name = "test",
                     age = 10,
-                    owner_id = LazyId.lazy(0, it)
+                    owner_id = Owners.lazy(0, it)
                 )
                 it.insert(cat)
                 catId = cat.id
@@ -61,7 +62,7 @@ internal class ConnectionManagerTest {
             )
             it.insert(cat)
             it.delete(cat)
-            assertNull(it.find<Cat>(cat.id!!))
+            assertNull(Cats.find(it, cat.id!!))
         }
     }
 
@@ -76,7 +77,7 @@ internal class ConnectionManagerTest {
             it.insert(cat)
             cat.name = "test2"
             it.update(cat)
-            assertEquals("test2", it.find<Cat>(cat.id!!)!!.name)
+            assertEquals("test2", Cats.find(it, cat.id!!)!!.name)
         }
     }
 
@@ -85,13 +86,13 @@ internal class ConnectionManagerTest {
         var hash: Int? = null
         pool.getManager().use { rm ->
             hash = rm.connection.hashCode()
-            val cat = rm.find<Cat>(1)
-            if(verbose) println(cat?.name)
+            val cat = Cats.find(rm, 1)
+            if (verbose) println(cat?.name)
         }
         Thread.sleep(4000)
         pool.getManager().use { rm ->
-            val cat = rm.find<Cat>(1)
-            if(verbose) println(cat?.name)
+            val cat = Cats.find(rm, 1)
+            if (verbose) println(cat?.name)
             assertNotEquals(hash, rm.connection.hashCode())
         }
     }

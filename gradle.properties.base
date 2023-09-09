@@ -1,3 +1,0 @@
-# suppress inspection "UnusedProperty" for whole file
-kotlin.code.style=official
-vers=__branch_name__-__commit_hash__

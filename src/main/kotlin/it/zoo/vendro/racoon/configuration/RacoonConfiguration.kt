@@ -1,14 +1,13 @@
 package it.zoo.vendro.racoon.configuration
 
-import it.zoo.vendro.racoon.definition.LazyId
 import it.zoo.vendro.racoon.connection.ConnectionManager
+import it.zoo.vendro.racoon.definition.LazyId
 import it.zoo.vendro.racoon.internals.extensions.camelCase
 import it.zoo.vendro.racoon.internals.extensions.lowerSnakeCase
 import it.zoo.vendro.racoon.internals.extensions.upperCamelCase
 import it.zoo.vendro.racoon.internals.extensions.upperSnakeCase
 import it.zoo.vendro.racoon.serdes.RacoonSerDe
 import it.zoo.vendro.racoon.serdes.builtin.*
-import java.math.BigInteger
 import java.sql.Timestamp
 import java.util.*
 import kotlin.reflect.KClass
@@ -154,10 +153,8 @@ class RacoonConfiguration(
     class Casting(
         val racoonCasters: MutableSet<Pair<WKClass, MutableSet<Pair<WKClass, RacoonSerDe<out Any?, out Any?>>>>> =
             mutableSetOf(
-                WKClass(typeOf<LazyId<*>>()) to mutableSetOf(
+                WKClass(typeOf<LazyId<*, *>>()) to mutableSetOf(
                     WKClass(typeOf<Int>()) to LazySerDe(),
-                    WKClass(typeOf<Long>()) to LazyLongSerDe(),
-                    WKClass(typeOf<BigInteger>()) to LazyBigIntegerSerDe()
                 ),
                 WKClass(typeOf<Enum<*>>()) to mutableSetOf(WKClass(typeOf<String>()) to EnumSerDe()),
                 WKClass(typeOf<Date>()) to mutableSetOf(

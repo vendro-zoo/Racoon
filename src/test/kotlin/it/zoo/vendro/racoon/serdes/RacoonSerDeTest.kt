@@ -6,6 +6,7 @@ import it.zoo.vendro.racoon.context.ToQuerySerDeContext
 import it.zoo.vendro.racoon.definition.*
 import models.Owner
 import org.junit.jupiter.api.Test
+import kotlin.reflect.typeOf
 import kotlin.test.assertEquals
 
 internal class RacoonSerDeTest {
@@ -31,16 +32,24 @@ internal class RacoonSerDeTest {
         @ColumnGetType(ColumnGetTypes.Int)
         var age: Int2,
         var name: String?,
-        var owner_id: LazyId<Owner>? = null,
-    ) : Table
+        var owner_id: LazyId<Owner, Int>? = null,
+    ) : Table<Int> {
+        @ColumnIgnore
+        override val tableInfo = Cats2
+    }
+
+    object Cats2 : TableInfo<Int, Cat2> {
+        override val tbKClass = Cat2::class
+        override val idType = typeOf<Int>()
+    }
 
     @Test
     fun customParameterInsert() {
         pool.getManager().use { rm ->
             val cat = Cat2(age = Int2(2), name = "cat")
-            rm.insert(cat)
+            cat.insert(rm)
 
-            val ncat = rm.find<Cat2>(cat.id!!)
+            val ncat = Cats2.find(rm, cat.id!!)
             assertEquals(8, ncat!!.age.i)
         }
     }

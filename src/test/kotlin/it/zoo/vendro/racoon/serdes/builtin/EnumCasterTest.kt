@@ -4,6 +4,7 @@ import it.zoo.vendro.racoon.TestConfiguration
 import models.Dog
 import models.DogColor
 import models.DogSize
+import models.Dogs
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -45,7 +46,7 @@ internal class EnumCasterTest {
                     color = DogColor.LIGHT
                 )
             )
-            val dog2 = rm.find<Dog>(dog.id!!)
+            val dog2 = Dogs.find(rm, dog.id!!)
             assertEquals(DogSize.SMALL, dog2!!.size)
         }
     }
@@ -59,7 +60,7 @@ internal class EnumCasterTest {
                     size = DogSize.L
                 )
             )
-            val dog2 = rm.find<Dog>(dog.id!!)
+            val dog2 = Dogs.find(rm, dog.id!!)
             assertEquals(DogSize.L, dog2!!.size)
         }
     }

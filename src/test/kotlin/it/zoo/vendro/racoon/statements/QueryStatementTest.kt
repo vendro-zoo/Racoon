@@ -2,15 +2,16 @@ package it.zoo.vendro.racoon.statements
 
 import it.zoo.vendro.racoon.TestConfiguration
 import it.zoo.vendro.racoon.connection.ConnectionManager
-import it.zoo.vendro.racoon.definition.ColumnName
-import it.zoo.vendro.racoon.definition.LazyId
-import it.zoo.vendro.racoon.definition.Table
-import it.zoo.vendro.racoon.definition.TableName
+import it.zoo.vendro.racoon.definition.*
 import models.Cat
+import models.Cats
 import models.Owner
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -180,22 +181,30 @@ internal class QueryStatementTest {
         }
     }
 
+    @TableName("cat")
+    data class CustomCat(
+        override var id: Int? = null,
+        @property:ColumnName("age")
+        @param:ColumnName("age")
+        var AGE: Int,
+        @property:ColumnName("name")
+        @param:ColumnName("name")
+        var NAME: String?,
+        @property:ColumnName("owner_id")
+        @param:ColumnName("owner_id")
+        var OWNERID: LazyId<Owner, Int>? = null,
+    ) : Table<Int> {
+        @ColumnIgnore
+        override val tableInfo = CustomCats
+    }
+
+    object CustomCats : TableInfo<Int, CustomCat> {
+        override val tbKClass = CustomCat::class
+        override val idType = typeOf<Int>()
+    }
+
     @Test
     internal fun customName() {
-        @TableName("cat")
-        data class CustomCat(
-            override var id: Int? = null,
-            @property:ColumnName("age")
-            @param:ColumnName("age")
-            var AGE: Int,
-            @property:ColumnName("name")
-            @param:ColumnName("name")
-            var NAME: String?,
-            @property:ColumnName("owner_id")
-            @param:ColumnName("owner_id")
-            var OWNERID: LazyId<Owner>? = null,
-        ) : Table
-
         pool.getManager().use { rm ->
             val cat = rm.createQuery("SELECT * FROM cat")
                 .mapToClass<CustomCat>().first()

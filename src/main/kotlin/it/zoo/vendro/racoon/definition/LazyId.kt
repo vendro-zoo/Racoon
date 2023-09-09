@@ -2,6 +2,8 @@ package it.zoo.vendro.racoon.definition
 
 import it.zoo.vendro.racoon.connection.ConnectionManager
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 @Suppress("unused")
 /**
@@ -12,15 +14,16 @@ import kotlin.reflect.KClass
  *
  * @param T the type of the linked table
  */
-class LazyId<T: Table> private constructor(
+class LazyId<T : Table<I>, I : Any> private constructor(
     /**
      * The [KClass] of the linked table.
      */
     val type: KClass<T>,
+    val idType: KType,
     /**
      * The id of the record in the linked table.
      */
-    val id: Int?,
+    val id: I?,
 
     /**
      * The [ConnectionManager] instance used to access the database.
@@ -51,7 +54,7 @@ class LazyId<T: Table> private constructor(
             id ?: throw IllegalArgumentException("No id available")
 
             // Get the value and sets the flag to "loaded"
-            value = manager.findK(id, type)
+            value = manager.findK(id, type, idType)
             isLoaded = true
         }
         // Returns the value or throws an exception if the value has not been found
@@ -64,7 +67,8 @@ class LazyId<T: Table> private constructor(
          *
          * @see [lazyK]
          */
-        inline fun <reified T : Table> lazy(id: Int, manager: ConnectionManager) = lazyK(id, manager, T::class)
+        inline fun <reified I : Any, reified T : Table<Any>> lazy(id: I, manager: ConnectionManager) =
+            lazyK(id, manager, T::class, typeOf<I>())
 
         /**
          * Creates a [LazyId] instance that still needs to be evaluated.
@@ -74,15 +78,15 @@ class LazyId<T: Table> private constructor(
          * @param type the [KClass] of the linked table
          * @return a [LazyId] instance that still needs to be evaluated
          */
-        fun <T : Table> lazyK(id: Int, manager: ConnectionManager, type: KClass<T>) =
-            LazyId(type, id, manager, null, false)
+        fun <I : Any, T : Table<I>> lazyK(id: I, manager: ConnectionManager, type: KClass<T>, iType: KType) =
+            LazyId(type, iType, id, manager, null, false)
 
         /**
          * Behaves like [definedK] but the type of the linked table is passed as a reified type parameter.
          *
          * @see [definedK]
          */
-        inline fun <reified T : Table> defined(value: T) = definedK(value, T::class)
+        inline fun <reified I : Any, reified T : Table<I>> defined(value: T) = definedK(value, T::class, typeOf<I>())
 
         /**
          * Creates a [LazyId] instance that is already evaluated.
@@ -91,7 +95,7 @@ class LazyId<T: Table> private constructor(
          * @param type the [KClass] of the linked table
          * @return a [LazyId] instance that is already evaluated
          */
-        fun <T : Table> definedK(value: T, type: KClass<T>) =
-            LazyId(type, value.id, null, value, true)
+        fun <I : Any, T : Table<I>> definedK(value: T, type: KClass<T>, iType: KType) =
+            LazyId(type, iType, value.id, null, value, true)
     }
 }

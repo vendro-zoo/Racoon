@@ -1,9 +1,9 @@
 package it.zoo.vendro.racoon.definition
 
 import it.zoo.vendro.racoon.TestConfiguration
-import it.zoo.vendro.racoon.definition.LazyId
 import models.Cat
-import models.Owner
+import models.Cats
+import models.Owners
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -18,7 +18,7 @@ internal class LazyIdTest {
                 Cat(
                     name = "Kitty",
                     age = 3,
-                    owner_id = LazyId.lazy(2, rm)
+                    owner_id = Owners.lazy(2, rm)
                 )
             )
 
@@ -30,7 +30,7 @@ internal class LazyIdTest {
     @Test
     fun insertDefined() {
         pool.getManager().use { rm ->
-            val owner = rm.find<Owner>(2)!!
+            val owner = Owners.find(rm, 2)!!
             val cat = rm.insert(
                 Cat(
                     name = "Kitty",
@@ -62,7 +62,7 @@ internal class LazyIdTest {
     @Test
     fun evaluateLazy() {
         pool.getManager().use { rm ->
-            val cat = rm.find<Cat>(1)!!
+            val cat = Cats.find(rm, 1)!!
 
             assertNotNull(cat.owner_id?.id)
             assertNotNull(cat.owner_id?.get())

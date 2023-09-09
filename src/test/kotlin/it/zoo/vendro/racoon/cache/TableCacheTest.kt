@@ -5,6 +5,7 @@ import it.zoo.vendro.racoon.connection.ConnectionPool
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration.Naming.Companion.lowerSnakeCase
 import models.Cat
+import models.Cats
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -32,7 +33,7 @@ internal class TableCacheTest {
 
             val start = System.currentTimeMillis()
             for (i in 0..2000) {
-                rm.find<Cat>(cat)
+                Cats.find(rm, cat)
             }
             val end = System.currentTimeMillis()
             println("Time: ${end - start}")
@@ -50,13 +51,13 @@ internal class TableCacheTest {
                 .mapToClass<Cat>()
                 .first().id!!
 
-            rm.find<Cat>(cat1)
+            Cats.find(rm, cat1)
 
             assertEquals(1, rm.cache.cacheSize)
             assertTrue(rm.cache.cache.containsKey(Cat::class))
             assertTrue(rm.cache.cache[Cat::class]!!.containsKey(cat1))
 
-            rm.find<Cat>(cat2)
+            Cats.find(rm, cat2)
 
             assertEquals(1, rm.cache.cacheSize)
             assertTrue(rm.cache.cache.containsKey(Cat::class))
