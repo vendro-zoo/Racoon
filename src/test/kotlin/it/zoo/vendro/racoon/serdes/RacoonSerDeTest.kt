@@ -1,11 +1,10 @@
 package it.zoo.vendro.racoon.serdes
 
 import it.zoo.vendro.racoon.TestConfiguration
-import it.zoo.vendro.racoon.context.FromQueryCasterContext
-import it.zoo.vendro.racoon.context.ToQueryCasterContext
+import it.zoo.vendro.racoon.context.FromQuerySerDeContext
+import it.zoo.vendro.racoon.context.ToQuerySerDeContext
 import it.zoo.vendro.racoon.definition.*
 import models.Owner
-import it.zoo.vendro.racoon.serdes.RacoonSerDe
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -22,8 +21,8 @@ internal class RacoonSerDeTest {
         override val fromQueryPostfix: String
             get() = "*2"
 
-        override fun toQuery(parameter: Int2, context: ToQueryCasterContext): Int = parameter.i
-        override fun fromQuery(parameter: Int, context: FromQueryCasterContext): Int2 = Int2(parameter)
+        override fun toQuery(parameter: Int2, context: ToQuerySerDeContext): Int = parameter.i
+        override fun fromQuery(parameter: Int, context: FromQuerySerDeContext): Int2 = Int2(parameter)
     }
 
     @TableName("cat")

@@ -1,17 +1,17 @@
 package it.zoo.vendro.racoon.serdes.builtin
 
-import it.zoo.vendro.racoon.context.FromQueryCasterContext
-import it.zoo.vendro.racoon.context.ToQueryCasterContext
+import it.zoo.vendro.racoon.context.FromQuerySerDeContext
+import it.zoo.vendro.racoon.context.ToQuerySerDeContext
 import it.zoo.vendro.racoon.definition.ColumnName
 import it.zoo.vendro.racoon.serdes.RacoonSerDe
 import it.zoo.vendro.racoon.internals.extensions.asKClass
 import kotlin.reflect.KClass
 
 class EnumSerDe : RacoonSerDe<Enum<*>, String> {
-    override fun toQuery(parameter: Enum<*>, context: ToQueryCasterContext): String =
+    override fun toQuery(parameter: Enum<*>, context: ToQuerySerDeContext): String =
         getNameFromEnum(parameter)
 
-    override fun fromQuery(parameter: String, context: FromQueryCasterContext): Enum<*> =
+    override fun fromQuery(parameter: String, context: FromQuerySerDeContext): Enum<*> =
         getEnumFromName(parameter, context.actualType.asKClass())
 
     private companion object {

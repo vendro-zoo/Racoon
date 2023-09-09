@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.statements.result
 
-import it.zoo.vendro.racoon.context.FromQueryCasterContext
+import it.zoo.vendro.racoon.context.FromQuerySerDeContext
 import it.zoo.vendro.racoon.definition.*
 import it.zoo.vendro.racoon.internals.extensions.asKClass
 import it.zoo.vendro.racoon.internals.extensions.isMarkedNullable
@@ -61,7 +61,7 @@ class QueryResultRow(val queryResult: QueryResult) {
 
             val registeredCaster = config.casting.getCasterK(parameterType, foundValue::class.createType())
             val castedValue =
-                registeredCaster?.fromQuery(foundValue, FromQueryCasterContext(manager, parameterType))
+                registeredCaster?.fromQuery(foundValue, FromQuerySerDeContext(manager, parameterType))
                     ?: castEquivalent(parameter, foundValue)
 
             retrievedParameterMap[parameter] = castedValue

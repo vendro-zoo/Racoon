@@ -1,7 +1,7 @@
 package it.zoo.vendro.racoon.statements.parameters
 
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration
-import it.zoo.vendro.racoon.context.ToQueryCasterContext
+import it.zoo.vendro.racoon.context.ToQuerySerDeContext
 import it.zoo.vendro.racoon.definition.ColumnInsertion
 import it.zoo.vendro.racoon.connection.ConnectionManager
 import java.sql.PreparedStatement
@@ -63,7 +63,7 @@ class Parameters(val manager: ConnectionManager) {
         map[index] = ParameterFieldValue(
             value = if (caster == null) value else caster.toQuery(
                 notNullValue,
-                ToQueryCasterContext(manager, notNullValue::class)
+                ToQuerySerDeContext(manager, notNullValue::class)
             ),
             columnInsertion = columnInsertion
         )

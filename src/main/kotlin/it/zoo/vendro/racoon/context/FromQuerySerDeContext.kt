@@ -1,7 +1,7 @@
 package it.zoo.vendro.racoon.context
 
 import it.zoo.vendro.racoon.connection.ConnectionManager
-import kotlin.reflect.KClass
+import kotlin.reflect.KType
 
 
 /**
@@ -9,10 +9,10 @@ import kotlin.reflect.KClass
  *
  * @see RacoonContext
  */
-class ToQueryCasterContext (
+class FromQuerySerDeContext (
     manager: ConnectionManager,
     /**
      * The actual class to cast to.
      */
-    val actualClass: KClass<*>
+    val actualType: KType
 ) : RacoonContext(manager)
