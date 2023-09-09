@@ -1,4 +1,4 @@
-package it.zoo.vendro.racoon.models
+package models
 
 import it.zoo.vendro.racoon.definition.ColumnName
 import it.zoo.vendro.racoon.definition.ColumnSetType

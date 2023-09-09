@@ -1,8 +1,8 @@
-package it.zoo.vendro.racoon.habitat
+package it.zoo.vendro.racoon.connection
 
 import it.zoo.vendro.racoon.TestConfiguration
 import it.zoo.vendro.racoon.definition.LazyId
-import it.zoo.vendro.racoon.models.Cat
+import models.Cat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

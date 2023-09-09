@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.cache
 
-import it.zoo.vendro.racoon.habitat.ConnectionManager
+import it.zoo.vendro.racoon.connection.ConnectionManager
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.definition.Table
 import kotlin.math.min

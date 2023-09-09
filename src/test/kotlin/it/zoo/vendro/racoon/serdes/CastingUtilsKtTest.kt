@@ -1,4 +1,4 @@
-package it.zoo.vendro.racoon.internals.serdes
+package it.zoo.vendro.racoon.serdes
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail

@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.context
 
-import it.zoo.vendro.racoon.habitat.ConnectionManager
+import it.zoo.vendro.racoon.connection.ConnectionManager
 import kotlin.reflect.KClass
 
 

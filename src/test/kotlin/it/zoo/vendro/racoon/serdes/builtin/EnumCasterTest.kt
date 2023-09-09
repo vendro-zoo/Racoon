@@ -1,9 +1,9 @@
-package it.zoo.vendro.racoon.internals.serdes.builtin
+package it.zoo.vendro.racoon.serdes.builtin
 
 import it.zoo.vendro.racoon.TestConfiguration
-import it.zoo.vendro.racoon.models.Dog
-import it.zoo.vendro.racoon.models.DogColor
-import it.zoo.vendro.racoon.models.DogSize
+import models.Dog
+import models.DogColor
+import models.DogSize
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

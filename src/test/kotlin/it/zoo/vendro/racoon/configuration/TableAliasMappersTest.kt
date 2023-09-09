@@ -1,6 +1,5 @@
-package it.zoo.vendro.racoon.internals.mappers
+package it.zoo.vendro.racoon.configuration
 
-import it.zoo.vendro.racoon.configuration.RacoonConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

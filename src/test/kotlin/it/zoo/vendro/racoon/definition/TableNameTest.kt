@@ -1,4 +1,4 @@
-package it.zoo.vendro.racoon.habitat.definition
+package it.zoo.vendro.racoon.definition
 
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.definition.Table
@@ -6,7 +6,7 @@ import it.zoo.vendro.racoon.definition.TableName
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class ColumnIgnoreTest {
+class TableNameTest {
     val config = RacoonConfiguration(
         naming = RacoonConfiguration.Naming(
             tableAliasMapper = { it },

@@ -1,4 +1,4 @@
-package it.zoo.vendro.racoon.models
+package models
 
 import it.zoo.vendro.racoon.definition.LazyId
 import it.zoo.vendro.racoon.definition.Table

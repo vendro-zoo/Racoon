@@ -3,7 +3,7 @@ package it.zoo.vendro.racoon.statements.parameters
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.context.ToQueryCasterContext
 import it.zoo.vendro.racoon.definition.ColumnInsertion
-import it.zoo.vendro.racoon.habitat.ConnectionManager
+import it.zoo.vendro.racoon.connection.ConnectionManager
 import java.sql.PreparedStatement
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf

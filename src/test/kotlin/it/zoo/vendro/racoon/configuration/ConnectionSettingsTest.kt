@@ -1,4 +1,4 @@
-package it.zoo.vendro.racoon.internals.configuration
+package it.zoo.vendro.racoon.configuration
 
 import it.zoo.vendro.racoon.configuration.ConnectionSettings
 import org.junit.jupiter.api.Assertions.assertEquals

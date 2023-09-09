@@ -1,12 +1,10 @@
-package it.zoo.vendro.racoon.habitat.cache
+package it.zoo.vendro.racoon.cache
 
 import it.zoo.vendro.racoon.TestConfiguration
-import it.zoo.vendro.racoon.habitat.ConnectionPool
+import it.zoo.vendro.racoon.connection.ConnectionPool
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration
-import it.zoo.vendro.racoon.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration.Naming.Companion.lowerSnakeCase
-import it.zoo.vendro.racoon.protocols.PostgresSQLProtocol
-import it.zoo.vendro.racoon.models.Cat
+import models.Cat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -37,6 +35,7 @@ internal class TableCacheTest {
                 rm.find<Cat>(cat)
             }
             val end = System.currentTimeMillis()
+            println("Time: ${end - start}")
             assertTrue(end - start < 50, "The cache took too long to be used")
         }
     }

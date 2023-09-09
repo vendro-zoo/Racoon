@@ -1,7 +1,7 @@
 package it.zoo.vendro.racoon.configuration
 
 import it.zoo.vendro.racoon.definition.LazyId
-import it.zoo.vendro.racoon.habitat.ConnectionManager
+import it.zoo.vendro.racoon.connection.ConnectionManager
 import it.zoo.vendro.racoon.internals.extensions.camelCase
 import it.zoo.vendro.racoon.internals.extensions.lowerSnakeCase
 import it.zoo.vendro.racoon.internals.extensions.upperCamelCase

@@ -1,4 +1,4 @@
-package it.zoo.vendro.racoon.habitat.statements
+package it.zoo.vendro.racoon.statements
 
 import it.zoo.vendro.racoon.TestConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals

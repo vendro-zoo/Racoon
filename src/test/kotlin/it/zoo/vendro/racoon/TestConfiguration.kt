@@ -3,7 +3,7 @@ package it.zoo.vendro.racoon
 import it.zoo.vendro.racoon.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration.Naming.Companion.lowerSnakeCase
-import it.zoo.vendro.racoon.habitat.ConnectionPool
+import it.zoo.vendro.racoon.connection.ConnectionPool
 import it.zoo.vendro.racoon.protocols.PostgresSQLProtocol
 import it.zoo.vendro.racoon.test.PostgreContainer
 
@@ -15,7 +15,7 @@ object TestConfiguration {
         username = "testuser",
         password = "testpassword",
         protocol = PostgresSQLProtocol(),
-        idleTimeout = 2
+        idleTimeout = 0
     )
     val CONFIGURATION = RacoonConfiguration(
         connection = CONNECTION,

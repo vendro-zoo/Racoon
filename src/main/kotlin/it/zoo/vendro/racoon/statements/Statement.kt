@@ -1,7 +1,7 @@
 package it.zoo.vendro.racoon.statements
 
 import it.zoo.vendro.racoon.definition.ColumnInsertion
-import it.zoo.vendro.racoon.habitat.ConnectionManager
+import it.zoo.vendro.racoon.connection.ConnectionManager
 import it.zoo.vendro.racoon.statements.parameters.ParameterMapping
 import it.zoo.vendro.racoon.statements.parameters.Parameters
 import java.sql.PreparedStatement

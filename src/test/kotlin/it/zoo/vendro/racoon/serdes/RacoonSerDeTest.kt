@@ -1,10 +1,10 @@
-package it.zoo.vendro.racoon.internals.serdes
+package it.zoo.vendro.racoon.serdes
 
 import it.zoo.vendro.racoon.TestConfiguration
 import it.zoo.vendro.racoon.context.FromQueryCasterContext
 import it.zoo.vendro.racoon.context.ToQueryCasterContext
 import it.zoo.vendro.racoon.definition.*
-import it.zoo.vendro.racoon.models.Owner
+import models.Owner
 import it.zoo.vendro.racoon.serdes.RacoonSerDe
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
