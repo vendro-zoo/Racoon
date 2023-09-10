@@ -9,19 +9,19 @@ import it.zoo.vendro.racoon.internals.extensions.getRuntimeGeneric
 import it.zoo.vendro.racoon.serdes.RacoonSerDe
 import kotlin.reflect.KClass
 
-class LazySerDe : RacoonSerDe<LazyId<Table<*>, *>?, Any?> {
-    override fun toQuery(parameter: LazyId<Table<*>, *>?, context: ToQuerySerDeContext): Any? =
+class LazyIdSerDe<TB : Table<Any, TB>> : RacoonSerDe<LazyId<*, TB>?, Any?> {
+    override fun toQuery(parameter: LazyId<*, TB>?, context: ToQuerySerDeContext): Any? =
         parameter?.id
 
     @Suppress("UNCHECKED_CAST")
-    override fun fromQuery(parameter: Any?, context: FromQuerySerDeContext): LazyId<Table<*>, *>? {
+    override fun fromQuery(parameter: Any?, context: FromQuerySerDeContext): LazyId<Any, TB>? {
         val id = parameter ?: return null
-        val tableClass = context.actualType.getRuntimeGeneric()?.asKClass() as KClass<Table<Any>>
+        val tableClass = context.actualType.getRuntimeGeneric(1)?.asKClass() as KClass<TB>
         return LazyId.lazyK(
             id,
             context.manager,
             tableClass,
             context.actualType.getRuntimeGeneric()!!
-        ) as LazyId<Table<*>, *>
+        )
     }
 }

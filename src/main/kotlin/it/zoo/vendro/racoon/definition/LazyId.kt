@@ -14,7 +14,7 @@ import kotlin.reflect.typeOf
  *
  * @param T the type of the linked table
  */
-class LazyId<T : Table<I>, I : Any> private constructor(
+class LazyId<I : Any, T : Table<I, T>> private constructor(
     /**
      * The [KClass] of the linked table.
      */
@@ -67,7 +67,7 @@ class LazyId<T : Table<I>, I : Any> private constructor(
          *
          * @see [lazyK]
          */
-        inline fun <reified I : Any, reified T : Table<Any>> lazy(id: I, manager: ConnectionManager) =
+        inline fun <reified I : Any, reified T : Table<Any, T>> lazy(id: I, manager: ConnectionManager) =
             lazyK(id, manager, T::class, typeOf<I>())
 
         /**
@@ -78,7 +78,7 @@ class LazyId<T : Table<I>, I : Any> private constructor(
          * @param type the [KClass] of the linked table
          * @return a [LazyId] instance that still needs to be evaluated
          */
-        fun <I : Any, T : Table<I>> lazyK(id: I, manager: ConnectionManager, type: KClass<T>, iType: KType) =
+        fun <I : Any, T : Table<I, T>> lazyK(id: I, manager: ConnectionManager, type: KClass<T>, iType: KType) =
             LazyId(type, iType, id, manager, null, false)
 
         /**
@@ -86,7 +86,7 @@ class LazyId<T : Table<I>, I : Any> private constructor(
          *
          * @see [definedK]
          */
-        inline fun <reified I : Any, reified T : Table<I>> defined(value: T) = definedK(value, T::class, typeOf<I>())
+        inline fun <reified I : Any, reified T : Table<I, T>> defined(value: T) = definedK(value, T::class, typeOf<I>())
 
         /**
          * Creates a [LazyId] instance that is already evaluated.
@@ -95,7 +95,7 @@ class LazyId<T : Table<I>, I : Any> private constructor(
          * @param type the [KClass] of the linked table
          * @return a [LazyId] instance that is already evaluated
          */
-        fun <I : Any, T : Table<I>> definedK(value: T, type: KClass<T>, iType: KType) =
+        fun <I : Any, TB : Table<I, TB>> definedK(value: TB, type: KClass<TB>, iType: KType) =
             LazyId(type, iType, value.id, null, value, true)
     }
 }

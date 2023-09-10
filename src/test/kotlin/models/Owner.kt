@@ -11,7 +11,7 @@ data class Owner(
     override var id: Int? = null,
     val name: String?,
     val surname: String?,
-) : Table<Int> {
+) : Table<Int, Owner> {
     @ColumnIgnore
     override val tableInfo: TableInfo<Int, Owner> = Owners
 }

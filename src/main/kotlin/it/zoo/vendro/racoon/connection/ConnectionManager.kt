@@ -166,7 +166,8 @@ class ConnectionManager(
      * @return The record mapped to the type [T].
      * @see findUncachedK
      */
-    inline fun <reified I : Any, reified T : Table<I>> findUncached(id: I): T? = findUncachedK(id, T::class, typeOf<I>())
+    inline fun <reified I : Any, reified T : Table<I, *>> findUncached(id: I): T? =
+        findUncachedK(id, T::class, typeOf<I>())
 
     /**
      * Finds a record in the database and maps the result to the given class.
@@ -175,7 +176,7 @@ class ConnectionManager(
      * @param tClass The class of the record to find.
      * @return The record mapped to the type [T].
      */
-    fun <I : Any, T : Table<I>> findUncachedK(id: I, tClass: KClass<T>, iType: KType): T? {
+    fun <I : Any, T : Table<I, *>> findUncachedK(id: I, tClass: KClass<T>, iType: KType): T? {
         createQuery(generateSelectQueryK(tClass, config)).use { queryRacoon ->
             return queryRacoon.setParamK("id", id, iType)
                 .uncheckedConsumeRows { row ->
@@ -192,7 +193,7 @@ class ConnectionManager(
      * @return The record mapped to the type [T].
      * @see findK
      */
-    inline fun <reified I : Any, reified T : Table<I>> find(id: I): T? = findK(id, T::class, typeOf<I>())
+    inline fun <reified I : Any, reified T : Table<I, *>> find(id: I): T? = findK(id, T::class, typeOf<I>())
 
     /**
      * Finds a record in the database and maps the result to the given class.
@@ -206,7 +207,7 @@ class ConnectionManager(
      * @return The record mapped to the type [T].
      * @see findUncachedK
      */
-    fun <I : Any, T : Table<I>> findK(id: I, kClass: KClass<T>, iType: KType): T? {
+    fun <I : Any, T : Table<I, *>> findK(id: I, kClass: KClass<T>, iType: KType): T? {
         cache.getK(id, kClass)?.let { return it }
 
         val found = findUncachedK(id, kClass, iType)
@@ -221,7 +222,8 @@ class ConnectionManager(
      * @param obj The object to insert.
      * @return The [ConnectionManager] instance.
      */
-    inline fun <reified I : Any, reified T : Table<I>> insertUncached(obj: T) = insertUncachedK(obj, T::class, typeOf<I>())
+    inline fun <reified I : Any, reified T : Table<I, *>> insertUncached(obj: T) =
+        insertUncachedK(obj, T::class, typeOf<I>())
 
     /**
      * Inserts an object into the database and updates the id.
@@ -230,7 +232,7 @@ class ConnectionManager(
      * @param kClass The class of the object to insert.
      * @return The object with the id updated. Any old reference to the object will still be valid.
      */
-    fun <I : Any, T : Table<I>> insertUncachedK(obj: T, kClass: KClass<T>, iType: KType) = obj.apply {
+    fun <I : Any, T : Table<I, *>> insertUncachedK(obj: T, kClass: KClass<T>, iType: KType) = obj.apply {
         val parameters = kClass.memberProperties
 
         createInsert(generateInsertQueryK(kClass, config)).use { insertRacoon ->
@@ -257,7 +259,7 @@ class ConnectionManager(
      * @param T The type that is being inserted.
      * @param obj The object to insert.
      */
-    inline fun <reified I : Any, reified T : Table<I>> insert(obj: T) = insertK(obj, T::class, typeOf<I>())
+    inline fun <reified I : Any, reified T : Table<I, *>> insert(obj: T) = insertK(obj, T::class, typeOf<I>())
 
     /**
      * Inserts an object into the database and updates the id.
@@ -267,7 +269,7 @@ class ConnectionManager(
      * @param obj The object to insert.
      * @param kClass The class of the object to insert.
      */
-    fun <I : Any, T : Table<I>> insertK(obj: T, kClass: KClass<T>, iType: KType) =
+    fun <I : Any, T : Table<I, *>> insertK(obj: T, kClass: KClass<T>, iType: KType) =
         insertUncachedK(obj, kClass, iType).also { cache.putK(obj, kClass) }
 
     /**
@@ -277,7 +279,8 @@ class ConnectionManager(
      * @param obj The object to update.
      * @return The [ConnectionManager] instance.
      */
-    inline fun <reified I : Any, reified T : Table<I>> updateUncached(obj: T) = updateUncachedK(obj, T::class, typeOf<I>())
+    inline fun <reified I : Any, reified T : Table<I, *>> updateUncached(obj: T) =
+        updateUncachedK(obj, T::class, typeOf<I>())
 
     /**
      * Updates a record in the database with the given object.
@@ -289,7 +292,7 @@ class ConnectionManager(
      * @param kClass The class of the object to update.
      * @return The [ConnectionManager] instance.
      */
-    fun <I : Any, T : Table<I>> updateUncachedK(obj: T, kClass: KClass<T>, iType: KType) = obj.apply {
+    fun <I : Any, T : Table<I, *>> updateUncachedK(obj: T, kClass: KClass<T>, iType: KType) = obj.apply {
         val parameters = kClass.memberProperties
 
         createExecute(generateUpdateQueryK(kClass, config)).use { executeRacoon ->
@@ -314,7 +317,7 @@ class ConnectionManager(
      * @param T The type that is being updated.
      * @param obj The object to update.
      */
-    inline fun <reified I : Any, reified T : Table<I>> update(obj: T) = updateK(obj, T::class, typeOf<I>())
+    inline fun <reified I : Any, reified T : Table<I, *>> update(obj: T) = updateK(obj, T::class, typeOf<I>())
 
     /**
      * Updates a record in the database with the given object.
@@ -327,7 +330,7 @@ class ConnectionManager(
      * @param obj The object to update.
      * @param kClass The class of the object to update.
      */
-    fun <I : Any, T : Table<I>> updateK(obj: T, kClass: KClass<T>, iType: KType) {
+    fun <I : Any, T : Table<I, *>> updateK(obj: T, kClass: KClass<T>, iType: KType) {
         updateUncachedK(obj, kClass, iType)
         cache.putK(obj, kClass)
     }
@@ -339,7 +342,8 @@ class ConnectionManager(
      * @param obj The object to delete.
      * @return The [ConnectionManager] instance.
      */
-    inline fun <reified I : Any, reified T : Table<I>> deleteUncached(obj: T) = deleteUncachedK(obj, T::class, typeOf<I>())
+    inline fun <reified I : Any, reified T : Table<I, *>> deleteUncached(obj: T) =
+        deleteUncachedK(obj, T::class, typeOf<I>())
 
     /**
      * Deletes a record from the database with the given object.
@@ -354,7 +358,7 @@ class ConnectionManager(
      * @return The [ConnectionManager] instance.
      * @throws IllegalArgumentException if the object has no property with the name 'id'.
      */
-    fun <I : Any, T : Table<I>> deleteUncachedK(obj: T, kClass: KClass<T>, iType: KType) = apply {
+    fun <I : Any, T : Table<I, *>> deleteUncachedK(obj: T, kClass: KClass<T>, iType: KType) = apply {
         val id = obj.id ?: throw IllegalArgumentException("Can't delete object without id")
 
         createExecute(generateDeleteQueryK(kClass, config)).use { executeRacoon ->
@@ -368,7 +372,7 @@ class ConnectionManager(
      * @param T The type that is being deleted.
      * @param obj The object to delete.
      */
-    inline fun <reified I : Any, reified T : Table<I>> delete(obj: T) = deleteK(obj, T::class, typeOf<I>())
+    inline fun <reified I : Any, reified T : Table<I, *>> delete(obj: T) = deleteK(obj, T::class, typeOf<I>())
 
     /**
      * Deletes a record from the database with the given object.
@@ -378,14 +382,14 @@ class ConnectionManager(
      * @param obj The object to delete.
      * @param kClass The class of the object to delete.
      */
-    fun <I : Any, T : Table<I>> deleteK(obj: T, kClass: KClass<T>, iType: KType) {
+    fun <I : Any, T : Table<I, *>> deleteK(obj: T, kClass: KClass<T>, iType: KType) {
         deleteUncachedK(obj, kClass, iType)
         cache.removeK(obj.id!!, kClass)
     }
 
-    inline fun <reified I : Any, reified T : Table<I>> refresh(obj: T) = refreshK(obj, T::class, typeOf<I>())
+    inline fun <reified I : Any, reified T : Table<I, *>> refresh(obj: T) = refreshK(obj, T::class, typeOf<I>())
 
-    fun <I : Any, T : Table<I>> refreshK(obj: T, kClass: KClass<T>, iType: KType) = obj.apply {
+    fun <I : Any, T : Table<I, *>> refreshK(obj: T, kClass: KClass<T>, iType: KType) = obj.apply {
         val id = this.id ?: throw IllegalArgumentException("Can't refresh object without id")
         val updated = findUncachedK(id, kClass, iType) ?: throw SQLException(
             "Could not find object with id '$id' " +

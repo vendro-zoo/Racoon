@@ -12,8 +12,8 @@ class Cat(
     override var id: Int? = null,
     var age: Int,
     var name: String?,
-    var owner_id: LazyId<Owner, Int>? = null
-) : Table<Int> {
+    var owner_id: LazyId<Int, Owner>? = null
+) : Table<Int, Cat> {
     @ColumnIgnore
     override val tableInfo: TableInfo<Int, Cat> = Cats
 }

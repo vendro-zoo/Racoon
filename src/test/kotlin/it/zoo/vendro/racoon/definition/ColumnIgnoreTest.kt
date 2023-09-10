@@ -15,7 +15,7 @@ class ColumnIgnoreTest {
     )
 
     @TableName("testClass")
-    class TestClass(override var id: Int? = null) : Table<Int> {
+    class TestClass(override var id: Int? = null) : Table<Int, TestClass> {
         override val tableInfo = TestClasses
     }
 
@@ -27,7 +27,7 @@ class ColumnIgnoreTest {
 
 
     @TableName("testClass2", "tc")
-    class TestClass2(override var id: Int? = null) : Table<Int> {
+    class TestClass2(override var id: Int? = null) : Table<Int, TestClass2> {
         override val tableInfo = TestClasses2
     }
 

@@ -192,8 +192,8 @@ internal class QueryStatementTest {
         var NAME: String?,
         @property:ColumnName("owner_id")
         @param:ColumnName("owner_id")
-        var OWNERID: LazyId<Owner, Int>? = null,
-    ) : Table<Int> {
+        var OWNERID: LazyId<Int, Owner>? = null,
+    ) : Table<Int, CustomCat> {
         @ColumnIgnore
         override val tableInfo = CustomCats
     }

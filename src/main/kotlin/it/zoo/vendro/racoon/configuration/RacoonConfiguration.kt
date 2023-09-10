@@ -154,7 +154,7 @@ class RacoonConfiguration(
         val racoonCasters: MutableSet<Pair<WKClass, MutableSet<Pair<WKClass, RacoonSerDe<out Any?, out Any?>>>>> =
             mutableSetOf(
                 WKClass(typeOf<LazyId<*, *>>()) to mutableSetOf(
-                    WKClass(typeOf<Int>()) to LazySerDe(),
+                    WKClass(typeOf<Int>()) to LazyIdSerDe(),
                 ),
                 WKClass(typeOf<Enum<*>>()) to mutableSetOf(WKClass(typeOf<String>()) to EnumSerDe()),
                 WKClass(typeOf<Date>()) to mutableSetOf(

@@ -16,7 +16,7 @@ enum class DogColor {
     ;
 }
 
-class Dog (
+data class Dog (
     override var id: Int? = null,
     var name: String,
     @ColumnSetType(ColumnSetTypes.ObjectOther)
@@ -25,7 +25,7 @@ class Dog (
     @ColumnSetType(ColumnSetTypes.ObjectOther)
     @property:ColumnSetType(ColumnSetTypes.ObjectOther)
     var color: DogColor? = null
-) : Table<Int> {
+) : Table<Int, Dog> {
     @ColumnIgnore
     override val tableInfo = Dogs
 }

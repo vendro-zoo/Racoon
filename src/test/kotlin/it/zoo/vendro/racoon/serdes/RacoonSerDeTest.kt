@@ -32,8 +32,8 @@ internal class RacoonSerDeTest {
         @ColumnGetType(ColumnGetTypes.Int)
         var age: Int2,
         var name: String?,
-        var owner_id: LazyId<Owner, Int>? = null,
-    ) : Table<Int> {
+        var owner_id: LazyId<Int, Owner>? = null,
+    ) : Table<Int, Cat2> {
         @ColumnIgnore
         override val tableInfo = Cats2
     }
