@@ -15,18 +15,18 @@ interface Table<T : Any, TB : Table<T, TB>> {
     val tableInfo: TableInfo<T, TB>
 
     @Suppress("UNCHECKED_CAST")
-    fun update(rm: ConnectionManager) {
-        rm.updateK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
+    fun update(cm: ConnectionManager) {
+        cm.updateK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun delete(rm: ConnectionManager) {
-        rm.deleteK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
+    fun delete(cm: ConnectionManager) {
+        cm.deleteK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun insert(rm: ConnectionManager) {
-        rm.insertK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
+    fun insert(cm: ConnectionManager) {
+        cm.insertK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -39,10 +39,10 @@ interface TableInfo<T : Any, TB : Table<T, TB>> {
     val tbKClass: KClass<TB>
     val idType: KType
 
-    fun find(rm: ConnectionManager, id: T): TB? {
-        return rm.findK(id, tbKClass, this.idType)
+    fun find(cm: ConnectionManager, id: T): TB? {
+        return cm.findK(id, tbKClass, this.idType)
     }
 
     fun defined(value: TB): LazyId<T, TB> = value.defined()
-    fun lazy(id: T, rm: ConnectionManager): LazyId<T, TB> = LazyId.lazyK(id, rm, tbKClass, idType)
+    fun lazy(id: T, cm: ConnectionManager): LazyId<T, TB> = LazyId.lazyK(id, cm, tbKClass, idType)
 }

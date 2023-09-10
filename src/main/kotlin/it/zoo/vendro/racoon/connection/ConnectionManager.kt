@@ -465,20 +465,20 @@ class ConnectionManager(
          * @return A [ConnectionManager] instance.
          */
         internal fun fromSettings(connectionSettings: ConnectionSettings, pool: ConnectionPool): ConnectionManager {
-            val rm = ConnectionManager(
+            val cm = ConnectionManager(
                 retryUntilNotNull { DriverManager.getConnection(connectionSettings.toString()) },
                 pool
             )
             val idleTimeout = pool.configuration.connection.idleTimeout
 
-            rm.connection.autoCommit = false
+            cm.connection.autoCommit = false
 
             if (idleTimeout > 0) {
-                rm.createExecute("SET wait_timeout = $idleTimeout, interactive_timeout = $idleTimeout")
+                cm.createExecute("SET wait_timeout = $idleTimeout, interactive_timeout = $idleTimeout")
                     .execute()
             }
 
-            return rm
+            return cm
         }
     }
 }
