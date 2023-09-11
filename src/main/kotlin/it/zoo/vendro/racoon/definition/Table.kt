@@ -15,17 +15,17 @@ interface Table<T : Any, TB : Table<T, TB>> {
     val tableInfo: TableInfo<T, TB>
 
     @Suppress("UNCHECKED_CAST")
-    fun update(cm: ConnectionManager) {
+    fun update(cm: ConnectionManager) = apply {
         cm.updateK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun delete(cm: ConnectionManager) {
+    fun delete(cm: ConnectionManager) = apply {
         cm.deleteK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun insert(cm: ConnectionManager) {
+    fun insert(cm: ConnectionManager) = apply {
         cm.insertK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
     }
 
