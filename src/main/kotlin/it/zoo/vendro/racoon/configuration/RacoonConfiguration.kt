@@ -154,7 +154,7 @@ class RacoonConfiguration(
         val racoonCasters: MutableSet<Pair<WKClass, MutableSet<Pair<WKClass, RacoonSerDe<out Any?, out Any?>>>>> =
             mutableSetOf(
                 WKClass(typeOf<LazyId<*, *>>()) to mutableSetOf(
-                    WKClass(typeOf<Int>()) to LazyIdSerDe(),
+                    WKClass(typeOf<Any>()) to LazyIdSerDe(),
                 ),
                 WKClass(typeOf<Enum<*>>()) to mutableSetOf(WKClass(typeOf<String>()) to EnumSerDe()),
                 WKClass(typeOf<Date>()) to mutableSetOf(
@@ -230,16 +230,19 @@ class RacoonConfiguration(
         fun getCasterK(jType: KType, sType: KType): RacoonSerDe<Any?, Any?>? {
             val wJClass = WKClass(jType)
             val wSClass = WKClass(sType)
+            val wAnyClass = WKClass(typeOf<Any>())
 
             val m1 = racoonCasters.find { it.first == wJClass }?.second ?: jType.jvmErasure.superclasses.firstNotNullOfOrNull { superclass ->
                 val arguments = List(superclass.typeParameters.size) { KTypeProjection.STAR }
                 racoonCasters.find { it.first == WKClass(superclass.createType(arguments = arguments, nullable = wJClass.kType.isMarkedNullable)) }
             }?.second ?: return null
 
-            val m2 = m1.find { it.first == wSClass }?.second ?: sType.jvmErasure.superclasses.firstNotNullOfOrNull { superclass ->
-                val arguments = List(superclass.typeParameters.size) { KTypeProjection.STAR }
-                m1.find { it.first == WKClass(superclass.createType(arguments = arguments, nullable = wSClass.kType.isMarkedNullable)) }
-            }?.second
+            val m2 = m1.find { it.first == wSClass }?.second
+                ?: m1.find { it.first == wAnyClass }?.second
+                ?: sType.jvmErasure.superclasses.firstNotNullOfOrNull { superclass ->
+                    val arguments = List(superclass.typeParameters.size) { KTypeProjection.STAR }
+                    m1.find { it.first == WKClass(superclass.createType(arguments = arguments, nullable = wSClass.kType.isMarkedNullable)) }
+                }?.second
 
             return m2 as RacoonSerDe<Any?, Any?>?
         }
