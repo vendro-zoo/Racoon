@@ -17,17 +17,17 @@ interface Table<T : Any, TB : Table<T, TB>> {
     @Suppress("UNCHECKED_CAST")
     fun update(cm: ConnectionManager) = apply {
         cm.updateK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
-    }
+    } as TB
 
     @Suppress("UNCHECKED_CAST")
     fun delete(cm: ConnectionManager) = apply {
         cm.deleteK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
-    }
+    } as TB
 
     @Suppress("UNCHECKED_CAST")
     fun insert(cm: ConnectionManager) = apply {
         cm.insertK(this, tableInfo.tbKClass as KClass<Table<T, TB>>, tableInfo.idType)
-    }
+    } as TB
 
     @Suppress("UNCHECKED_CAST")
     fun defined(): LazyId<T, TB> {
