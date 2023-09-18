@@ -1,5 +1,6 @@
 package it.zoo.vendro.racoon.connection
 
+import it.zoo.vendro.racoon.cache.HashCache
 import it.zoo.vendro.racoon.cache.TableCache
 import it.zoo.vendro.racoon.configuration.ConnectionSettings
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration
@@ -17,11 +18,8 @@ import it.zoo.vendro.racoon.statements.QueryStatement
 import org.intellij.lang.annotations.Language
 import java.io.FileNotFoundException
 import java.sql.*
-import kotlin.reflect.KClass
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KType
+import kotlin.reflect.*
 import kotlin.reflect.full.memberProperties
-import kotlin.reflect.typeOf
 
 @Suppress("unused")
 class ConnectionManager(
@@ -48,6 +46,7 @@ class ConnectionManager(
         internal set
 
     internal val cache = TableCache(this)
+    internal val hashes = HashCache()
 
     /**
      * Closes the connection to the database.
@@ -181,7 +180,7 @@ class ConnectionManager(
             return queryRacoon.setParamK("id", id, iType)
                 .uncheckedConsumeRows { row ->
                     row.mapToClassK(tClass)
-                }!!.firstOrNull()
+                }!!.firstOrNull()?.also { hashes.put(it) }
         }
     }
 
@@ -225,6 +224,14 @@ class ConnectionManager(
     inline fun <reified I : Any, reified T : Table<I, *>> insertUncached(obj: T) =
         insertUncachedK(obj, T::class, typeOf<I>())
 
+    private fun <I: Any, T : Table<I, *>> recursiveInsert(field: KProperty1<T, *>, obj: T) {
+        if (field.returnType.classifier == LazyId::class) {
+            val lazyId = (field.get(obj) as LazyId<*, *>?) ?: return
+            val lazyIdValue = (lazyId.value ?: return) as Table<Any, *>
+            if (lazyIdValue.id == null) insertK(lazyIdValue, lazyIdValue::class as KClass<Table<Any, *>>, lazyId.idType)
+        }
+    }
+
     /**
      * Inserts an object into the database and updates the id.
      *
@@ -239,6 +246,8 @@ class ConnectionManager(
             for (field in parameters) {
                 if (field.name == "id") continue
                 if (ColumnIgnore.shouldIgnore(field, IgnoreTarget.INSERT)) continue
+                recursiveInsert(field, obj)
+                recursiveUpdate(field, obj)
                 insertRacoon.setParamK(
                     ColumnName.getName(field, config),
                     field.get(obj),
@@ -282,6 +291,14 @@ class ConnectionManager(
     inline fun <reified I : Any, reified T : Table<I, *>> updateUncached(obj: T) =
         updateUncachedK(obj, T::class, typeOf<I>())
 
+    private fun <I: Any, T : Table<I, *>> recursiveUpdate(field: KProperty1<T, *>, obj: T) {
+        if (field.returnType.classifier == LazyId::class) {
+            val lazyId = (field.get(obj) as LazyId<*, *>?) ?: return
+            val lazyIdValue = (lazyId.value ?: return) as Table<Any, *>
+            if (lazyIdValue.id == null && !hashes.compare(lazyIdValue)) updateK(lazyIdValue, lazyIdValue::class as KClass<Table<Any, *>>, lazyId.idType)
+        }
+    }
+
     /**
      * Updates a record in the database with the given object.
      *
@@ -298,6 +315,8 @@ class ConnectionManager(
         createExecute(generateUpdateQueryK(kClass, config)).use { executeRacoon ->
             for (field in parameters) {
                 if (ColumnIgnore.shouldIgnore(field, IgnoreTarget.UPDATE)) continue
+                recursiveInsert(field, obj)
+                recursiveUpdate(field, obj)
                 executeRacoon.setParamK(
                     ColumnName.getName(field, config),
                     field.get(obj),
