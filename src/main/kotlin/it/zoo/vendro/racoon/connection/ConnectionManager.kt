@@ -398,6 +398,7 @@ class ConnectionManager(
 
         for (parameter in kClass.memberProperties) {
             if (parameter !is KMutableProperty<*>) continue
+            if (ColumnIgnore.shouldIgnore(parameter, IgnoreTarget.SELECT)) continue
             parameter.setter.call(this, getValueK(updated, parameter.name, kClass))
         }
     }
