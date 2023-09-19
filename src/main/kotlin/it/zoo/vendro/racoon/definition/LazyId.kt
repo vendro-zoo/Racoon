@@ -23,7 +23,7 @@ class LazyId<I : Any, T : Table<I, T>> private constructor(
     /**
      * The id of the record in the linked table.
      */
-    val id: I?,
+    id: I?,
 
     /**
      * The [ConnectionManager] instance used to access the database.
@@ -39,6 +39,9 @@ class LazyId<I : Any, T : Table<I, T>> private constructor(
      */
     var isLoaded: Boolean = false
 ) {
+    val id: I? = id
+        get() = field ?: value?.id
+
     /**
      * Gets the value of the linked table.
      *
@@ -51,7 +54,7 @@ class LazyId<I : Any, T : Table<I, T>> private constructor(
         if (!isLoaded) {
             // Checks that the state of the LazyId is valid
             manager ?: throw IllegalArgumentException("No manager available")
-            id ?: throw IllegalArgumentException("No id available")
+            val id = id ?: throw IllegalArgumentException("No id available")
 
             // Get the value and sets the flag to "loaded"
             value = manager.findK(id, type, idType)
