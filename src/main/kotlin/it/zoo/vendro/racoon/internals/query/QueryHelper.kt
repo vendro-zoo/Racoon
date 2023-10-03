@@ -35,7 +35,7 @@ internal fun fromValueForQuery(kProperty1: KProperty1<*, *>, config: RacoonConfi
     return if (caster != null && (caster.fromQueryPostfix.isNotBlank() || caster.fromQueryPrefix.isNotBlank()))
         "${caster.fromQueryPrefix}$alias1$q${ColumnName.getName(kProperty1, config)}$q${caster.fromQueryPostfix} " +
                 "as $q$asAlias${ColumnName.getName(kProperty1, config)}$q"
-    else "$alias1$q${ColumnName.getName(kProperty1, config)}$q"
+    else "$q$asAlias${ColumnName.getName(kProperty1, config)}$q"
 }
 
 /**
