@@ -428,7 +428,7 @@ class ConnectionManager(
      * @param query The query to execute.
      * @return A [QueryStatement] capable of handling the query and its results.
      */
-    fun createQuery(@Language("mysql") query: String): QueryStatement = QueryStatement(this, query)
+    fun createQuery(@Language("sql") query: String): QueryStatement = QueryStatement(this, query)
 
     /**
      * Creates a [QueryStatement] with the given sql file.
@@ -444,7 +444,7 @@ class ConnectionManager(
      * @param query The query to execute.
      * @return An [InsertStatement] capable of handling the query and its results.
      */
-    fun createInsert(@Language("mysql") query: String): InsertStatement = InsertStatement(this, query)
+    fun createInsert(@Language("sql") query: String): InsertStatement = InsertStatement(this, query)
 
     /**
      * Creates an [InsertStatement] with the given sql file.
@@ -461,7 +461,7 @@ class ConnectionManager(
      * @return An [ExecuteStatement] capable of handling the query.
      */
 
-    fun createExecute(@Language("mysql") query: String): ExecuteStatement = ExecuteStatement(this, query)
+    fun createExecute(@Language("sql") query: String): ExecuteStatement = ExecuteStatement(this, query)
 
     /**
      * Creates an [ExecuteStatement] with the given sql file.
