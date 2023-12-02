@@ -1,6 +1,6 @@
 package it.zoo.vendro.racoon.internals.query
 
-import it.zoo.vendro.racoon.habitat.configuration.RacoonConfiguration
+import it.zoo.vendro.racoon.configuration.RacoonConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -16,7 +16,7 @@ internal class QueryHelperKtTest {
     @Test
     fun generateInsertQueryK1() {
         val query = generateInsertQueryK(TestClass::class, config)
-        assertEquals("INSERT INTO `TestClass` (`a`,`b`) VALUE (:a,:b)", query)
+        assertEquals("INSERT INTO `TestClass` (`a`,`b`) VALUES (:a,:b)", query)
     }
 
     @Test

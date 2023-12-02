@@ -1,26 +1,28 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val vers: String by project
 
 plugins {
-    kotlin("jvm") version "1.6.20"
-    id("maven-publish")  // Used to publish to the local maven repository
-    id("org.jetbrains.dokka") version "1.6.21"  // Used to generate the API documentation
-    id("org.sonarqube") version "3.3"  // Used to perform cloud-based analysis
+    kotlin("jvm") version "1.9.0"
+    id("maven-publish")
+    id("org.jetbrains.dokka") version "1.8.20"
 }
 
 group = "it.zoo.vendro"
+val fullVersion = project.properties["project.version"] as String
+version = fullVersion
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
-    testImplementation("mysql:mysql-connector-java:8.0.29")
+    implementation(kotlin("reflect"))
+    implementation("com.mysql:mysql-connector-j:8.1.0")
 
-    dokkaJavadocPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.6.21")  // Used to generate the API documentation as javadoc
-
+    testImplementation("org.postgresql:postgresql:42.6.0")
+    testImplementation("org.testcontainers:testcontainers:1.19.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.0")
+    testImplementation("org.testcontainers:postgresql:1.19.0")
     testImplementation(kotlin("test"))
 }
 
@@ -28,7 +30,7 @@ dependencies {
 val sourcesJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
     dependsOn(JavaPlugin.CLASSES_TASK_NAME)
     archiveClassifier.set("sources")
-    archiveVersion.set(vers)
+    archiveVersion.set(fullVersion)
     from(sourceSets["main"].allSource)
 }
 
@@ -36,7 +38,7 @@ val sourcesJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
 val javadocJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
     dependsOn("dokkaJavadoc")
     archiveClassifier.set("javadoc")
-    archiveVersion.set(vers)
+    archiveVersion.set(fullVersion)
     from(tasks.javadoc)
 }
 
@@ -44,20 +46,17 @@ tasks.test {
     useJUnitPlatform()
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
 }
 
 tasks.withType<GenerateModuleMetadata> {
     enabled = false
-}
-
-sonarqube {
-    properties {
-        property("sonar.projectKey", "vendro-zoo_racoon")
-        property("sonar.organization", "vendro-zoo")
-        property("sonar.host.url", "https://sonarcloud.io")
-    }
 }
 
 // Publish all the jar files to the local maven repository
@@ -66,7 +65,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "it.zoo.vendro"
             artifactId = "racoon"
-            version = vers
+            version = fullVersion
 
             from(components["java"])
             artifact(sourcesJar)
