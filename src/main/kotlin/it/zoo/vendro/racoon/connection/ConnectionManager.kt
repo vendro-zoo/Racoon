@@ -45,7 +45,7 @@ class ConnectionManager(
     var closed = false
         internal set
 
-    internal val cache = TableCache(this)
+    val cache = TableCache(this)
     internal val hashes = HashCache()
 
     /**
