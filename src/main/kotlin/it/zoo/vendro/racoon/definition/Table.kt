@@ -43,6 +43,10 @@ interface TableInfo<T : Any, TB : Table<T, TB>> {
         return cm.findK(id, tbKClass, this.idType)
     }
 
+    fun findUncached(cm: ConnectionManager, id: T): TB? {
+        return cm.findUncachedK(id, tbKClass, this.idType)
+    }
+
     fun defined(value: TB): LazyId<T, TB> = value.defined()
     fun lazy(id: T, cm: ConnectionManager): LazyId<T, TB> = LazyId.lazyK(id, cm, tbKClass, idType)
 }
