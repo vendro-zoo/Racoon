@@ -181,6 +181,25 @@ class QueryResultRow(val queryResult: QueryResult) {
     fun mapToNullableString(index: Int = 1) = resultSet.getString(index).takeIf { !resultSet.wasNull() }
     fun mapToString(index: Int = 1) = mapToNullableString(index) ?: throwBecauseNull()
 
+    fun mapToNullableInt(name: String) = resultSet.getInt(name).takeIf { !resultSet.wasNull() }
+    fun mapToInt(name: String) = mapToNullableInt(name) ?: throwBecauseNull()
+    fun mapToNullableLong(name: String) = resultSet.getLong(name).takeIf { !resultSet.wasNull() }
+    fun mapToLong(name: String) = mapToNullableLong(name) ?: throwBecauseNull()
+    fun mapToNullableShort(name: String) = resultSet.getShort(name).takeIf { !resultSet.wasNull() }
+    fun mapToShort(name: String) = mapToNullableShort(name) ?: throwBecauseNull()
+    fun mapToNullableByte(name: String) = resultSet.getByte(name).takeIf { !resultSet.wasNull() }
+    fun mapToByte(name: String) = mapToNullableByte(name) ?: throwBecauseNull()
+    fun mapToNullableFloat(name: String) = resultSet.getFloat(name).takeIf { !resultSet.wasNull() }
+    fun mapToFloat(name: String) = mapToNullableFloat(name) ?: throwBecauseNull()
+    fun mapToNullableDouble(name: String) = resultSet.getDouble(name).takeIf { !resultSet.wasNull() }
+    fun mapToDouble(name: String) = mapToNullableDouble(name) ?: throwBecauseNull()
+    fun mapToNullableBigDecimal(name: String) = resultSet.getBigDecimal(name).takeIf { !resultSet.wasNull() }
+    fun mapToBigDecimal(name: String) = mapToNullableBigDecimal(name) ?: throwBecauseNull()
+    fun mapToNullableBoolean(name: String) = resultSet.getBoolean(name).takeIf { !resultSet.wasNull() }
+    fun mapToBoolean(name: String) = mapToNullableBoolean(name) ?: throwBecauseNull()
+    fun mapToNullableString(name: String) = resultSet.getString(name).takeIf { !resultSet.wasNull() }
+    fun mapToString(name: String) = mapToNullableString(name) ?: throwBecauseNull()
+
     private fun throwBecauseNull(): Nothing {
         throw SQLException("Not null value expected, but null found")
     }
