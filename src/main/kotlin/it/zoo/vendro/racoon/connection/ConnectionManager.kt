@@ -3,6 +3,7 @@ package it.zoo.vendro.racoon.connection
 import it.zoo.vendro.racoon.cache.HashCache
 import it.zoo.vendro.racoon.cache.TableCache
 import it.zoo.vendro.racoon.configuration.ConnectionSettings
+import it.zoo.vendro.racoon.configuration.JDBCConnectionString
 import it.zoo.vendro.racoon.configuration.RacoonConfiguration
 import it.zoo.vendro.racoon.definition.*
 import it.zoo.vendro.racoon.exceptions.ConnectionUnavailable
@@ -484,9 +485,19 @@ class ConnectionManager(
          * @param connectionSettings The connection settings to use.
          * @return A [ConnectionManager] instance.
          */
-        internal fun fromSettings(connectionSettings: ConnectionSettings, pool: ConnectionPool): ConnectionManager {
+        internal fun fromSettings(connectionSettings: JDBCConnectionString, pool: ConnectionPool): ConnectionManager {
             val cm = ConnectionManager(
-                retryUntilNotNull { DriverManager.getConnection(connectionSettings.toString()) },
+                retryUntilNotNull {
+                    if (connectionSettings.username == null || connectionSettings.password == null) {
+                        DriverManager.getConnection(connectionSettings.getConnectionString())
+                    } else {
+                        DriverManager.getConnection(
+                            connectionSettings.getConnectionString(),
+                            connectionSettings.username,
+                            connectionSettings.password
+                        )
+                    }
+                },
                 pool
             )
             val idleTimeout = pool.configuration.connection.idleTimeout

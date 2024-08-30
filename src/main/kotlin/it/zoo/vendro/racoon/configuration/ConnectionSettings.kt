@@ -22,11 +22,11 @@ data class ConnectionSettings(
     /**
      * The username to use when connecting to the database.
      */
-    val username: String? = null,
+    override val username: String? = null,
     /**
      * The password to use when connecting to the database.
      */
-    val password: String? = null,
+    override val password: String? = null,
     /**
      * The timeout in milliseconds to use when connecting to the database.
      *
@@ -46,7 +46,7 @@ data class ConnectionSettings(
      *
      * The default value is 30.
      */
-    val idleTimeout: Int = 30,
+    override val idleTimeout: Int = 30,
     /**
      * The maximum number of connections to keep open at any one time.
      *
@@ -54,7 +54,7 @@ data class ConnectionSettings(
      *
      * The default value is 0.
      */
-    val maxManagers: Int = 0,
+    override val maxManagers: Int = 0,
     /**
      * The maximum number of connections to keep stored in the pool.
      *
@@ -62,7 +62,7 @@ data class ConnectionSettings(
      *
      * The default value is 10.
      */
-    val maxPoolSize: Int = 10,
+    override val maxPoolSize: Int = 10,
     /**
      * The name of the protocol.
      *
@@ -70,8 +70,8 @@ data class ConnectionSettings(
      *
      * NOTE: Values other than "mysql" are not supported, and so may not work.
      */
-    val protocol: SQLProtocol = MySQLProtocol()
-) {
+    override val protocol: SQLProtocol = MySQLProtocol()
+) : JDBCConnectionString {
     /**
      * Creates a connection string for the database.
      *
@@ -89,4 +89,28 @@ data class ConnectionSettings(
 
         return stringBuilder.toString()
     }
+
+    override fun getConnectionString(): String = toString()
+}
+
+data class RawConnectionSettings(
+    val url: String,
+    override val username: String? = null,
+    override val password: String? = null,
+    override val maxManagers: Int = 0,
+    override val maxPoolSize: Int = 10,
+    override val protocol: SQLProtocol = MySQLProtocol()
+) : JDBCConnectionString {
+    override fun getConnectionString(): String = url
+    override val idleTimeout: Int = 0
+}
+
+interface JDBCConnectionString {
+    val username: String?
+    val password: String?
+    val idleTimeout: Int
+    val maxManagers: Int
+    val maxPoolSize: Int
+    val protocol: SQLProtocol
+    fun getConnectionString(): String
 }
