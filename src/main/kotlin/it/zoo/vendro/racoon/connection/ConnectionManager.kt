@@ -96,22 +96,19 @@ class ConnectionManager(
     inline fun <T> use(block: (ConnectionManager) -> T): T {
         if (closed) throw ConnectionUnavailable()
         if (finalOpExecuted) throw IllegalStateException("Can't use after final operation has been executed")
-        val blockResult = runCatching { block(this) }.fold(
-            {
-                if (!finalOpExecuted) commit()
-                release()
-                it
-            },
-            {
-                try {
-                    rollback()
-                } catch (e: ConnectionUnavailable) {
-                    throw ConnectionUnavailable(it)
-                }
-                release()
-                throw it
-            })
-        return blockResult
+        try {
+            return block(this)
+        } catch (e: Throwable) {
+            try {
+                rollback()
+            } catch (e: ConnectionUnavailable) {
+                throw ConnectionUnavailable(e)
+            }
+            throw e
+        } finally {
+            if (!finalOpExecuted) commit()
+            release()
+        }
     }
 
     /**
@@ -225,7 +222,7 @@ class ConnectionManager(
     inline fun <reified I : Any, reified T : Table<I, *>> insertUncached(obj: T) =
         insertUncachedK(obj, T::class, typeOf<I>())
 
-    private fun <I: Any, T : Table<I, *>> recursiveInsert(field: KProperty1<T, *>, obj: T) {
+    private fun <I : Any, T : Table<I, *>> recursiveInsert(field: KProperty1<T, *>, obj: T) {
         if (field.returnType.classifier == LazyId::class) {
             val lazyId = (field.get(obj) as LazyId<*, *>?) ?: return
             val lazyIdValue = (lazyId.value ?: return) as Table<Any, *>
@@ -292,11 +289,15 @@ class ConnectionManager(
     inline fun <reified I : Any, reified T : Table<I, *>> updateUncached(obj: T) =
         updateUncachedK(obj, T::class, typeOf<I>())
 
-    private fun <I: Any, T : Table<I, *>> recursiveUpdate(field: KProperty1<T, *>, obj: T) {
+    private fun <I : Any, T : Table<I, *>> recursiveUpdate(field: KProperty1<T, *>, obj: T) {
         if (field.returnType.classifier == LazyId::class) {
             val lazyId = (field.get(obj) as LazyId<*, *>?) ?: return
             val lazyIdValue = (lazyId.value ?: return) as Table<Any, *>
-            if (lazyIdValue.id == null && !hashes.compare(lazyIdValue)) updateK(lazyIdValue, lazyIdValue::class as KClass<Table<Any, *>>, lazyId.idType)
+            if (lazyIdValue.id == null && !hashes.compare(lazyIdValue)) updateK(
+                lazyIdValue,
+                lazyIdValue::class as KClass<Table<Any, *>>,
+                lazyId.idType
+            )
         }
     }
 
