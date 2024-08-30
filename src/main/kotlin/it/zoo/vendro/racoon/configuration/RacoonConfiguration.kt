@@ -23,7 +23,7 @@ import kotlin.reflect.typeOf
  */
 @Suppress("unused")
 class RacoonConfiguration(
-    val connection: ConnectionSettings = ConnectionSettings(
+    val connection: JDBCConnectionString = ConnectionSettings(
         host = "localhost",
         database = "test"
     ),
@@ -164,25 +164,29 @@ class RacoonConfiguration(
             )
     ) {
         data class WKClass(val kType: KType) {
+            private val jvmErasure = kType.jvmErasure
+            val qualifiedNameHashCode = jvmErasure.qualifiedName.hashCode()
+
+            fun verify() {
+                if (kType.arguments.any { it != KTypeProjection.STAR })
+                    throw IllegalArgumentException("Only * type parameter is supported")
+            }
+
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
                 if (javaClass != other?.javaClass) return false
 
                 other as WKClass
 
-                val thisJvm = kType.jvmErasure
-                val otherJvm = other.kType.jvmErasure
-
-                if (thisJvm.qualifiedName != otherJvm.qualifiedName) return false
-
-                if (!kType.arguments.all { it == KTypeProjection.STAR })
-                    throw IllegalArgumentException("Only * type parameter is supported")
-
-                return true
+                return qualifiedNameHashCode == other.qualifiedNameHashCode
             }
 
             override fun hashCode(): Int {
                 return kType.hashCode()
+            }
+
+            companion object {
+                val ANY = WKClass(typeOf<Any>())
             }
         }
 
@@ -205,6 +209,9 @@ class RacoonConfiguration(
         inline fun <reified J, reified S> setCaster(caster: RacoonSerDe<J, S>) = apply {
             val wJClass = WKClass(typeOf<J>())
             val wSClass = WKClass(typeOf<S>())
+
+            wJClass.verify()
+            wSClass.verify()
 
             val m1: MutableSet<Pair<WKClass, RacoonSerDe<*, *>>> =
                 racoonCasters.find { it.first == wJClass }?.second ?: mutableSetOf<Pair<WKClass, RacoonSerDe<*, *>>>().apply {
@@ -230,7 +237,7 @@ class RacoonConfiguration(
         fun getCasterK(jType: KType, sType: KType): RacoonSerDe<Any?, Any?>? {
             val wJClass = WKClass(jType)
             val wSClass = WKClass(sType)
-            val wAnyClass = WKClass(typeOf<Any>())
+            val wAnyClass = WKClass.ANY
 
             val m1 = racoonCasters.find { it.first == wJClass }?.second ?: jType.jvmErasure.superclasses.firstNotNullOfOrNull { superclass ->
                 val arguments = List(superclass.typeParameters.size) { KTypeProjection.STAR }
